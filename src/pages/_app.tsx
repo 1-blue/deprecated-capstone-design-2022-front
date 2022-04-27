@@ -4,6 +4,7 @@ import type { AppProps } from "next/app";
 import { SWRConfig } from "swr";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "next-themes";
+import { useRouter } from "next/router";
 
 // layout
 import Layout from "@src/components/Layout";
@@ -11,13 +12,18 @@ import Layout from "@src/components/Layout";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
   return (
     //@ts-ignore
     <SWRConfig value={{ fetcher }}>
       {/* theme-provider */}
       <ThemeProvider attribute="class">
         {/* 전체 레이아웃 */}
-        <Layout>
+        <Layout
+          nonResposive={router.asPath === "/write"}
+          hasHeader={router.asPath !== "/write"}
+        >
           <Component {...pageProps} />
         </Layout>
         {/* 토스트 메시지 */}

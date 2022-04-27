@@ -155,7 +155,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 
 ### 2.1 POST /api/post
 
-- 목적: 게시글 생성
+- 목적: 게시글 생성 및 임시 게시글 제거
 - 전송
 
 ```typescript
@@ -163,6 +163,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
   title: string;
   contents: string;
   keywords?: string[];
+  tempPostIdx?: number;
 }
 ```
 
@@ -171,7 +172,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 ```typescript
 {
   ok: boolean;
-  postIdx: number;
+  title: string;
 }
 ```
 
@@ -312,6 +313,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
   title: string;
   contents: string;
   keywords?: string[];
+  tempPostIdx?: number;
 }
 ```
 
@@ -320,6 +322,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 ```typescript
 {
   ok: boolean;
+  tempPostIdx: number;
 }
 ```
 
