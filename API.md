@@ -390,3 +390,18 @@ interface IPostWithUserKeyword extends IPostWithUser {
   posts: IPostWithUser;
 }
 ```
+
+## 7. 이미지
+
+### 7.1 POST /api/photo
+
+- 목적: 이미지 업로드
+- 전송: `multipart/formData`형식에 `photo`이름으로 전달
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  photoUrl: string;
+}
+```

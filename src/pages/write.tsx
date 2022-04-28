@@ -1,16 +1,21 @@
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { KeyboardEvent, useCallback, useState } from "react";
+import { KeyboardEvent, useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 // common-component
 import Markdown from "@src/components/common/Markdown";
+import Spinner from "@src/components/common/Spinner";
+import Icon from "@src/components/common/Icon";
 
 // hook
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 import useMe from "@src/hooks/useMe";
+
+// type
+import { ICON } from "@src/types";
 
 type WriteForm = {
   title: string;
@@ -24,6 +29,10 @@ type CreatePostResponse = {
 interface ICreateTemparoryPostResponse extends CreatePostResponse {
   tempPostIdx?: number;
 }
+type PhotoResponse = {
+  ok: boolean;
+  photoUrl: string;
+};
 
 const Write: NextPage = () => {
   const router = useRouter();
@@ -34,7 +43,7 @@ const Write: NextPage = () => {
   // 2022/04/27 - 태그가 들어갈 배열 - by 1-blue
   const [keywords, setKeywords] = useState<string[]>([]);
   // 2022/04/27 - 게시글 생성 함수 - by 1-blue
-  const [createPost, { data: createPostResponse }] =
+  const [createPost, { data: createPostResponse, loading: createPostLoading }] =
     useMutation<CreatePostResponse>({
       url: "/api/post",
     });
@@ -146,73 +155,168 @@ const Write: NextPage = () => {
     excute: resetState,
   });
 
+  // 2022/04/28 - 이미지 input ref - by 1-blue
+  const photoRef = useRef<HTMLInputElement>(null);
+  // 2022/04/28 - 이미지 드래그중인지 판단할 변수 - by 1-blue
+  const [isDragging, setIsDragging] = useState(false);
+  // 2022/04/28 - 이미지 업로드 로딩 변수 - by 1-blue
+  const [uploadLoading, setUploadLoading] = useState(false);
+  // 2022/04/28 - 이미지 업로드 ( 드래그 앤 드랍 ) - by 1-blue
+  const onUploadPhotoByDrop = useCallback(
+    async (e: any) => {
+      e.preventDefault();
+
+      setUploadLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("photo", e.dataTransfer.files[0]);
+        const { photoUrl }: PhotoResponse = await fetch("/api/photo", {
+          method: "POST",
+          body: formData,
+        }).then((res) => res.json());
+        setValue(
+          "contents",
+          getValues("contents") + `\n![이미지](${photoUrl})`
+        );
+        toast.success("이미지를 업로드했습니다.");
+      } catch (error) {
+        toast.error("이미지 업로드에 실패했습니다.");
+      }
+
+      setUploadLoading(false);
+      setIsDragging(false);
+    },
+    [getValues, setValue, setUploadLoading, setIsDragging]
+  );
+  // 2022/04/28 - 이미지 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+  const onUploadPhotoByExplorer = useCallback(
+    async (e: any) => {
+      setUploadLoading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("photo", e.target.files[0]);
+        const { photoUrl }: PhotoResponse = await fetch("/api/photo", {
+          method: "POST",
+          body: formData,
+        }).then((res) => res.json());
+        setValue(
+          "contents",
+          getValues("contents") + `\n![이미지](${photoUrl})`
+        );
+        toast.success("이미지를 업로드했습니다.");
+      } catch (error) {
+        toast.error("이미지 업로드에 실패했습니다.");
+      }
+
+      setUploadLoading(false);
+      setIsDragging(false);
+    },
+    [setUploadLoading, getValues, setValue, setIsDragging]
+  );
+
   return (
     <>
-      <article className="flex h-screen" onKeyDown={handleSave}>
+      <article
+        className="flex h-screen"
+        onKeyDown={handleSave}
+        onDragOver={() => setIsDragging(true)}
+        onDragLeave={() => setIsDragging(false)}
+      >
         {/* 좌측 입력 영역 */}
         <section className="flex-1 dark:bg-zinc-800 bg-zinc-200 p-4">
-          <form
-            className="flex flex-col h-full"
-            onSubmit={handleSubmit(onCreatePost)}
-          >
-            <input
-              type="text"
-              placeholder="제목을 입력하세요"
-              className="p-4 bg-transparent focus:outline-none text-3xl font-bold"
-              {...register("title")}
-            />
-            <input
-              type="text"
-              placeholder="태그를 입력하세요"
-              className="p-4 bg-transparent focus:outline-none"
-              {...register("keyword")}
-              onKeyDown={onCreateKeyword}
-            />
-            <ul className="px-4 flex flex-wrap space-x-2">
-              {keywords.map((keyword) => (
-                <li
-                  key={keyword}
-                  className="py-1 px-2 rounded-md mb-2 bg-zinc-500 text-white"
-                >
-                  <button
-                    type="button"
-                    onClick={onRemoveKeyword(keyword)}
-                    tabIndex={-1}
-                  >
-                    {keyword}
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <textarea
-              placeholder="당신의 이야기를 적어보세요..."
-              className="p-4 bg-transparent focus:outline-none flex-1 resize-none"
-              {...register("contents")}
-            />
-            <div className="flex space-x-2 dark:bg-zinc-700 p-4 -m-4">
-              <button
-                type="button"
-                className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors"
-                onClick={onCancelCreatePost}
-              >
-                ◂ 나가기
-              </button>
-              <div className="flex-1" />
-              <button
-                type="button"
-                className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors"
-                onClick={onTemporarySave}
-              >
-                임시저장
-              </button>
-              <button
-                type="submit"
-                className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors"
-              >
-                출간하기
-              </button>
+          {isDragging ? (
+            <div
+              className="flex flex-col h-full justify-center items-center"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={onUploadPhotoByDrop}
+            >
+              <span>🖼️이미지를 여기에 드래그 해주세요!</span>
+              <Icon icon={ICON.PHOTO} className="w-40 h-40" />
             </div>
-          </form>
+          ) : (
+            <form
+              className="flex flex-col h-full"
+              onSubmit={handleSubmit(onCreatePost)}
+            >
+              <input
+                type="file"
+                accept="image/*"
+                ref={photoRef}
+                onChange={onUploadPhotoByExplorer}
+                hidden
+              />
+              <input
+                autoFocus
+                type="text"
+                placeholder="제목을 입력하세요"
+                className="p-4 bg-transparent focus:outline-none text-3xl font-bold"
+                {...register("title")}
+              />
+              <input
+                type="text"
+                placeholder="태그를 입력하세요"
+                className="p-4 bg-transparent focus:outline-none"
+                {...register("keyword")}
+                onKeyDown={onCreateKeyword}
+              />
+              <ul className="px-4 flex flex-wrap space-x-2">
+                {keywords.map((keyword) => (
+                  <li
+                    key={keyword}
+                    className="py-1 px-2 rounded-md mb-2 bg-zinc-500 text-white"
+                  >
+                    <button
+                      type="button"
+                      onClick={onRemoveKeyword(keyword)}
+                      tabIndex={-1}
+                    >
+                      {keyword}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <ul className="flex">
+                <div className="flex-1" />
+                <button
+                  type="button"
+                  onClick={() => photoRef.current?.click()}
+                  className="p-1 rounded-md hover:text-white hover:bg-black dark:hover:text-black dark:hover:bg-white focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                >
+                  <Icon icon={ICON.PHOTO} />
+                </button>
+              </ul>
+              <textarea
+                placeholder="당신의 이야기를 적어보세요..."
+                className="p-4 bg-transparent focus:outline-none flex-1 resize-none"
+                {...register("contents")}
+              />
+              <div className="flex space-x-2 dark:bg-zinc-700 p-4 -m-4">
+                <button
+                  type="button"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  onClick={onCancelCreatePost}
+                >
+                  ◂ 나가기
+                </button>
+                <div className="flex-1" />
+                <button
+                  type="button"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  onClick={onTemporarySave}
+                >
+                  임시저장
+                </button>
+                <button
+                  type="submit"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                >
+                  출간하기
+                </button>
+              </div>
+            </form>
+          )}
         </section>
 
         {/* 우측 결과물 미리보기 영역 */}
@@ -221,6 +325,8 @@ const Write: NextPage = () => {
           <Markdown markdown={watch("contents")} />
         </section>
       </article>
+
+      {(createPostLoading || uploadLoading) && <Spinner kinds="page" />}
     </>
   );
 };

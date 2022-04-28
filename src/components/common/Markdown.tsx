@@ -1,6 +1,9 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+// common-component
+import Photo from "@src/components/common/Photo";
+
 type Props = {
   markdown: string;
 };
@@ -25,6 +28,23 @@ const Markdown = ({ markdown }: Props) => {
         ),
         a: ({ node, ...props }) => (
           <a {...props} className="text-indigo-500 no-underline" />
+        ),
+        blockquote: ({ node, ...props }) => (
+          <blockquote {...props} className="bg-zinc-800 border-l-indigo-500" />
+        ),
+        img: ({ node, ...props }) => (
+          <>
+            {props.src?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
+              <Photo
+                {...props}
+                photo={props.src}
+                size="w-full h-80"
+                className="m-0"
+              />
+            ) : (
+              <img {...props} className="w-full h-80 m-0" />
+            )}
+          </>
         ),
       }}
     >

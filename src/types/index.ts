@@ -9,6 +9,7 @@ export enum ICON {
   HEART = "HEART",
   COMMENTS = "COMMENTS",
   CHEVRON_DOWN = "CHEVRON_DOWN",
+  PHOTO = "PHOTO",
 }
 
 // 2022/04/10 - 단축 유저 타입 - by 1-blue
