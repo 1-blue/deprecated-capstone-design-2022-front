@@ -5,16 +5,16 @@ import useSWR from "swr";
 import { ApiResponseOfMe } from "@src/types";
 
 // 2022/04/08 - 로그인한 유저 정보 - by 1-blue
-const useUser = () => {
+const useMe = () => {
   const { data, error } = useSWR<ApiResponseOfMe>("/api/users/me");
 
   useEffect(() => {
     if (!data?.ok) return;
 
-    console.log("비로그인 상태 by useUser");
+    console.log("비로그인 상태 by useMe");
   }, [data]);
 
-  return { user: data?.user, isLoading: !data && !error };
+  return { me: data?.user, isLoading: !data && !error };
 };
 
-export default useUser;
+export default useMe;

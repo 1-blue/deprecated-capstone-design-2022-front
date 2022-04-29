@@ -22,8 +22,17 @@ type Post = {
   contents: string;
   createdAt: Date;
   updatedAt: Date;
+  isPrivate: boolean;
+  summary: string;
+  thumbnail: string;
 
   userIdx: number;
+  categoryIdx: number;
+};
+
+type Category = {
+  idx: number;
+  category: string;
 };
 
 type Comment = {
@@ -155,7 +164,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 
 ### 2.1 POST /api/post
 
-- 목적: 게시글 생성
+- 목적: 게시글 생성 및 카테고리 생서 및 임시 게시글 제거
 - 전송
 
 ```typescript
@@ -163,6 +172,11 @@ interface IPostWithUserKeyword extends IPostWithUser {
   title: string;
   contents: string;
   keywords?: string[];
+  tempPostIdx?: number;
+  isPrivate: boolean;
+  summary: string;
+  thumbnail: string;
+  category?: string;
 }
 ```
 
@@ -171,7 +185,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 ```typescript
 {
   ok: boolean;
-  postIdx: number;
+  title: string;
 }
 ```
 
@@ -312,6 +326,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
   title: string;
   contents: string;
   keywords?: string[];
+  tempPostIdx?: number;
 }
 ```
 
@@ -320,6 +335,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 ```typescript
 {
   ok: boolean;
+  tempPostIdx: number;
 }
 ```
 
@@ -385,5 +401,35 @@ interface IPostWithUserKeyword extends IPostWithUser {
 {
   ok: boolean;
   posts: IPostWithUser;
+}
+```
+
+## 7. 이미지
+
+### 7.1 POST /api/photo
+
+- 목적: 이미지 업로드
+- 전송: `multipart/formData`형식에 `photo`이름으로 전달
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  photoUrl: string;
+}
+```
+
+## 8. 카테고리
+
+### 8.1 GET /api/category
+
+- 목적: 로그인한 유저의 카테고리들 요청
+- 전송: `cookie`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  categorys: string[];
 }
 ```
