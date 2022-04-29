@@ -10,9 +10,10 @@ export default async function handler(
     case "GET":
       return res.status(200).json({ ok: true, message: "SAdsas" });
     case "POST":
-      const { title, keywords, contents, tempPostIdx } = req.body;
+      const { title } = req.body;
 
-      console.log(title, keywords, contents, tempPostIdx);
+      console.log(req.body);
+
       console.log("대충 게시글 생성 + 2초 대기");
 
       await new Promise((reject, resolve) => {

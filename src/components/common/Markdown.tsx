@@ -20,7 +20,7 @@ const Markdown = ({ markdown }: Props) => {
         code: ({ node, ...props }) => (
           <code
             {...props}
-            className="bg-indigo-500 px-2 py-1 rounded-sm text-white after:contents before:contents group-odd:p-0 group-even:p-0"
+            className="bg-indigo-700 px-2 py-1 rounded-sm text-white after:contents before:contents group-odd:p-0 group-even:p-0 group-odd:bg-transparent group-even:bg-transparent"
           />
         ),
         pre: ({ node, ...props }) => (

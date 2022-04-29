@@ -17,11 +17,16 @@ module.exports = {
           "0%": { transform: "rotateY(0deg)" },
           "100%": { transform: "rotateY(360deg)" },
         },
+        "slide-up": {
+          "0%": { transform: "translateY(100vh)" },
+          "100%": { transform: "translateY(0px)" },
+        },
       },
     },
     animation: {
       "fade-in": "fade-in 0.4s linear",
       "spin-y": "spin-y 2s ease-in-out infinite",
+      "slide-up": "slide-up 0.4s linear",
     },
   },
   plugins: [require("@tailwindcss/typography")],

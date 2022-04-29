@@ -22,8 +22,17 @@ type Post = {
   contents: string;
   createdAt: Date;
   updatedAt: Date;
+  isPrivate: boolean;
+  summary: string;
+  thumbnail: string;
 
   userIdx: number;
+  categoryIdx: number;
+};
+
+type Category = {
+  idx: number;
+  category: string;
 };
 
 type Comment = {
@@ -155,7 +164,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 
 ### 2.1 POST /api/post
 
-- 목적: 게시글 생성 및 임시 게시글 제거
+- 목적: 게시글 생성 및 카테고리 생서 및 임시 게시글 제거
 - 전송
 
 ```typescript
@@ -164,6 +173,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
   contents: string;
   keywords?: string[];
   tempPostIdx?: number;
+  isPrivate: boolean;
+  summary: string;
+  thumbnail: string;
+  category?: string;
 }
 ```
 
@@ -403,5 +416,20 @@ interface IPostWithUserKeyword extends IPostWithUser {
 {
   ok: boolean;
   photoUrl: string;
+}
+```
+
+## 8. 카테고리
+
+### 8.1 GET /api/category
+
+- 목적: 로그인한 유저의 카테고리들 요청
+- 전송: `cookie`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  categorys: string[];
 }
 ```

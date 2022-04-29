@@ -10,6 +10,9 @@ export enum ICON {
   COMMENTS = "COMMENTS",
   CHEVRON_DOWN = "CHEVRON_DOWN",
   PHOTO = "PHOTO",
+  EARTH = "EARTH",
+  LOCK = "LOCK",
+  PLUS_CURCLE = "PLUS_CURCLE",
 }
 
 // 2022/04/10 - 단축 유저 타입 - by 1-blue

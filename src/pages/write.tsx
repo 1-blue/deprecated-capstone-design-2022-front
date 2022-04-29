@@ -4,6 +4,9 @@ import { KeyboardEvent, useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
+// component
+import InputSetting from "@src/components/Write/InputSetting";
+
 // common-component
 import Markdown from "@src/components/common/Markdown";
 import Spinner from "@src/components/common/Spinner";
@@ -12,41 +15,39 @@ import Icon from "@src/components/common/Icon";
 // hook
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
-import useMe from "@src/hooks/useMe";
 
 // type
 import { ICON } from "@src/types";
 
-type WriteForm = {
+export type WriteForm = {
   title: string;
   keyword: string;
   contents: string;
 };
-type CreatePostResponse = {
+export type CreatePostResponse = {
   ok: boolean;
   title: string;
 };
 interface ICreateTemparoryPostResponse extends CreatePostResponse {
   tempPostIdx?: number;
 }
-type PhotoResponse = {
+export type PhotoResponse = {
   ok: boolean;
   photoUrl: string;
+};
+export type PostMetadata = {
+  summary: string;
+  isPrivate: boolean;
+  category: string;
+  thumbnail: string;
 };
 
 const Write: NextPage = () => {
   const router = useRouter();
-  const { me } = useMe();
   // 2022/04/26 - markdown관련 헬퍼 함수들 - by 1-blue
-  const { register, handleSubmit, watch, getValues, setValue } =
-    useForm<WriteForm>();
+  const { register, watch, getValues, setValue } = useForm<WriteForm>();
   // 2022/04/27 - 태그가 들어갈 배열 - by 1-blue
   const [keywords, setKeywords] = useState<string[]>([]);
-  // 2022/04/27 - 게시글 생성 함수 - by 1-blue
-  const [createPost, { data: createPostResponse, loading: createPostLoading }] =
-    useMutation<CreatePostResponse>({
-      url: "/api/post",
-    });
   // 2022/04/27 - 게시글 임시 생성 함수 - by 1-blue
   const [
     createTemporaryPost,
@@ -56,21 +57,6 @@ const Write: NextPage = () => {
     url: "/api/temp",
   });
 
-  // 2022/04/27 - 게시글 생성 - by 1-blue
-  const onCreatePost = useCallback(
-    (body: WriteForm) => {
-      if (!body.title) return toast.error("제목을 입력해주세요!");
-      if (!body.contents) return toast.error("내용을 입력해주세요!");
-      if (!confirm("정말 게시글을 생성하시겠습니까?")) return;
-
-      createPost({
-        ...body,
-        keywords,
-        tempPostIdx: createTemporaryPostResponse?.tempPostIdx,
-      });
-    },
-    [createPost, keywords, createTemporaryPostResponse]
-  );
   // 2022/04/27 - 게시글 임시 저장 - by 1-blue
   const onTemporarySave = useCallback(() => {
     const title = getValues("title");
@@ -130,6 +116,18 @@ const Write: NextPage = () => {
     [setKeywords]
   );
 
+  // 2022/04/29 - 게시글 제출 화면인지 판단하는 변수 - by 1-blue
+  const [isPreview, setIsPreview] = useState(false);
+  // 2022/04/29 - 게시글 생성 미리보기로 이동 - by 1-blue
+  const onMovePreview = useCallback(() => {
+    const title = getValues("title");
+    const contents = getValues("contents");
+
+    if (!title) return toast.error("제목을 입력해주세요!");
+    if (!contents) return toast.error("내용을 입력해주세요!");
+
+    setIsPreview(true);
+  }, [getValues, setIsPreview]);
   // 2022/04/27 - 게시글 생성 취소 - by 1-blue
   const onCancelCreatePost = useCallback(() => {
     if (
@@ -142,12 +140,6 @@ const Write: NextPage = () => {
     router.back();
   }, [router]);
 
-  // 2022/04/27 - 게시글 생성 성공 시 toast + 페이지 이동 - by 1-blue
-  useToastMessage({
-    ok: createPostResponse?.ok,
-    message: `"${createPostResponse?.title}" 게시글을 생성했습니다.`,
-    go: `/${me?.name}/${createPostResponse?.title}`,
-  });
   // 2022/04/27 - 게시글 임시 생성 성공 시 toast - by 1-blue
   useToastMessage({
     ok: createTemporaryPostResponse?.ok,
@@ -216,6 +208,14 @@ const Write: NextPage = () => {
     [setUploadLoading, getValues, setValue, setIsDragging]
   );
 
+  // 2022/04/29 - 게시글 생성 관련 옵션값들 ( 하위 컴포넌트에서 사용하지만 상위에 두는 이유는 하위 컴포넌트가 제거되어도 값을 보존하기 위함 ) - by 1-blue
+  const [postMetadata, setPostMetadata] = useState<PostMetadata>({
+    category: "",
+    isPrivate: false,
+    summary: "",
+    thumbnail: "",
+  });
+
   return (
     <>
       <article
@@ -227,6 +227,7 @@ const Write: NextPage = () => {
         {/* 좌측 입력 영역 */}
         <section className="flex-1 dark:bg-zinc-800 bg-zinc-200 p-4">
           {isDragging ? (
+            // 이미지 드래그중일 때 랜더링
             <div
               className="flex flex-col h-full justify-center items-center"
               onDragOver={(e) => e.preventDefault()}
@@ -236,10 +237,7 @@ const Write: NextPage = () => {
               <Icon icon={ICON.PHOTO} className="w-40 h-40" />
             </div>
           ) : (
-            <form
-              className="flex flex-col h-full"
-              onSubmit={handleSubmit(onCreatePost)}
-            >
+            <form className="flex flex-col h-full">
               <input
                 type="file"
                 accept="image/*"
@@ -292,10 +290,10 @@ const Write: NextPage = () => {
                 className="p-4 bg-transparent focus:outline-none flex-1 resize-none"
                 {...register("contents")}
               />
-              <div className="flex space-x-2 dark:bg-zinc-700 p-4 -m-4">
+              <div className="flex space-x-2  bg-zinc-100 dark:bg-zinc-700 p-4 -m-4">
                 <button
                   type="button"
-                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-500 hover:text-white transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
                   onClick={onCancelCreatePost}
                 >
                   ◂ 나가기
@@ -303,14 +301,15 @@ const Write: NextPage = () => {
                 <div className="flex-1" />
                 <button
                   type="button"
-                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-500 hover:text-white transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
                   onClick={onTemporarySave}
                 >
                   임시저장
                 </button>
                 <button
-                  type="submit"
-                  className="px-2 py-1 rounded-md hover:bg-zinc-400 transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  type="button"
+                  className="px-2 py-1 rounded-md hover:bg-zinc-500 hover:text-white transition-colors focus:ring-indigo-500 focus:ring-2 focus:ring-offset-2"
+                  onClick={onMovePreview}
                 >
                   출간하기
                 </button>
@@ -326,7 +325,19 @@ const Write: NextPage = () => {
         </section>
       </article>
 
-      {(createPostLoading || uploadLoading) && <Spinner kinds="page" />}
+      {/* 게시글 미리보기 및 설정 */}
+      {isPreview && (
+        <InputSetting
+          getValues={getValues}
+          keywords={keywords}
+          setIsPreview={setIsPreview}
+          tempPostIdx={createTemporaryPostResponse?.tempPostIdx}
+          postMetadata={postMetadata}
+          setPostMetadata={setPostMetadata}
+        />
+      )}
+
+      {uploadLoading && <Spinner kinds="page" />}
     </>
   );
 };
