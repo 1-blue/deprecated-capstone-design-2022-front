@@ -14,6 +14,7 @@ type SimpleUser = {
   idx: number;
   name: string;
   avatar?: string;
+  introduction?: string;
 };
 
 type Post = {
@@ -42,7 +43,7 @@ type Comment = {
   updatedAt: Date;
 
   postIdx: number;
-  commentIdx: number;
+  commentIdx?: number;
 };
 
 type PostKeyword = {
@@ -56,11 +57,19 @@ type UserPost = {
   postIdx: number;
 };
 
+type Keyword = {
+  idx: number;
+  keyword: string;
+};
+
 interface IPostWithUser extends Post {
   user: SimpleUser;
 }
 interface IPostWithUserKeyword extends IPostWithUser {
   keywords: Keyword[];
+}
+interface ICommentWithUser extends Comment {
+  user: simpleUser;
 }
 ```
 
@@ -202,21 +211,46 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 2.3 GET /api/post/:postId
+### 2.3 GET /api/post/:title
 
-- 목적: 로그인한 유저의 특정 게시글 상세 정보 요청 && 해당 게시글의 연관된 게시글 요청
-- 전송: `postId`
+- 목적: 로그인한 유저의 특정 게시글 상세 정보 요청 && 해당 게시글의 연관된 게시글 요청 && 해당 게시글과 같은 카테고리를 가진 게시글 요청
+- 전송: `title`
 - 응답
 
 ```typescript
 {
   ok: boolean;
-  posts: IPostWithUserKeyword[];
-  relevantPosts: IPostWithUser[];
+  post: IPostWithUserKeyword[];
 }
 ```
 
-### 2.3 PATCH /api/post/:postId
+### 2.4 GET /api/post/:title/relevant
+
+- 목적: 해당 게시글의 연관된 게시글들 요청
+- 전송: `title`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  posts: IPostWithUser[];
+}
+```
+
+### 2.5 GET /api/post/:title/categorized
+
+- 목적: 해당 게시글과 같은 카테고리를 가진 로그인한 유저의 게시글들 요청
+- 전송: `title`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  posts: IPostWithUser[];
+}
+```
+
+### 2.6 PATCH /api/post/:postId
 
 - 목적: 로그인한 유저의 특정 게시글 수정 요청
 - 전송: `postId`
@@ -229,7 +263,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 2.4 DELETE /api/post/:postId
+### 2.7 DELETE /api/post/:postId
 
 - 목적: 로그인한 유저의 특정 게시글 삭제 요청
 - 전송: `postId`
@@ -243,7 +277,7 @@ interface IPostWithUserKeyword extends IPostWithUser {
 
 ## 3. 댓글
 
-### 3.1 POST /api/post/:postId/comment
+### 3.1 POST /api/post/:postTitle/comment
 
 - 목적: 댓글 생성
 - 전송
@@ -263,23 +297,23 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 3.2 GET /api/post/:postId/comment?postId=postId&page=page&offset=offset
+### 3.2 GET /api/post/:postTitle/comment?page=page&offset=offset
 
 - 목적: 특정 게시글의 최신순 댓글 일부 요청
-- 전송: `page`, `offset`
+- 전송: `postTitle`, `page`, `offset`
 - 응답
 
 ```typescript
 {
   ok: boolean;
-  posts: IPostWithUser[];
+  posts: ICommentWithUser[];
 }
 ```
 
-### 3.3 DELETE /api/post/:postId/comment
+### 3.3 DELETE /api/post/:postTitle/comment
 
 - 목적: 로그인한 유저의 특정 댓글 삭제 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript
@@ -290,10 +324,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
 
 ## 4. 좋아요
 
-### 4.1 POST /api/post/:postId/like
+### 4.1 POST /api/post/:postTitle/like
 
 - 목적: 특정 게시글 좋아요 생성 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript
@@ -302,10 +336,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 4.2 DELETE /api/post/:postId/like
+### 4.2 DELETE /api/post/:postTitle/like
 
 - 목적: 특정 게시글 좋아요 제거 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript
@@ -352,10 +386,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 5.3 GET /api/temp/:postId
+### 5.3 GET /api/temp/:postTitle
 
 - 목적: 로그인한 유저의 임시 게시글 상세 정보 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript
@@ -365,10 +399,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 5.4 PATCH /api/temp/:postId
+### 5.4 PATCH /api/temp/:postTitle
 
 - 목적: 로그인한 유저의 특정 임시 게시글 수정 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript
@@ -377,10 +411,10 @@ interface IPostWithUserKeyword extends IPostWithUser {
 }
 ```
 
-### 5.5 DELETE /api/temp/:postId
+### 5.5 DELETE /api/temp/:postTitle
 
 - 목적: 로그인한 유저의 특정 임시 게시글 삭제 요청
-- 전송: `postId`
+- 전송: `postTitle`
 - 응답
 
 ```typescript

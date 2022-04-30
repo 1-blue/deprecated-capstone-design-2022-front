@@ -17,7 +17,7 @@ const Markdown = ({ markdown }: Props) => {
         p: ({ node, ...props }) => (
           <p {...props} className="whitespace-pre-line" />
         ),
-        code: ({ node, ...props }) => (
+        code: ({ node, inline, ...props }) => (
           <code
             {...props}
             className="bg-indigo-700 px-2 py-1 rounded-sm text-white after:contents before:contents group-odd:p-0 group-even:p-0 group-odd:bg-transparent group-even:bg-transparent"
@@ -30,7 +30,10 @@ const Markdown = ({ markdown }: Props) => {
           <a {...props} className="text-indigo-500 no-underline" />
         ),
         blockquote: ({ node, ...props }) => (
-          <blockquote {...props} className="bg-zinc-800 border-l-indigo-500" />
+          <blockquote
+            {...props}
+            className="bg-zinc-300 dark:bg-zinc-800 border-l-indigo-500"
+          />
         ),
         img: ({ node, ...props }) => (
           <>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 // type
-import { ICON, Post } from "@src/types";
+import { ICON, SimplePost } from "@src/types";
 
 // util
 import { timeFormat } from "@src/libs/dateFormat";
@@ -10,7 +10,13 @@ import { timeFormat } from "@src/libs/dateFormat";
 import Icon from "@src/components/common/Icon";
 import Photo from "@src/components/common/Photo";
 
-const Post = ({ post, $priority }: { post: Post; $priority: boolean }) => {
+type Props = {
+  post: SimplePost;
+  photoSize: string;
+  $priority?: boolean;
+};
+
+const Post = ({ post, photoSize, $priority }: Props) => {
   return (
     <li className="group bg-zinc-300 dark:bg-zinc-700 rounded-md overflow-hidden hover:-translate-y-2 duration-500 min-w-[300px] mb-8">
       {/* 게시글 섬네일 */}
@@ -18,7 +24,7 @@ const Post = ({ post, $priority }: { post: Post; $priority: boolean }) => {
         <a>
           <Photo
             photo={post.thumbnail}
-            size="w-full h-[300px]"
+            size={photoSize}
             alt="임시 게시글 이미지"
             $scale
             $cover
@@ -32,7 +38,7 @@ const Post = ({ post, $priority }: { post: Post; $priority: boolean }) => {
         <Link href={`/${post.user.name}/${post.title}`}>
           <a>
             <h3 className="text-lg font-bold px-4 mb-1">{post.title}</h3>
-            <p className="whitespace-pre text-sm px-4 mb-4">{post.contents}</p>
+            <p className="whitespace-pre text-sm px-4 mb-4">{post.summary}</p>
           </a>
         </Link>
         {/* 게시글 작성 시간 */}

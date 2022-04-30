@@ -22,7 +22,12 @@ const Home: NextPage = () => {
       <article>
         <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {responsePosts?.posts.map((post, index) => (
-            <Post key={post.id} post={post} $priority={index < 4} />
+            <Post
+              key={post.id}
+              post={post}
+              photoSize="w-full h-[300px]"
+              $priority={index < 4}
+            />
           ))}
         </ul>
       </article>
