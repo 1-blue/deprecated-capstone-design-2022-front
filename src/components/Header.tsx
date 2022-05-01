@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
@@ -12,6 +12,7 @@ import { ICON } from "@src/types";
 
 // hook
 import useUser from "@src/hooks/useMe";
+import useModal from "@src/hooks/useModal";
 
 type Props = {
   hasHeader: boolean;
@@ -20,19 +21,7 @@ type Props = {
 const Header = ({ hasHeader }: Props) => {
   const { me } = useUser();
   const { theme, setTheme } = useTheme();
-  const modalRef = useRef<null | HTMLElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
-
-  // 2022/04/10 - 영역외 클릭 시 모달 닫기 이벤트 - by 1-blue
-  const handleCloseModal = useCallback(() => {
-    if (isOpen) setIsOpen(false);
-  }, [isOpen]);
-
-  // 2022/04/10 - 모달 닫기 이벤트 등록 - by 1-blue
-  useEffect(() => {
-    setTimeout(() => window.addEventListener("click", handleCloseModal), 0);
-    return () => window.removeEventListener("click", handleCloseModal);
-  }, [handleCloseModal]);
+  const [modalRef, isOpen, setIsOpen] = useModal();
 
   return (
     <>
@@ -90,7 +79,7 @@ const Header = ({ hasHeader }: Props) => {
                   />
                   {isOpen && (
                     <Modal
-                      className="top-14 right-2 flex flex-col w-52 rounded-md list-none"
+                      className="absolute top-14 right-2 flex flex-col w-52 rounded-md list-none bg-zinc-200 dark:bg-zinc-700"
                       ref={modalRef}
                     >
                       <>

@@ -8,11 +8,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { method } = req;
+  const { title } = req.query;
 
   switch (method) {
     case "GET":
-      const { title } = req.query;
-
       console.log("특정 게시글 상세 정보 요청 >> ", title);
 
       return res.status(200).json({
@@ -21,6 +20,16 @@ export default async function handler(
       });
     case "POST":
       return res.status(200).json({ ok: true });
+    case "DELETE":
+      console.log("특정 게시글 제거 요청 ( 2초 대기 ) >> ", title);
+
+      await new Promise((reject, resolve) => {
+        setTimeout(() => {
+          reject("1");
+        }, 2000);
+      });
+
+      return res.status(200).json({ ok: true, message: "게시글 제거 성공" });
 
     default:
       return res

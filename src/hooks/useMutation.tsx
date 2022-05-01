@@ -6,7 +6,7 @@ interface IUseMutationState<T> {
   error: any;
 }
 type UseMutationProps = {
-  url?: string;
+  url?: string | null;
   method?: "POST" | "PUT" | "DELETE" | "PATCH";
 };
 type UseMutationResponse<T> = [

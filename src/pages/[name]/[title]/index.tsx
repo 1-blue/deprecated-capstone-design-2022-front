@@ -32,6 +32,10 @@ import { combineClassNames } from "@src/libs/util";
 
 // hook
 import useMe from "@src/hooks/useMe";
+import useModal from "@src/hooks/useModal";
+import Modal from "@src/components/common/Modal";
+import useMutation from "@src/hooks/useMutation";
+import useToastMessage from "@src/hooks/useToastMessage";
 
 type PostResponse = {
   ok: boolean;
@@ -57,6 +61,9 @@ type CommentsResponse = {
   ok: boolean;
   comments: ICommentWithUser[];
 };
+type PostRemoveResponse = {
+  ok: boolean;
+};
 
 const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
   const router = useRouter();
@@ -76,7 +83,9 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
 
   // 2022/04/30 - 해당 게시글의 댓글 패치 - by 1-blue
   const { data: commentsResponse } = useSWR<CommentsResponse>(
-    router.query.title ? `/api/post/${router.query.title}/comment` : null
+    router.query.title
+      ? `/api/post/${router.query.title}/comment?page=${1}&offset=${0}`
+      : null
   );
 
   // 2022/04/30 - 댓글 입력 관련 메서드들 - by 1-blue
@@ -91,6 +100,21 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
     commentRef.current.style.height = "auto";
     commentRef.current.style.height = commentRef.current?.scrollHeight + "px";
   }, [commentRef]);
+
+  // 2022/05/01 - 게시글 삭제 모달 - by 1-blue
+  const [modalRef, isOpen, setIsOpen] = useModal();
+  // 2022/05/01 - 게시글 삭제 요청 관련 메서드 - by 1-blue
+  const [removePost, { data: removePostResponse, loading: removePostLoading }] =
+    useMutation<PostRemoveResponse>({
+      url: router.query.title ? `/api/post/${router.query.title}` : null,
+      method: "DELETE",
+    });
+  // 2022/05/01 - 게시글 삭제 시 성공 토스트 및 페이지 이동 - by 1-blue
+  useToastMessage({
+    ok: removePostResponse?.ok,
+    message: `"${router.query.title}" 게시글을 삭제했습니다.`,
+    go: "/",
+  });
 
   if (router.isFallback) return <Spinner kinds="page" />;
   if (!ok) return <span>에러 페이지</span>;
@@ -124,6 +148,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
               <button
                 type="button"
                 className="text-gray-400 hover:text-black dark:hover:text-white"
+                onClick={() => setIsOpen((prev) => !prev)}
               >
                 삭제
               </button>
@@ -138,6 +163,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
               <li
                 key={keyword}
                 className="bg-zinc-200 text-indigo-600 hover:bg-zinc-300 hover:text-indigo-700 dark:bg-zinc-700 dark:hover:bg-zinc-800 dark:text-indigo-300 dark:hover:text-indigo-400 font-semibold py-2 px-4 mb-2 rounded-md cursor-pointer"
+                onClick={() => router.push(`/search?q=${keyword}`)}
               >
                 {keyword}
               </li>
@@ -305,6 +331,35 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
 
       {/* 우측 네비게이션 */}
       <aside></aside>
+
+      {/* 게시글 삭제 모달 */}
+      {isOpen && (
+        <Modal ref={modalRef} noScroll primary>
+          <form className="flex flex-col bg-zinc-900 p-8 rounded-md space-y-4 w-[400px]">
+            <span className="font-bold text-2xl">포스트 삭제</span>
+            <span>정말 포스트를 삭제하시겠습니까?</span>
+            <div />
+            <div className="text-right space-x-2">
+              <button
+                type="button"
+                className="px-6 py-2 bg-indigo-400 rounded-md hover:bg-indigo-500"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="px-6 py-2 bg-indigo-400 rounded-md hover:bg-indigo-500"
+                onClick={() => removePost({})}
+              >
+                확인
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* 게시글 삭제 스피너 */}
+      {removePostLoading && <Spinner kinds="page" />}
     </>
   );
 };
