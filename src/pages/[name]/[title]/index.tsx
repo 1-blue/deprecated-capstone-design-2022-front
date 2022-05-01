@@ -142,6 +142,9 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
               <button
                 type="button"
                 className="text-gray-400 hover:text-black dark:hover:text-white"
+                onClick={() =>
+                  router.push(`/write?title=${router.query?.title}`)
+                }
               >
                 수정
               </button>
