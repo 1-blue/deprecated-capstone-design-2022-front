@@ -9,6 +9,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 // type
 import {
@@ -25,6 +26,8 @@ import Photo from "@src/components/common/Photo";
 import Markdown from "@src/components/common/Markdown";
 import Post from "@src/components/Post";
 import Icon from "@src/components/common/Icon";
+import Button from "@src/components/common/Button";
+import Modal from "@src/components/common/Modal";
 
 // util
 import { dateFormat, timeFormat } from "@src/libs/dateFormat";
@@ -33,7 +36,6 @@ import { combineClassNames } from "@src/libs/util";
 // hook
 import useMe from "@src/hooks/useMe";
 import useModal from "@src/hooks/useModal";
-import Modal from "@src/components/common/Modal";
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
@@ -81,15 +83,8 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
     router.query.title ? `/api/post/${router.query.title}/relevant` : null
   );
 
-  // 2022/04/30 - 해당 게시글의 댓글 패치 - by 1-blue
-  const { data: commentsResponse } = useSWR<CommentsResponse>(
-    router.query.title
-      ? `/api/post/${router.query.title}/comment?page=${1}&offset=${0}`
-      : null
-  );
-
   // 2022/04/30 - 댓글 입력 관련 메서드들 - by 1-blue
-  const { handleSubmit, register } = useForm<CommentForm>();
+  const { handleSubmit, register, reset } = useForm<CommentForm>();
   // 2022/04/30 - comment Ref - by 1-blue
   const { ref, ...rest } = register("comment");
   const commentRef = useRef<HTMLTextAreaElement | null>(null);
@@ -100,6 +95,74 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
     commentRef.current.style.height = "auto";
     commentRef.current.style.height = commentRef.current?.scrollHeight + "px";
   }, [commentRef]);
+  // 2022/04/30 - 해당 게시글의 댓글 패치 - by 1-blue
+  const { data: commentsResponse, mutate: commentsMuate } =
+    useSWR<CommentsResponse>(
+      router.query.title
+        ? `/api/post/${router.query.title}/comment?page=${1}&offset=${0}`
+        : null
+    );
+  // 2022/05/02 - 댓글 추가 관련 메서드 - by 1-blue
+  const [addComment, { loading: addCommentLoading }] = useMutation({
+    url: router.query.title ? `/api/post/${router.query.title}/comment` : null,
+    method: "POST",
+  });
+  // 2022/05/02 - 댓글 추가 - by 1-blue
+  const onAddComment = useCallback(
+    (body: CommentForm) => {
+      if (body.comment.length === 0)
+        return toast.error("댓글을 입력하고 제출해주세요!");
+      if (addCommentLoading)
+        return toast.error(
+          "댓글을 생성하는 중입니다.\n잠시후에 다시 시도해주세요!"
+        );
+
+      addComment({ contents: body.comment });
+
+      commentsMuate(
+        (prev) =>
+          prev && {
+            ...prev,
+            comments: [
+              {
+                idx: Date.now(),
+                contents: body.comment,
+                postIdx: post.id,
+                createdAt: new Date(Date.now()),
+                updatedAt: new Date(Date.now()),
+                user: me!,
+                commentIdx: undefined,
+              },
+              ...prev.comments,
+            ],
+          },
+        false
+      );
+
+      reset();
+    },
+    [addCommentLoading, addComment, commentsMuate, post, me, reset]
+  );
+  // 2022/05/02 - 댓글 삭제 - by 1-blue
+  const onRemoveComment = useCallback(
+    (commentIdx: number) => async () => {
+      await fetch(`/api/post/${router.query.title}/comment/${commentIdx}`, {
+        method: "DELETE",
+      });
+
+      commentsMuate(
+        (prev) =>
+          prev && {
+            ...prev,
+            comments: prev.comments.filter(
+              (comment) => comment.idx !== commentIdx
+            ),
+          },
+        false
+      );
+    },
+    [router, commentsMuate]
+  );
 
   // 2022/05/01 - 게시글 삭제 모달 - by 1-blue
   const [modalRef, isOpen, setIsOpen] = useModal();
@@ -255,7 +318,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
         {/* 댓글 작성 */}
         <section className="space-y-4">
           <span className="font-semibold">{"n"}개의 댓글</span>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit(onAddComment)}>
             <textarea
               placeholder="댓글을 작성하세요"
               {...rest}
@@ -266,12 +329,12 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
                 commentRef.current = e;
               }}
             />
-            <button
+            <Button
               type="submit"
-              className="block ml-auto font-semibold bg-indigo-400 text-white dark:bg-indigo-500 dark:text-black py-2 px-4 rounded-md"
-            >
-              댓글 작성
-            </button>
+              className="block ml-auto font-semibold bg-indigo-400 text-white dark:bg-indigo-500 py-2 px-4 rounded-md"
+              contents="댓글 작성"
+              loading={addCommentLoading}
+            />
           </form>
         </section>
 
@@ -280,7 +343,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
           <ul className="divide-y dark:divide-gray-400">
             {commentsResponse?.comments.map((comment) => (
               <li key={comment.idx} className="space-y-4 pt-4">
-                {/* 아바타, 이름, 작성시간 */}
+                {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
                 <div className="flex space-x-2">
                   <Photo
                     photo={comment.user.avatar}
@@ -294,6 +357,16 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
                       {timeFormat(comment.updatedAt)}
                     </time>
                   </div>
+                  <div className="flex-1" />
+                  {comment.user.id === me?.id && (
+                    <button
+                      type="button"
+                      className="self-start text-gray-400 hover:text-white"
+                      onClick={onRemoveComment(comment.idx)}
+                    >
+                      삭제
+                    </button>
+                  )}
                 </div>
 
                 {/* 내용 */}

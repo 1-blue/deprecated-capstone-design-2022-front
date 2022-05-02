@@ -18,7 +18,15 @@ export default async function handler(
         comments: getComments(),
       });
     case "POST":
-      return res.status(200).json({ ok: true });
+      console.log("댓글 생성 요청 ( 2초 대기 ) >> ", req.query, req.body);
+
+      await new Promise((reject, resolve) => {
+        setTimeout(() => {
+          reject("1");
+        }, 2000);
+      });
+
+      return res.status(200).json({ ok: true, message: "댓글 생성 완료" });
 
     default:
       return res

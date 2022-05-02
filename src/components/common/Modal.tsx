@@ -1,5 +1,7 @@
-import { combineClassNames } from "@src/libs/util";
 import { forwardRef, useEffect } from "react";
+
+// util
+import { combineClassNames } from "@src/libs/util";
 
 type Props = {
   children: React.ReactChild;
@@ -11,6 +13,7 @@ type Props = {
 // eslint-disable-next-line react/display-name
 const Modal = forwardRef<HTMLElement, Props>(
   ({ children, className, noScroll, primary }, ref) => {
+    // 2022/05/01 - 모달창 open 시 스크롤 금지 - by 1-blue
     useEffect(() => {
       if (!noScroll) return;
       document.body.style.overflow = "hidden";
