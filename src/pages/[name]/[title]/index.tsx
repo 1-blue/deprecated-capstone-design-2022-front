@@ -6,6 +6,7 @@ import type {
 } from "next";
 import { useRouter } from "next/router";
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import Link from "next/link";
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -95,13 +96,32 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
     commentRef.current.style.height = "auto";
     commentRef.current.style.height = commentRef.current?.scrollHeight + "px";
   }, [commentRef]);
-  // 2022/04/30 - 해당 게시글의 댓글 패치 - by 1-blue
-  const { data: commentsResponse, mutate: commentsMuate } =
-    useSWR<CommentsResponse>(
-      router.query.title
-        ? `/api/post/${router.query.title}/comment?page=${1}&offset=${0}`
-        : null
-    );
+
+  // 2022/05/02 - 댓글 추가 패치 가능 여부 - by 1-blue
+  const [hasMoreComment, setHasMoreComment] = useState(true);
+  // 2022/05/02 - 댓글들 순차적 요청 - by 1-blue
+  const {
+    data: commentsResponse,
+    setSize,
+    mutate: commentsMuate,
+    isValidating: commentsLoading,
+  } = useSWRInfinite<CommentsResponse>(
+    router.query.title
+      ? (pageIndex, previousPageData) => {
+          if (previousPageData && previousPageData.comments.length !== 10) {
+            setHasMoreComment(false);
+            return null;
+          }
+          if (previousPageData && !previousPageData.comments.length) {
+            setHasMoreComment(false);
+            return null;
+          }
+          return `/api/post/${
+            router.query.title
+          }/comment?page=${pageIndex}&offset=${10}`;
+        }
+      : () => null
+  );
   // 2022/05/02 - 댓글 추가 관련 메서드 - by 1-blue
   const [addComment, { loading: addCommentLoading }] = useMutation({
     url: router.query.title ? `/api/post/${router.query.title}/comment` : null,
@@ -121,21 +141,23 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
 
       commentsMuate(
         (prev) =>
-          prev && {
+          prev && [
+            {
+              ok: true,
+              comments: [
+                {
+                  idx: Date.now(),
+                  contents: body.comment,
+                  postIdx: post.id,
+                  createdAt: new Date(Date.now()),
+                  updatedAt: new Date(Date.now()),
+                  user: me!,
+                  commentIdx: undefined,
+                },
+              ],
+            },
             ...prev,
-            comments: [
-              {
-                idx: Date.now(),
-                contents: body.comment,
-                postIdx: post.id,
-                createdAt: new Date(Date.now()),
-                updatedAt: new Date(Date.now()),
-                user: me!,
-                commentIdx: undefined,
-              },
-              ...prev.comments,
-            ],
-          },
+          ],
         false
       );
 
@@ -152,12 +174,11 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
 
       commentsMuate(
         (prev) =>
-          prev && {
-            ...prev,
-            comments: prev.comments.filter(
-              (comment) => comment.idx !== commentIdx
-            ),
-          },
+          prev &&
+          prev.map(({ comments }) => ({
+            ok: true,
+            comments: comments.filter((comment) => comment.idx !== commentIdx),
+          })),
         false
       );
     },
@@ -340,43 +361,63 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
 
         {/* 댓글들 */}
         <section>
-          <ul className="divide-y dark:divide-gray-400">
-            {commentsResponse?.comments.map((comment) => (
-              <li key={comment.idx} className="space-y-4 pt-4">
-                {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
-                <div className="flex space-x-2">
-                  <Photo
-                    photo={comment.user.avatar}
-                    size="w-14 h-14"
-                    alt="유저 이미지"
-                    $rouneded
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{comment.user.name}</span>
-                    <time className="text-sm dark:text-gray-400">
-                      {timeFormat(comment.updatedAt)}
-                    </time>
-                  </div>
-                  <div className="flex-1" />
-                  {comment.user.id === me?.id && (
-                    <button
-                      type="button"
-                      className="self-start text-gray-400 hover:text-white"
-                      onClick={onRemoveComment(comment.idx)}
-                    >
-                      삭제
-                    </button>
-                  )}
-                </div>
+          <>
+            {commentsResponse?.map(({ comments }, index) => (
+              <ul key={index} className="divide-y dark:divide-gray-400">
+                {comments.map((comment) => (
+                  <li key={comment.idx} className="space-y-4 pt-4">
+                    {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
+                    <div className="flex space-x-2">
+                      <Photo
+                        photo={comment.user.avatar}
+                        size="w-14 h-14"
+                        alt="유저 이미지"
+                        $rouneded
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-semibold">
+                          {comment.user.name}
+                        </span>
+                        <time className="text-sm dark:text-gray-400">
+                          {timeFormat(comment.updatedAt)}
+                        </time>
+                      </div>
+                      <div className="flex-1" />
+                      {comment.user.id === me?.id && (
+                        <button
+                          type="button"
+                          className="self-start text-gray-400 hover:text-white"
+                          onClick={onRemoveComment(comment.idx)}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
 
-                {/* 내용 */}
-                <p className="whitespace-pre-line">{comment.contents}</p>
+                    {/* 내용 */}
+                    <p className="whitespace-pre-line">{comment.contents}</p>
 
-                {/* 답글 */}
-                <div></div>
-              </li>
+                    {/* 답글 */}
+                    <div></div>
+                  </li>
+                ))}
+              </ul>
             ))}
-          </ul>
+
+            {hasMoreComment ? (
+              <Button
+                type="button"
+                className="block mx-auto px-4 py-2 rounded-md font-semibold text-white bg-indigo-400 hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                contents="댓글 더 불러오기"
+                onClick={() => setSize((prev) => prev + 1)}
+                loading={commentsLoading}
+              />
+            ) : (
+              <span className="block text-center text-xl font-semibold">
+                더 이상 불러올 댓글이 없습니다.
+              </span>
+            )}
+          </>
         </section>
       </article>
 

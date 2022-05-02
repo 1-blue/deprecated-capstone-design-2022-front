@@ -123,14 +123,29 @@ export const getCategorizedPosts = (): SimplePost[] =>
       },
     }));
 
-export const getComments = (): ICommentWithUser[] =>
-  Array(8)
-    .fill(null)
-    .map((v, i) => ({
-      idx: i,
-      contents: "댓글 - " + i,
-      createdAt: new Date(Date.now()),
-      updatedAt: new Date(Date.now()),
-      user: getMe(),
-      postIdx: 1,
-    }));
+export const getComments = (page: number): ICommentWithUser[] => {
+  if (page === 0) {
+    return Array(5)
+      .fill(null)
+      .map((v, i) => ({
+        idx: i,
+        contents: "댓글 - " + i,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        user: getMe(),
+        postIdx: 1,
+      }));
+  } else if (page === 1) {
+    return Array(3)
+      .fill(null)
+      .map((v, i) => ({
+        idx: i + 5,
+        contents: "추가로 패치한 댓글 - " + i + 5,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        user: getMe(),
+        postIdx: 1,
+      }));
+  }
+  return [];
+};
