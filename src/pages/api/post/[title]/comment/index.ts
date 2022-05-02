@@ -11,7 +11,13 @@ export default async function handler(
 
   switch (method) {
     case "GET":
-      console.log("특정 게시글의 댓글들 요청 >> ", req.query);
+      console.log("특정 게시글의 댓글들 요청 ( 2초 대기 ) >> ", req.query);
+
+      await new Promise((reject, resolve) => {
+        setTimeout(() => {
+          reject("1");
+        }, 2000);
+      });
 
       return res.status(200).json({
         ok: true,

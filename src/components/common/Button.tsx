@@ -9,10 +9,18 @@ type Props = {
   contents: React.ReactChild;
   className?: string;
   loading?: boolean;
+  loadingText?: string;
   [props: string]: any;
 };
 
-const Button = ({ type, contents, className, loading, ...props }: Props) => {
+const Button = ({
+  type,
+  contents,
+  className,
+  loading,
+  loadingText = "불러오는 중입니다...",
+  ...props
+}: Props) => {
   return (
     <button
       type={type}
@@ -23,7 +31,14 @@ const Button = ({ type, contents, className, loading, ...props }: Props) => {
       disabled={loading}
       {...props}
     >
-      {loading ? <Spinner kinds="button" /> : <>{contents}</>}
+      {loading ? (
+        <div className="flex space-x-2">
+          <span>{loadingText}</span>
+          <Spinner kinds="button" />
+        </div>
+      ) : (
+        <>{contents}</>
+      )}
     </button>
   );
 };

@@ -125,7 +125,7 @@ export const getCategorizedPosts = (): SimplePost[] =>
 
 export const getComments = (page: number): ICommentWithUser[] => {
   if (page === 0) {
-    return Array(5)
+    return Array(10)
       .fill(null)
       .map((v, i) => ({
         idx: i,

@@ -14,7 +14,7 @@ type SimpleUser = {
   idx: number;
   name: string;
   avatar?: string;
-  introduction?: string;
+  introduction?: string;`
 };
 
 type Post = {
@@ -250,10 +250,10 @@ interface ICommentWithUser extends Comment {
 }
 ```
 
-### 2.6 PATCH /api/post/:postId
+### 2.6 PATCH /api/post/:title
 
 - 목적: 로그인한 유저의 특정 게시글 수정 요청
-- 전송: `postId`
+- 전송: `title`
 - 응답
 
 ```typescript
@@ -263,10 +263,10 @@ interface ICommentWithUser extends Comment {
 }
 ```
 
-### 2.7 DELETE /api/post/:postId
+### 2.7 DELETE /api/post/:title
 
 - 목적: 로그인한 유저의 특정 게시글 삭제 요청
-- 전송: `postId`
+- 전송: `title`
 - 응답
 
 ```typescript
@@ -310,10 +310,10 @@ interface ICommentWithUser extends Comment {
 }
 ```
 
-### 3.3 DELETE /api/post/:postTitle/comment
+### 3.3 DELETE /api/post/:postTitle/comment/:commentIdx
 
 - 목적: 로그인한 유저의 특정 댓글 삭제 요청
-- 전송: `postTitle`
+- 전송: `postTitle`, `commentIdx`
 - 응답
 
 ```typescript
