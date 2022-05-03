@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import type {
   GetStaticPaths,
   GetStaticProps,
@@ -7,10 +8,10 @@ import type {
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import Link from "next/link";
-import { useState } from "react";
+import { toast } from "react-toastify";
 
 // type
-import { ICON, Post as PostType, SimplePost } from "@src/types";
+import { ICON, Post as PostType, SimplePost, SimpleUser } from "@src/types";
 
 // common-component
 import Spinner from "@src/components/common/Spinner";
@@ -32,6 +33,7 @@ import useMe from "@src/hooks/useMe";
 import useModal from "@src/hooks/useModal";
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
+import Like from "@src/components/Like";
 
 type PostResponse = {
   ok: boolean;
@@ -236,19 +238,11 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
         </ul>
       </section>
 
-      {/* 좌측 좋아요 */}
-      <aside className="fixed top-[10%] left-[4%] bg-zinc-200 text-gray-400 py-3 px-2 rounded-full flex flex-col items-center">
-        <button
-          type="button"
-          className="p-2 border-2 bg-zinc-300 border-gray-400 hover:border-indigo-500 hover:text-indigo-500 rounded-full"
-        >
-          <Icon icon={ICON.HEART} />
-        </button>
-        <span className="font-semibold text-gray-600">{"n"}</span>
-      </aside>
-
       {/* 우측 네비게이션 */}
       <aside></aside>
+
+      {/* 좋아요 버튼 */}
+      <Like />
 
       {/* 게시글 삭제 모달 */}
       {isOpen && (

@@ -14,7 +14,7 @@ type SimpleUser = {
   idx: number;
   name: string;
   avatar?: string;
-  introduction?: string;`
+  introduction?: string;
 };
 
 type Post = {
@@ -173,7 +173,7 @@ interface ICommentWithUser extends Comment {
 
 ### 2.1 POST /api/post
 
-- 목적: 게시글 생성 및 카테고리 생서 및 임시 게시글 제거
+- 목적: 게시글 생성 및 카테고리 생성 및 임시 게시글 제거
 - 전송
 
 ```typescript
@@ -345,6 +345,19 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
+}
+```
+
+### 4.3 GET /api/post/:postTitle/like
+
+- 목적: 특정 게시글에 좋아요를 누른 유저들 정보 요청
+- 전송: `postTitle`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  likers: SimpleUser[];
 }
 ```
 

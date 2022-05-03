@@ -25,6 +25,12 @@ module.exports = {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
+        "heart-beat": {
+          "25%": { transform: "scale(1.4, 1.4)" },
+          "50%": { transform: "scale(1, 1)" },
+          "75%": { transform: "scale(1.4, 1.4)" },
+          "100%": { transform: "scale(1, 1)" },
+        },
       },
     },
     animation: {
@@ -32,6 +38,7 @@ module.exports = {
       "spin-y": "spin-y 2s ease-in-out infinite",
       "slide-up": "slide-up 0.4s linear",
       spin: "spin 1s linear infinite",
+      "heart-beat": "heart-beat 1s linear",
     },
   },
   plugins: [require("@tailwindcss/typography")],

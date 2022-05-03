@@ -149,3 +149,13 @@ export const getComments = (page: number): ICommentWithUser[] => {
   }
   return [];
 };
+
+export const getLikers = (): SimpleUser[] =>
+  Array(3)
+    .fill(null)
+    .map((v, i) => ({
+      id: i,
+      name: "테스트 유저" + i,
+      avatar: "/avatar.png",
+      introduction: "테스트 아무말" + i,
+    }));

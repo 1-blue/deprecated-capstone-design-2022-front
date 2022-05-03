@@ -229,7 +229,7 @@ const Icon = ({ icon, className, $fill }: Props) => {
       ) : (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={combineClassNames("h-6 w-6", className ? className : "")}
+          className={combineClassNames("h-5 w-5", className ? className : "")}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
