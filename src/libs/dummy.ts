@@ -47,31 +47,38 @@ export const getDummyPosts = (): SimplePost[] =>
 export const getDummyPost = (): IPostWithKeyword => ({
   id: 0,
   title: "React.js [테스트용 게시글]",
-  contents: `# 아무튼 제목
-  \`테스트\`
+  contents: `# 첫 번째 목록 테스트
   + 순서
   + 순서
   1. 숫자
   2. 숫자
 
+  ## 두 번째 코드 블럭 테스트
   \`\`\`
   코드 블럭
   \`\`\`
 
-  + 테이블 테스트
+  
+  ### 세 번째 블럭 테스트
+  \`테스트\`
 
+  # h1 테스트
+
+  #### 네 번째 테이블 테스트
   |제목|내용|설명|
   |:---|---:|:---:|
   |왼쪽정렬|오른쪽정렬|중앙정렬|
   |왼쪽정렬|오른쪽정렬|중앙정렬|
   |왼쪽정렬|오른쪽정렬|중앙정렬|
 
-  **굵은 글씨**
+  ## h2 테스트
 
+  ##### 다섯 번째 글자 형식 테스트
+  **굵은 글씨**
   ~중간라인~
 
+  ###### 여섯 번째 링크, 이미지, 문구 테스트
   [링크](https://github.com/1-blue)
-
   ![이미지](https://blemarket.s3.ap-northeast-2.amazonaws.com/images/production/germany_1650793243414)
 
   > 👉 중요한 내용 👈

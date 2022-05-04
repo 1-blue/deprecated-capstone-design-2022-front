@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import type {
   GetStaticPaths,
   GetStaticProps,
@@ -8,21 +8,21 @@ import type {
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import Link from "next/link";
-import { toast } from "react-toastify";
 
 // type
-import { ICON, Post as PostType, SimplePost, SimpleUser } from "@src/types";
+import { Post as PostType, SimplePost } from "@src/types";
 
 // common-component
 import Spinner from "@src/components/common/Spinner";
 import Photo from "@src/components/common/Photo";
 import Markdown from "@src/components/common/Markdown";
 import Post from "@src/components/Post";
-import Icon from "@src/components/common/Icon";
 import Modal from "@src/components/common/Modal";
 
 // component
 import CommentContainer from "@src/components/Comment/CommentContainer";
+import Like from "@src/components/Like";
+import TitleNav from "@src/components/TitleNav";
 
 // util
 import { dateFormat } from "@src/libs/dateFormat";
@@ -33,7 +33,6 @@ import useMe from "@src/hooks/useMe";
 import useModal from "@src/hooks/useModal";
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
-import Like from "@src/components/Like";
 
 type PostResponse = {
   ok: boolean;
@@ -52,7 +51,6 @@ type RelevantPostsResponse = {
 type PostRemoveResponse = {
   ok: boolean;
 };
-
 const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
   const router = useRouter();
   const { me } = useMe();
@@ -239,7 +237,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
       </section>
 
       {/* 우측 네비게이션 */}
-      <aside></aside>
+      <TitleNav contents={post.contents} />
 
       {/* 좋아요 버튼 */}
       <Like />
