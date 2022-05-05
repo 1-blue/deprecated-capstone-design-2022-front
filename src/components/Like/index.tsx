@@ -51,11 +51,11 @@ const Like = () => {
   }, [likerResponse, setIsMineLiked, me]);
   // 2022/05/03 - 좋아요 버튼 클릭 이벤트 - by 1-blue
   const onClickLikeButton = useCallback(() => {
+    if (!me) return toast.error("로그인 후에 접근이 가능합니다.");
     if (removeLikeLoading || addLikeLoading)
       return toast.error(
         "이미 좋아요 처리중입니다.\n잠시 후에 다시 시도해주세요!"
       );
-    if (!me) return toast.error("로그인 후에 접근이 가능합니다.");
 
     if (isMineLiked) {
       removeLike({});

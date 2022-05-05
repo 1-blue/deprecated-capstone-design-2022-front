@@ -15,8 +15,12 @@ import { Comment as CommentType, SimpleUser } from "@src/types";
 // hook
 import useMutation from "@src/hooks/useMutation";
 
+export interface IRecommentWithUser extends CommentType {
+  user: SimpleUser;
+}
 export interface ICommentWithUser extends CommentType {
   user: SimpleUser;
+  recomments?: IRecommentWithUser[];
 }
 export type CommentsResponse = {
   ok: boolean;
@@ -32,6 +36,7 @@ const CommentContainer = ({ postIdx }: Props) => {
 
   // 2022/05/02 - 보여줄 댓글 개수 - by 1-blue
   const [showCount, setShowCount] = useState(1);
+
   // 2022/05/02 - 댓글 offset - by 1-blue
   const [offset, setOffset] = useState(10);
   // 2022/05/02 - 댓글 추가 패치 가능 여부 - by 1-blue
@@ -66,13 +71,16 @@ const CommentContainer = ({ postIdx }: Props) => {
 
   return (
     <>
-      {/* 댓글 입력 폼 */}
-      <CommentForm
-        postIdx={postIdx}
-        addComment={addComment}
-        addCommentLoading={addCommentLoading}
-        commentsMutate={commentsMutate}
-      />
+      <section className="space-y-2">
+        <span className="font-semibold">{"n"}개의 댓글</span>
+        {/* 댓글 입력 폼 */}
+        <CommentForm
+          postIdx={postIdx}
+          addComment={addComment}
+          addCommentLoading={addCommentLoading}
+          commentsMutate={commentsMutate}
+        />
+      </section>
 
       <section className="divide-y">
         <>
@@ -84,8 +92,11 @@ const CommentContainer = ({ postIdx }: Props) => {
                   {comments.map((comment) => (
                     <Comment
                       key={comment.idx}
+                      postIdx={postIdx}
                       comment={comment}
                       commentsMutate={commentsMutate}
+                      addComment={addComment}
+                      addCommentLoading={addCommentLoading}
                     />
                   ))}
                 </ul>

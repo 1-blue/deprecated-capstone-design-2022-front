@@ -10,8 +10,12 @@ import {
 interface IPostWithKeyword extends Post {
   keywords: SimpleKeyword[];
 }
+interface IRecommentWithUser extends Comment {
+  user: SimpleUser;
+}
 interface ICommentWithUser extends Comment {
   user: SimpleUser;
+  recomments?: IRecommentWithUser[];
 }
 
 export const getMe = (): SimpleUser => ({
@@ -130,6 +134,20 @@ export const getCategorizedPosts = (): SimplePost[] =>
       },
     }));
 
+export const getRecomments = (number: number): IRecommentWithUser[] => {
+  return Array(14)
+    .fill(null)
+    .map((v, i) => ({
+      idx: i,
+      contents: "답글 🐲 - " + i,
+      createdAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()),
+      user: getMe(),
+      postIdx: 1,
+      commentIdx: i + number * 10,
+    }));
+};
+
 export const getComments = (page: number): ICommentWithUser[] => {
   if (page === 0) {
     return Array(10)
@@ -141,6 +159,7 @@ export const getComments = (page: number): ICommentWithUser[] => {
         updatedAt: new Date(Date.now()),
         user: getMe(),
         postIdx: 1,
+        recomments: i === 0 || i === 1 ? getRecomments(0) : undefined,
       }));
   } else if (page === 1) {
     return Array(3)

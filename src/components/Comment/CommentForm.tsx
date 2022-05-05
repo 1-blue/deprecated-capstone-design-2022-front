@@ -12,6 +12,9 @@ import { CommentsResponse } from "./CommentContainer";
 // hook
 import useMe from "@src/hooks/useMe";
 
+// util
+import { combineClassNames } from "@src/libs/util";
+
 type CommentForm = {
   comment: string;
 };
@@ -21,6 +24,7 @@ type Props = {
   addComment: (body: any) => void;
   addCommentLoading: boolean;
   commentsMutate: KeyedMutator<CommentsResponse[]>;
+  commentIdx?: number;
 };
 
 const CommentForm = ({
@@ -28,11 +32,12 @@ const CommentForm = ({
   addComment,
   addCommentLoading,
   commentsMutate,
+  commentIdx,
 }: Props) => {
   const { me } = useMe();
 
   // 2022/04/30 - 댓글 입력 관련 메서드들 - by 1-blue
-  const { handleSubmit, register, reset } = useForm<CommentForm>();
+  const { handleSubmit, register } = useForm<CommentForm>();
   // 2022/04/30 - comment Ref - by 1-blue
   const { ref, ...rest } = register("comment");
   const commentRef = useRef<HTMLTextAreaElement | null>(null);
@@ -47,6 +52,7 @@ const CommentForm = ({
   // 2022/05/02 - 댓글 추가 - by 1-blue
   const onAddComment = useCallback(
     (body: CommentForm) => {
+      if (!me) return toast.error("로그인 후에 접근해주세요!");
       if (body.comment.length === 0)
         return toast.error("댓글을 입력하고 제출해주세요!");
       if (addCommentLoading)
@@ -58,9 +64,12 @@ const CommentForm = ({
 
       commentsMutate(
         (prev) =>
-          prev && [
-            {
-              ok: true,
+          prev &&
+          prev.map((comments, index) => {
+            if (index !== 0) return comments;
+
+            return {
+              ...comments,
               comments: [
                 {
                   idx: Date.now(),
@@ -68,41 +77,105 @@ const CommentForm = ({
                   postIdx: postIdx,
                   createdAt: new Date(Date.now()),
                   updatedAt: new Date(Date.now()),
-                  user: me!,
+                  user: me,
                   commentIdx: undefined,
                 },
+                ...comments.comments,
               ],
-            },
-            ...prev,
-          ],
+            };
+          }),
         false
       );
     },
     [addCommentLoading, addComment, commentsMutate, postIdx, me]
   );
+  // 2022/05/05 - 답글 추가 - by 1-blue
+  const onAddRecomment = useCallback(
+    (body: CommentForm) => {
+      if (!me) return toast.error("로그인 후에 접근해주세요!");
+      if (body.comment.length === 0)
+        return toast.error("답글을 입력하고 제출해주세요!");
+      if (addCommentLoading)
+        return toast.error(
+          "답글을 생성하는 중입니다.\n잠시후에 다시 시도해주세요!"
+        );
+
+      addComment({ contents: body.comment, commentIdx });
+
+      commentsMutate(
+        (prev) =>
+          prev &&
+          prev.map((comments) => ({
+            ...comments,
+            comments: comments.comments.map((comment) => {
+              if (comment.idx !== commentIdx) return comment;
+
+              return {
+                ...comment,
+                recomments: comment.recomments
+                  ? [
+                      ...comment.recomments,
+                      {
+                        idx: Date.now(),
+                        contents: body.comment,
+                        postIdx: postIdx,
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                        user: me,
+                        commentIdx: undefined,
+                      },
+                    ]
+                  : [
+                      {
+                        idx: Date.now(),
+                        contents: body.comment,
+                        postIdx: postIdx,
+                        createdAt: new Date(Date.now()),
+                        updatedAt: new Date(Date.now()),
+                        user: me,
+                        commentIdx: undefined,
+                      },
+                    ],
+              };
+            }),
+          })),
+        false
+      );
+    },
+    [addCommentLoading, addComment, commentsMutate, postIdx, me, commentIdx]
+  );
 
   return (
-    <section className="space-y-4">
-      <span className="font-semibold">{"n"}개의 댓글</span>
-      <form className="space-y-4" onSubmit={handleSubmit(onAddComment)}>
-        <textarea
-          placeholder="댓글을 작성하세요"
-          {...rest}
-          className="w-full p-4 focus:outline-none resize-none rounded-sm bg-zinc-200 dark:bg-zinc-600"
-          onInput={handleResizeHeight}
-          ref={(e) => {
-            ref(e);
-            commentRef.current = e;
-          }}
-        />
-        <Button
-          type="submit"
-          className="block ml-auto font-semibold bg-indigo-400 text-white dark:bg-indigo-500 py-2 px-4 rounded-md"
-          contents="댓글 작성"
-          loading={addCommentLoading}
-        />
-      </form>
-    </section>
+    <form
+      className="space-y-4"
+      onSubmit={handleSubmit(commentIdx ? onAddRecomment : onAddComment)}
+    >
+      <textarea
+        placeholder={
+          !me ? "로그인 후에 댓글을 입력할 수 있습니다." : "댓글을 작성하세요"
+        }
+        {...rest}
+        className={combineClassNames(
+          "w-full p-4 focus:outline-none resize-none rounded-sm bg-zinc-200 dark:bg-zinc-600",
+          !me ? "cursor-not-allowed" : ""
+        )}
+        onInput={handleResizeHeight}
+        ref={(e) => {
+          ref(e);
+          commentRef.current = e;
+        }}
+        disabled={!me}
+      />
+      <Button
+        type="submit"
+        className={combineClassNames(
+          "block ml-auto font-semibold bg-indigo-400 text-white dark:bg-indigo-500 py-2 px-4 rounded-md",
+          !me ? "cursor-not-allowed" : ""
+        )}
+        contents="댓글 작성"
+        loading={addCommentLoading}
+      />
+    </form>
   );
 };
 

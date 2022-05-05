@@ -68,8 +68,12 @@ interface IPostWithUser extends Post {
 interface IPostWithUserKeyword extends IPostWithUser {
   keywords: Keyword[];
 }
+interface IRecommentWithUser extends Comment {
+  user: SimpleUser;
+}
 interface ICommentWithUser extends Comment {
   user: simpleUser;
+  recomments?: IRecommentWithUser[];
 }
 ```
 
@@ -275,11 +279,11 @@ interface ICommentWithUser extends Comment {
 }
 ```
 
-## 3. 댓글
+## 3. 댓글/답글
 
 ### 3.1 POST /api/post/:postTitle/comment
 
-- 목적: 댓글 생성
+- 목적: 댓글/답글 생성
 - 전송
 
 ```typescript
@@ -299,20 +303,20 @@ interface ICommentWithUser extends Comment {
 
 ### 3.2 GET /api/post/:postTitle/comment?page=page&offset=offset
 
-- 목적: 특정 게시글의 최신순 댓글 일부 요청
+- 목적: 특정 게시글의 최신순 댓글 일부/답글 전체 요청
 - 전송: `postTitle`, `page`, `offset`
 - 응답
 
 ```typescript
 {
   ok: boolean;
-  posts: ICommentWithUser[];
+  comments: ICommentWithUser[];
 }
 ```
 
 ### 3.3 DELETE /api/post/:postTitle/comment/:commentIdx
 
-- 목적: 로그인한 유저의 특정 댓글 삭제 요청
+- 목적: 로그인한 유저의 특정 댓글/답글 삭제 요청
 - 전송: `postTitle`, `commentIdx`
 - 응답
 

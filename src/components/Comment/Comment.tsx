@@ -1,11 +1,15 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import type { KeyedMutator } from "swr";
 
 // common-component
 import Photo from "@src/components/common/Photo";
 
-// comment-component
+// component
+import Recomment from "./Recomment";
+import CommentForm from "./CommentForm";
+
+// type
 import { CommentsResponse, ICommentWithUser } from "./CommentContainer";
 
 // hooks
@@ -15,11 +19,20 @@ import useMe from "@src/hooks/useMe";
 import { timeFormat } from "@src/libs/dateFormat";
 
 type Props = {
+  postIdx: number;
   comment: ICommentWithUser;
   commentsMutate: KeyedMutator<CommentsResponse[]>;
+  addComment: (body: any) => void;
+  addCommentLoading: boolean;
 };
 
-const Comment = ({ comment, commentsMutate }: Props) => {
+const Comment = ({
+  postIdx,
+  comment,
+  commentsMutate,
+  addComment,
+  addCommentLoading,
+}: Props) => {
   const router = useRouter();
   const { me } = useMe();
 
@@ -43,13 +56,44 @@ const Comment = ({ comment, commentsMutate }: Props) => {
     [router, commentsMutate]
   );
 
+  // 2022/05/05 - 답글 더 보기 토글 - by 1-blue
+  const [toggleRecomment, setToggleRecomment] = useState(false);
+  // 2022/05/05 - 답글 삭제 - by 1-blue
+  const onRemoveRecomment = useCallback(
+    (recommentIdx: number) => async () => {
+      await fetch(`/api/post/${router.query.title}/comment/${recommentIdx}`, {
+        method: "DELETE",
+      });
+
+      commentsMutate(
+        (prev) =>
+          prev &&
+          prev.map(({ comments }) => ({
+            ok: true,
+            comments: comments.map((comment) => {
+              if (!comment.recomments) return comment;
+
+              return {
+                ...comment,
+                recomments: comment.recomments.filter(
+                  (recomment) => recomment.idx !== recommentIdx
+                ),
+              };
+            }),
+          })),
+        false
+      );
+    },
+    [router, commentsMutate]
+  );
+
   return (
-    <li className="space-y-4 pt-4">
+    <li className="space-y-4 py-6">
       {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
       <div className="flex space-x-2">
         <Photo
           photo={comment.user.avatar}
-          size="w-14 h-14"
+          size="w-12 h-12"
           alt="유저 이미지"
           $rouneded
         />
@@ -74,8 +118,36 @@ const Comment = ({ comment, commentsMutate }: Props) => {
       {/* 내용 */}
       <p className="whitespace-pre-line">{comment.contents}</p>
 
+      {/* 답글/답글폼 토글 버튼 */}
+      <button type="button" onClick={() => setToggleRecomment((prev) => !prev)}>
+        {comment.recomments
+          ? "답글 더 보기"
+          : toggleRecomment
+          ? "숨기기"
+          : "답글 달기"}
+      </button>
+
       {/* 답글 */}
-      <div></div>
+      {toggleRecomment && (
+        <ul className="pl-8">
+          {comment.recomments?.map((recomment) => (
+            <Recomment
+              key={recomment.idx}
+              recomment={recomment}
+              onRemoveRecomment={onRemoveRecomment}
+            />
+          ))}
+          <li key={-1} className="pt-4">
+            <CommentForm
+              postIdx={postIdx}
+              addComment={addComment}
+              addCommentLoading={addCommentLoading}
+              commentsMutate={commentsMutate}
+              commentIdx={comment.idx}
+            />
+          </li>
+        </ul>
+      )}
     </li>
   );
 };
