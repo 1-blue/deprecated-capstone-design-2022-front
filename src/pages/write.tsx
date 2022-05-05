@@ -1,8 +1,9 @@
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { KeyboardEvent, useCallback, useRef, useState } from "react";
+import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import useSWRImmutable from "swr/immutable";
 
 // component
 import InputSetting from "@src/components/Write/InputSetting";
@@ -17,7 +18,7 @@ import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
 // type
-import { ICON } from "@src/types";
+import { ICON, Post, SimpleKeyword } from "@src/types";
 
 export type WriteForm = {
   title: string;
@@ -41,9 +42,17 @@ export type PostMetadata = {
   category: string;
   thumbnail: string;
 };
+interface IPostWithKeyword extends Post {
+  keywords: SimpleKeyword[];
+}
+type CurrentPostReponse = {
+  ok: boolean;
+  post: IPostWithKeyword;
+};
 
 const Write: NextPage = () => {
   const router = useRouter();
+
   // 2022/04/26 - markdown관련 헬퍼 함수들 - by 1-blue
   const { register, watch, getValues, setValue } = useForm<WriteForm>();
   // 2022/04/27 - 태그가 들어갈 배열 - by 1-blue
@@ -216,6 +225,20 @@ const Write: NextPage = () => {
     thumbnail: "",
   });
 
+  // 2022/05/01 - 수정이라면 게시글 정보 가져오기 - by 1-blue
+  const { data: currentPost, isValidating: currentPostLoading } =
+    useSWRImmutable<CurrentPostReponse>(
+      router.query?.title ? `/api/post/${router.query?.title}` : null
+    );
+  // 2022/05/01 - 수정이라면 데이터 채우기 - by 1-blue
+  useEffect(() => {
+    if (!currentPost || !currentPost?.ok || !currentPost?.post) return;
+
+    setValue("title", currentPost.post.title);
+    setValue("contents", currentPost.post.contents);
+    setKeywords(currentPost.post.keywords.map(({ keyword }) => keyword));
+  }, [currentPost, setValue]);
+
   return (
     <>
       <article
@@ -337,7 +360,11 @@ const Write: NextPage = () => {
         />
       )}
 
+      {/* 게시글 업로드 스피너 */}
       {uploadLoading && <Spinner kinds="page" />}
+
+      {/* 게시글 수정 시 정보 받는 스피너 */}
+      {router.query.title && currentPostLoading && <Spinner kinds="page" />}
     </>
   );
 };

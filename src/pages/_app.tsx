@@ -21,8 +21,8 @@ function MyApp({ Component, pageProps }: AppProps) {
       <ThemeProvider attribute="class">
         {/* 전체 레이아웃 */}
         <Layout
-          nonResposive={router.asPath === "/write"}
-          hasHeader={router.asPath !== "/write"}
+          nonResposive={router.asPath.includes("/write")}
+          hasHeader={!router.asPath.includes("/write")}
         >
           <Component {...pageProps} />
         </Layout>

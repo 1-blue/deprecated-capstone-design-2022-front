@@ -145,7 +145,11 @@ const Icon = ({ icon, className, $fill }: Props) => {
         );
       case ICON.MOON:
         return (
-          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+          <path
+            fillRule="evenodd"
+            d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
+            clipRule="evenodd"
+          />
         );
       case ICON.SUN:
         return (
@@ -225,7 +229,7 @@ const Icon = ({ icon, className, $fill }: Props) => {
       ) : (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={combineClassNames("h-6 w-6", className ? className : "")}
+          className={combineClassNames("h-5 w-5", className ? className : "")}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

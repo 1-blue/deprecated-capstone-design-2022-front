@@ -17,7 +17,7 @@ const Markdown = ({ markdown }: Props) => {
         p: ({ node, ...props }) => (
           <p {...props} className="whitespace-pre-line" />
         ),
-        code: ({ node, ...props }) => (
+        code: ({ node, inline, ...props }) => (
           <code
             {...props}
             className="bg-indigo-700 px-2 py-1 rounded-sm text-white after:contents before:contents group-odd:p-0 group-even:p-0 group-odd:bg-transparent group-even:bg-transparent"
@@ -30,7 +30,10 @@ const Markdown = ({ markdown }: Props) => {
           <a {...props} className="text-indigo-500 no-underline" />
         ),
         blockquote: ({ node, ...props }) => (
-          <blockquote {...props} className="bg-zinc-800 border-l-indigo-500" />
+          <blockquote
+            {...props}
+            className="bg-zinc-300 dark:bg-zinc-800 border-l-indigo-500"
+          />
         ),
         img: ({ node, ...props }) => (
           <>
@@ -45,6 +48,24 @@ const Markdown = ({ markdown }: Props) => {
               <img {...props} className="w-full h-80 m-0" />
             )}
           </>
+        ),
+        h1: ({ node, ...props }) => (
+          <h1 id={props.children[0]?.toString()} {...props} />
+        ),
+        h2: ({ node, ...props }) => (
+          <h2 id={props.children[0]?.toString()} {...props} />
+        ),
+        h3: ({ node, ...props }) => (
+          <h3 id={props.children[0]?.toString()} {...props} />
+        ),
+        h4: ({ node, ...props }) => (
+          <h4 id={props.children[0]?.toString()} {...props} />
+        ),
+        h5: ({ node, ...props }) => (
+          <h5 id={props.children[0]?.toString()} {...props} />
+        ),
+        h6: ({ node, ...props }) => (
+          <h6 id={props.children[0]?.toString()} {...props} />
         ),
       }}
     >

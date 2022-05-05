@@ -162,10 +162,14 @@ const InputSetting = ({
                     $cover
                   />
                 ) : (
-                  <img
-                    src={postMetadata.thumbnail}
-                    className="w-full h-48 m-0"
-                  />
+                  <figure
+                    className="w-full h-48 m-0 bg-contain bg-no-repeat bg-center"
+                    style={{
+                      backgroundImage: `url("${postMetadata.thumbnail}")`,
+                    }}
+                  >
+                    <img src={postMetadata.thumbnail} hidden />
+                  </figure>
                 )}
               </>
             ) : (

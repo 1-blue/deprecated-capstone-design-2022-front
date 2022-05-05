@@ -11,7 +11,7 @@ const Spinner = ({ kinds }: Props) => {
     switch (kinds) {
       case "button":
         return (
-          <div className="w-6 h-6 mx-auto text-xs border-[5px] border-solid border-white/40 border-t-white rounded-full animate-spin bg-transparent" />
+          <div className="w-6 h-6 mx-auto text-xs border-[5px] border-solid border-white/40 border-t-white rounded-full bg-transparent animate-spin" />
         );
       case "page":
         return (
