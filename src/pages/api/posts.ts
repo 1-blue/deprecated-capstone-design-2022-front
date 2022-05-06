@@ -8,5 +8,8 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponseOfPosts>
 ) {
-  res.status(200).json({ ok: true, posts: getDummyPosts() });
+  const kinds = req.query.kinds as string;
+  const page = +(req.query.page as string);
+
+  res.status(200).json({ ok: true, posts: getDummyPosts(kinds, page) });
 }

@@ -25,15 +25,16 @@ export const getMe = (): SimpleUser => ({
   introduction: "기록과 정리를 좋아하는 개발자입니다! 👏",
 });
 
-export const getDummyPosts = (): SimplePost[] =>
-  Array(10)
+export const getDummyPosts = (kinds: string, page: number): SimplePost[] => {
+  const posts = Array(20)
     .fill(null)
     .map((v, i) => ({
-      id: i,
-      title: "대충 제목 - " + i,
+      id: i + page * 10,
+      title: "대충 제목 - " + i + page * 10,
       summary:
         "대충 이런 저런\n줄바꿈하고\n👀🐲✒️➖🚨🔍🧨🌓🚀\n이모티콘도 넣어보고\n이런 내용 아무튼 - " +
-        i,
+        i +
+        page * 10,
       thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
       updatedAt: new Date(),
       user: {
@@ -43,10 +44,14 @@ export const getDummyPosts = (): SimplePost[] =>
       },
       keywords: [{ keyword: "React.js" }],
       _count: {
-        comments: i,
-        favorite: i,
+        comments: i + page * 10,
+        favorite: i + page * 10,
       },
     }));
+
+  if (kinds === "popular") return posts.reverse();
+  else return posts;
+};
 
 export const getDummyPost = (): IPostWithKeyword => ({
   id: 0,
