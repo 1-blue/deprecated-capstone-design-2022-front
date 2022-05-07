@@ -16,7 +16,6 @@ type SimpleUser = {
   avatar?: string;
   introduction?: string;
 };
-
 type Post = {
   idx: number;
   title: string;
@@ -25,7 +24,7 @@ type Post = {
   updatedAt: Date;
   isPrivate: boolean;
   summary: string;
-  thumbnail: string;
+  thumbnail?: string;
 
   userIdx: number;
   categoryIdx: number;

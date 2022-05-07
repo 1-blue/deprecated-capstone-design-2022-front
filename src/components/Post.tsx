@@ -9,6 +9,7 @@ import { timeFormat } from "@src/libs/dateFormat";
 // common-component
 import Icon from "@src/components/common/Icon";
 import Photo from "@src/components/common/Photo";
+import Avatar from "@src/components/common/Avatar";
 
 type Props = {
   post: SimplePost;
@@ -50,7 +51,7 @@ const Post = ({ post, photoSize, $priority }: Props) => {
         <div className="flex items-center px-4">
           <Link href={`/${post.user.name}`}>
             <a className="flex space-x-2 items-center">
-              <Photo
+              <Avatar
                 photo={post.user.avatar}
                 size="w-6 h-6"
                 alt="유저 이미지"

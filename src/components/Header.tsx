@@ -4,8 +4,8 @@ import { useTheme } from "next-themes";
 
 // commom-component
 import Icon from "@src/components/common/Icon";
-import Photo from "@src/components/common/Photo";
 import Modal from "@src/components/common/Modal";
+import Avatar from "@src/components/common/Avatar";
 
 // type
 import { ICON } from "@src/types";
@@ -67,7 +67,7 @@ const Header = ({ hasHeader }: Props) => {
                   className="flex items-center space-x-1 relative"
                   onClick={() => setIsOpen((prev) => !prev)}
                 >
-                  <Photo
+                  <Avatar
                     photo={me.avatar}
                     size="w-10 h-10"
                     alt="유저 프로필 이미지"

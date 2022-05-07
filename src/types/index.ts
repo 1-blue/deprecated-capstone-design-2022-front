@@ -19,7 +19,7 @@ export enum ICON {
 export type SimpleUser = {
   id: number;
   name: string;
-  avatar: string;
+  avatar?: string;
   introduction?: string;
 };
 
@@ -27,7 +27,7 @@ export type SimpleUser = {
 export type SimplePost = {
   id: number;
   title: string;
-  thumbnail: string;
+  thumbnail?: string;
   updatedAt: Date;
   summary: string;
   user: SimpleUser;
@@ -76,6 +76,5 @@ export type ApiResponseOfMe = {
 };
 // 2022/04/10 - 인기/최신 게시글 반환 타입 - by 1-blue
 export type ApiResponseOfPosts = {
-  ok: boolean;
   posts: SimplePost[];
 };

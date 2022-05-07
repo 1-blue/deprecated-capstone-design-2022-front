@@ -8,18 +8,16 @@ type Props = {
   size: string;
   className?: string;
   alt?: string;
-  $scale?: boolean;
   $cover?: boolean;
   $rouneded?: boolean;
   $priority?: boolean;
 };
 
-const Photo = ({
+const Avatar = ({
   photo,
   size,
   className,
-  alt = "이미지",
-  $scale,
+  alt = "프로필 이미지",
   $cover,
   $rouneded,
   $priority,
@@ -34,14 +32,12 @@ const Photo = ({
         )}
       >
         <Image
-          src={photo ? photo : "/temporary.jpg"}
+          src={photo ? photo : "/avatar.png"}
           layout="fill"
           alt={alt}
           className={combineClassNames(
-            $scale ? "group-hover:scale-110 duration-500" : "",
             $cover ? "object-cover" : "object-contain",
-            $rouneded ? "rounded-full" : "",
-            photo ? "" : "blur"
+            $rouneded ? "rounded-full" : ""
           )}
           priority={$priority}
         />
@@ -50,4 +46,4 @@ const Photo = ({
   );
 };
 
-export default Photo;
+export default Avatar;

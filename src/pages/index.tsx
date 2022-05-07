@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import useSWRInfinite from "swr/infinite";
 
 // type
@@ -9,10 +9,13 @@ import { ApiResponseOfPosts } from "@src/types";
 import Post from "@src/components/Post";
 import MainNav from "@src/components/MainNav";
 
+// common-component
+import HeadInfo from "@src/components/common/HeadInfo";
+
 // hook
 import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
 
-const Home: NextPage = () => {
+const Home: NextPage<ApiResponseOfPosts> = ({ posts }) => {
   // 2022/05/06 - 게시글 offset - by 1-blue
   const [offset, setOffset] = useState(20);
   // 2022/05/06 - 게시글 추가 패치 가능 여부 - by 1-blue
@@ -29,8 +32,13 @@ const Home: NextPage = () => {
         return null;
       }
       return `/api/posts?page=${pageIndex}&offset=${offset}&kinds=popular`;
+    },
+    null,
+    {
+      fallbackData: [{ posts }],
     }
   );
+
   // 2022/05/06 - 게시글 스크롤링 시 패치하는 이벤트 등록 - by 1-blue
   useInfiniteScroll({
     condition: hasMorePost,
@@ -42,7 +50,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     setList(
       responsePosts?.map(({ posts }) =>
-        posts.map((post, i) => (
+        posts?.map((post, i) => (
           <Post
             key={post.id}
             post={post}
@@ -56,6 +64,12 @@ const Home: NextPage = () => {
 
   return (
     <>
+      <HeadInfo
+        title="홈"
+        description="velog 클론 코딩 프로젝트"
+        photo={responsePosts?.[0]?.posts?.[0]?.thumbnail}
+      />
+
       {/* 최신 게시글과 인기 게시글 네비게이터 */}
       <article>
         <MainNav />
@@ -69,6 +83,19 @@ const Home: NextPage = () => {
       </article>
     </>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const posts = await fetch(
+    process.env.NEXT_PUBLIC_SERVER_URL +
+      "/api/posts?page=0&offset=20&kinds=popular"
+  ).then((res) => res.json());
+
+  return {
+    props: {
+      ...posts,
+    },
+  };
 };
 
 export default Home;
