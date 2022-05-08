@@ -21,3 +21,8 @@ export const getTitleList = (sentence: string) => {
 
   return titleList;
 };
+
+// >>> 이미지 저장 위치 결정되면 배포 전에 수정하기!
+// 2022/05/07 - 이미지 경로 붙여주는 헬퍼함수 - by 1-blue
+export const combinePhotoUrl = (photo: string) =>
+  `http://localhost:3000/${photo}`;

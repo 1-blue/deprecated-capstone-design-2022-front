@@ -4,9 +4,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { ApiResponseOfPosts } from "@src/types";
 import { getDummyPosts } from "@src/libs/dummy";
 
-export default function handler(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ApiResponseOfPosts>
 ) {
-  res.status(200).json({ ok: true, posts: getDummyPosts() });
+  const kinds = req.query.kinds as string;
+  const page = +(req.query.page as string);
+
+  res.status(200).json({ posts: getDummyPosts(kinds, page) });
 }

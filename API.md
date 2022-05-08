@@ -16,7 +16,6 @@ type SimpleUser = {
   avatar?: string;
   introduction?: string;
 };
-
 type Post = {
   idx: number;
   title: string;
@@ -25,7 +24,7 @@ type Post = {
   updatedAt: Date;
   isPrivate: boolean;
   summary: string;
-  thumbnail: string;
+  thumbnail?: string;
 
   userIdx: number;
   categoryIdx: number;
@@ -202,10 +201,10 @@ interface ICommentWithUser extends Comment {
 }
 ```
 
-### 2.2 GET /api/post?page=page&offset=offset
+### 2.2 GET /api/posts?page=page&offset=offset&kinds=kinds
 
-- 목적: 최신순 게시글들 일부 요청
-- 전송: `page`, `offset`
+- 목적: 최신/인기순 게시글들 일부 요청
+- 전송: `page`, `offset`, `kinds` ( `kinds` -> `latest`, `popular` )
 - 응답
 
 ```typescript
