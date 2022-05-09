@@ -34,7 +34,7 @@ import useModal from "@src/hooks/useModal";
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
-type PostResponse = {
+type ResponseOfDetalPost = {
   ok: boolean;
   post: PostType;
   error?: Error;
@@ -51,7 +51,8 @@ type RelevantPostsResponse = {
 type PostRemoveResponse = {
   ok: boolean;
 };
-const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
+
+const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
   const router = useRouter();
   const { me } = useMe();
 
@@ -132,7 +133,7 @@ const PostDetail: NextPage<PostResponse> = ({ ok, post }) => {
               <li
                 key={keyword}
                 className="bg-zinc-200 text-indigo-600 hover:bg-zinc-300 hover:text-indigo-700 dark:bg-zinc-700 dark:hover:bg-zinc-800 dark:text-indigo-300 dark:hover:text-indigo-400 font-semibold py-2 px-4 mb-2 rounded-md cursor-pointer"
-                onClick={() => router.push(`/search?q=${keyword}`)}
+                onClick={() => router.push(`/search?keyword=${keyword}`)}
               >
                 {keyword}
               </li>
