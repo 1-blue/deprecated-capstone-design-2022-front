@@ -74,7 +74,7 @@ export type ApiResponseOfMe = {
   ok: boolean;
   user: SimpleUser;
 };
-// 2022/04/10 - 인기/최신 게시글 반환 타입 - by 1-blue
+// 2022/04/10 - 인기/최신/검색 게시글 반환 타입 - by 1-blue
 export type ApiResponseOfPosts = {
   posts: SimplePost[];
 };
