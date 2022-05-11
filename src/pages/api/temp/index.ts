@@ -1,9 +1,18 @@
+import { getTempPosts } from "@src/libs/dummy";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { method } = req;
 
   switch (method) {
+    case "GET":
+      const { page, offset } = req.query;
+
+      return res.status(200).json({ ok: true, posts: getTempPosts(+page) });
+
     case "POST":
       const { title, keywords, contents, tempPostIdx } = req.body;
 
@@ -11,7 +20,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       console.log("대충 임시 게시글 생성");
 
       return res.status(200).json({ ok: true, title, tempPostIdx: -1 });
-
     default:
       return res.status(200).json({ ok: true, message: "게시글... 아무것도" });
   }
