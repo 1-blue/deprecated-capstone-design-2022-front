@@ -18,9 +18,9 @@ import { combineClassNames } from "@src/libs/util";
 
 // type
 import { ICON } from "@src/types";
-import {
-  CreatePostResponse,
-  PhotoResponse,
+import type {
+  ResponseOfCreatedPost,
+  ResponseOfPhoto,
   PostMetadata,
   WriteForm,
 } from "@src/pages/write";
@@ -53,7 +53,7 @@ const InputSetting = ({
 
   // 2022/04/27 - 게시글 생성 함수 - by 1-blue
   const [createPost, { data: createPostResponse, loading: createPostLoading }] =
-    useMutation<CreatePostResponse>({
+    useMutation<ResponseOfCreatedPost>({
       url: "/api/post",
     });
   // 2022/04/27 - 게시글 생성 - by 1-blue
@@ -89,7 +89,7 @@ const InputSetting = ({
       try {
         const formData = new FormData();
         formData.append("photo", e.target.files[0]);
-        const { photoUrl }: PhotoResponse = await fetch("/api/photo", {
+        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -137,9 +137,9 @@ const InputSetting = ({
 
   return (
     <>
-      <article className="z-1 fixed -top-4 left-0 w-screen h-screen bg-white dark:bg-gray-800 flex justify-center items-center space-x-8 animate-slide-up">
+      <article className="z-1 fixed top-0 left-0 w-screen h-screen bg-white dark:bg-gray-800 flex md:justify-center md:items-center space-y-8 md:space-x-8 animate-slide-up flex-col md:flex-row p-4 overflow-auto">
         {/* 좌측 영역 */}
-        <section className="space-y-8 max-w-[350px] w-[40vw] h-[60vh]">
+        <section className="space-y-8 w-full md:max-w-[350px] md:w-[40vw] md:h-[60vh]">
           {/* 섬네일 입력 */}
           <form className="space-y-2">
             <h3 className="text-xl font-bold">포스트 미리보기</h3>
@@ -157,13 +157,13 @@ const InputSetting = ({
                 ) ? (
                   <Photo
                     photo={postMetadata.thumbnail}
-                    size="w-full h-48"
+                    size="w-full pt-[60%] md:h-48"
                     className="m-0"
                     $cover
                   />
                 ) : (
                   <figure
-                    className="w-full h-48 m-0 bg-contain bg-no-repeat bg-center"
+                    className="w-full pt-[60%] md:h-48 m-0 bg-contain bg-no-repeat bg-center"
                     style={{
                       backgroundImage: `url("${postMetadata.thumbnail}")`,
                     }}
@@ -176,7 +176,7 @@ const InputSetting = ({
               <>
                 <button
                   type="button"
-                  className="group w-full h-48 bg-transparent flex flex-col justify-center items-center rounded-sm border-2 border-indigo-500 hover:border-indigo-600 text-indigo-500 hover:text-indigo-600"
+                  className="group w-full md:h-48 h-72 md:pt-0 bg-transparent flex flex-col justify-center items-center rounded-sm border-2 border-indigo-500 hover:border-indigo-600 text-indigo-500 hover:text-indigo-600"
                   onClick={() => thumbnailRef.current?.click()}
                 >
                   <Icon icon={ICON.PHOTO} className="w-[80px] h-[80px]" />
@@ -208,7 +208,7 @@ const InputSetting = ({
         {/* 우측 영역 */}
         {isShowCategory ? (
           // 카테고리 입력
-          <section className="flex flex-col max-w-[350px] w-[40vw] h-[60vh]">
+          <section className="flex flex-col w-full md:max-w-[350px] md:w-[40vw] md:h-[60vh]">
             <h3 className="text-xl font-bold mb-2">카테고리 설정</h3>
             <form
               className="bg-zinc-300 dark:bg-zinc-700 p-4"
@@ -270,7 +270,7 @@ const InputSetting = ({
           </section>
         ) : (
           // 공개/카테고리/취소/출간 버튼
-          <section className="flex flex-col space-y-8 max-w-[350px] w-[40vw]  h-[60vh]">
+          <section className="flex flex-col space-y-8 w-full md:max-w-[350px] md:w-[40vw] md:h-[60vh]">
             {/* 공개 설정 */}
             <section className="space-y-2">
               <h3 className="text-xl font-bold">공개 설정</h3>
@@ -287,7 +287,7 @@ const InputSetting = ({
                     setPostMetadata((prev) => ({ ...prev, isPrivate: false }))
                   }
                 >
-                  <Icon icon={ICON.EARTH} />
+                  <Icon icon={ICON.EARTH} className="w-6 h-6" />
                   <span>전체 공개</span>
                 </button>
                 <button
@@ -302,7 +302,7 @@ const InputSetting = ({
                     setPostMetadata((prev) => ({ ...prev, isPrivate: true }))
                   }
                 >
-                  <Icon icon={ICON.LOCK} />
+                  <Icon icon={ICON.LOCK} className="w-6 h-6" />
                   <span>비공개</span>
                 </button>
               </div>
@@ -324,7 +324,7 @@ const InputSetting = ({
                   postMetadata.category
                 ) : (
                   <>
-                    <Icon icon={ICON.PLUS_CURCLE} />
+                    <Icon icon={ICON.PLUS_CURCLE} className="w-6 h-6" />
                     <span>카테고리에 추가하기</span>
                   </>
                 )}

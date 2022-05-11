@@ -2,11 +2,16 @@ import { useEffect } from "react";
 import useSWR from "swr";
 
 // type
-import { ApiResponseOfMe } from "@src/types";
+import type { SimpleUser } from "@src/types";
+
+type ResponseOfMe = {
+  ok: boolean;
+  user: SimpleUser;
+};
 
 // 2022/04/08 - 로그인한 유저 정보 - by 1-blue
 const useMe = () => {
-  const { data, error } = useSWR<ApiResponseOfMe>("/api/users/me");
+  const { data, error } = useSWR<ResponseOfMe>("/api/users/me");
 
   useEffect(() => {
     if (!data?.ok) return;

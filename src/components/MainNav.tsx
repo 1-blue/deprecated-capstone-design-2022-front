@@ -19,7 +19,7 @@ const MainNav = () => {
       >
         <Link href="/">
           <a className="flex space-x-2">
-            <Icon icon={ICON.TRENDING_UP} />
+            <Icon icon={ICON.TRENDING_UP} className="w-6 h-6" />
             <span>트렌딩</span>
           </a>
         </Link>
@@ -33,7 +33,7 @@ const MainNav = () => {
       >
         <Link href="/recent">
           <a className="flex space-x-2">
-            <Icon icon={ICON.CLOCK} />
+            <Icon icon={ICON.CLOCK} className="w-6 h-6" />
             <span>최신</span>
           </a>
         </Link>

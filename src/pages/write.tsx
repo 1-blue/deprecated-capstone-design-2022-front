@@ -12,27 +12,29 @@ import InputSetting from "@src/components/Write/InputSetting";
 import Markdown from "@src/components/common/Markdown";
 import Spinner from "@src/components/common/Spinner";
 import Icon from "@src/components/common/Icon";
+import HeadInfo from "@src/components/common/HeadInfo";
 
 // hook
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
 // type
-import { ICON, Post, SimpleKeyword } from "@src/types";
+import { ICON } from "@src/types";
+import type { IPostWithUserAndKeywordAndCount } from "@src/types";
 
 export type WriteForm = {
   title: string;
   keyword: string;
   contents: string;
 };
-export type CreatePostResponse = {
+export type ResponseOfCreatedPost = {
   ok: boolean;
   title: string;
 };
-interface ICreateTemparoryPostResponse extends CreatePostResponse {
+interface IResponseOfCreatedTemparoryPost extends ResponseOfCreatedPost {
   tempPostIdx?: number;
 }
-export type PhotoResponse = {
+export type ResponseOfPhoto = {
   ok: boolean;
   photoUrl: string;
 };
@@ -42,12 +44,9 @@ export type PostMetadata = {
   category: string;
   thumbnail: string;
 };
-interface IPostWithKeyword extends Post {
-  keywords: SimpleKeyword[];
-}
-type CurrentPostReponse = {
+type ResponseOfPosts = {
   ok: boolean;
-  post: IPostWithKeyword;
+  post: IPostWithUserAndKeywordAndCount;
 };
 
 const Write: NextPage = () => {
@@ -62,7 +61,7 @@ const Write: NextPage = () => {
     createTemporaryPost,
     { data: createTemporaryPostResponse },
     resetState,
-  ] = useMutation<ICreateTemparoryPostResponse>({
+  ] = useMutation<IResponseOfCreatedTemparoryPost>({
     url: "/api/temp",
   });
 
@@ -109,7 +108,14 @@ const Write: NextPage = () => {
             toast.warning("태그는 최대 10개까지만 생성이 가능합니다.");
             return prev;
           }
-          return [...prev, keyword].filter((v, i, arr) => arr.indexOf(v) === i);
+          const prevKeywordsLength = prev.length;
+          const nextKeywords = [...prev, keyword].filter(
+            (v, i, arr) => arr.indexOf(v) === i
+          );
+          if (prevKeywordsLength === nextKeywords.length)
+            toast.warning("중복된 태그는 생성할 수 없습니다.");
+
+          return nextKeywords;
         });
 
         setValue("keyword", "");
@@ -172,7 +178,7 @@ const Write: NextPage = () => {
       try {
         const formData = new FormData();
         formData.append("photo", e.dataTransfer.files[0]);
-        const { photoUrl }: PhotoResponse = await fetch("/api/photo", {
+        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -198,7 +204,7 @@ const Write: NextPage = () => {
       try {
         const formData = new FormData();
         formData.append("photo", e.target.files[0]);
-        const { photoUrl }: PhotoResponse = await fetch("/api/photo", {
+        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -227,7 +233,7 @@ const Write: NextPage = () => {
 
   // 2022/05/01 - 수정이라면 게시글 정보 가져오기 - by 1-blue
   const { data: currentPost, isValidating: currentPostLoading } =
-    useSWRImmutable<CurrentPostReponse>(
+    useSWRImmutable<ResponseOfPosts>(
       router.query?.title ? `/api/post/${router.query?.title}` : null
     );
   // 2022/05/01 - 수정이라면 데이터 채우기 - by 1-blue
@@ -241,6 +247,8 @@ const Write: NextPage = () => {
 
   return (
     <>
+      <HeadInfo title="게시글 생성" description="blelog의 게시글 생성" />
+
       <article
         className="flex h-screen"
         onKeyDown={handleSave}
@@ -284,14 +292,12 @@ const Write: NextPage = () => {
               />
               <ul className="px-4 flex flex-wrap space-x-2">
                 {keywords.map((keyword) => (
-                  <li
-                    key={keyword}
-                    className="py-1 px-2 rounded-md mb-2 bg-zinc-500 text-white"
-                  >
+                  <li key={keyword}>
                     <button
                       type="button"
                       onClick={onRemoveKeyword(keyword)}
                       tabIndex={-1}
+                      className="bg-zinc-300 text-indigo-500 hover:bg-zinc-400 hover:text-indigo-600 dark:bg-zinc-600 dark:hover:bg-zinc-700 dark:text-indigo-300 dark:hover:text-indigo-400 py-2 px-4 mb-2 rounded-md font-semibold"
                     >
                       {keyword}
                     </button>
@@ -305,7 +311,7 @@ const Write: NextPage = () => {
                   onClick={() => photoRef.current?.click()}
                   className="p-1 rounded-md hover:text-white hover:bg-black dark:hover:text-black dark:hover:bg-white focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
                 >
-                  <Icon icon={ICON.PHOTO} />
+                  <Icon icon={ICON.PHOTO} className="w-6 h-6" />
                 </button>
               </ul>
               <textarea

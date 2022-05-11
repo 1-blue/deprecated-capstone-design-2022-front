@@ -1,35 +1,81 @@
-// type
-import {
-  Comment,
-  Post,
-  SimpleKeyword,
-  SimplePost,
-  SimpleUser,
-} from "@src/types";
-
-interface IPostWithKeyword extends Post {
-  keywords: SimpleKeyword[];
-}
-interface IRecommentWithUser extends Comment {
-  user: SimpleUser;
-}
-interface ICommentWithUser extends Comment {
-  user: SimpleUser;
-  recomments?: IRecommentWithUser[];
-}
-
-export const getMe = (): SimpleUser => ({
-  id: 0,
+export const getMe = () => ({
+  idx: 0,
   name: "관리자",
   avatar: "/avatar.png",
   introduction: "기록과 정리를 좋아하는 개발자입니다! 👏",
 });
 
-export const getDummyPosts = (kinds: string, page: number): SimplePost[] => {
+export const getDummyPosts = (kinds: string, page: number, keyword: string) => {
+  // 검색 테스트
+  if (keyword) {
+    if (keyword.toLocaleLowerCase().includes("react")) {
+      return Array(4)
+        .fill(null)
+        .map((v, i) => ({
+          idx: i + page * 10,
+          title: "React.js [ 키워드 테스트 ]",
+          summary: "대충 리액트 관한 내용🐲",
+          thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
+          updatedAt: new Date(),
+          user: {
+            idx: 1,
+            name: "유저" + i,
+            avatar: "/avatar.png",
+          },
+          keywords: [{ keyword: "React.js" }, { keyword: "Next.js" }],
+          _count: {
+            comment: i + page * 10,
+            favorite: i + page * 10,
+          },
+        }));
+    }
+    if (keyword.toLocaleLowerCase().includes("vue")) {
+      return Array(4)
+        .fill(null)
+        .map((v, i) => ({
+          idx: i + page * 10,
+          title: "Vue.js [ 키워드 테스트 ]",
+          summary: "대충 뷰 관한 내용",
+          thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
+          updatedAt: new Date(),
+          user: {
+            idx: 1,
+            name: "유저" + i,
+            avatar: "/avatar.png",
+          },
+          keywords: [{ keyword: "Next.js" }, { keyword: "Vue.js" }],
+          _count: {
+            comment: i + page * 10,
+            favorite: i + page * 10,
+          },
+        }));
+    }
+    if (keyword.toLocaleLowerCase().includes("javascript")) {
+      return Array(4)
+        .fill(null)
+        .map((v, i) => ({
+          idx: i + page * 10,
+          title: "JavaScript [ 키워드 테스트 ]",
+          summary: "대충 자바스크립트 관한 내용",
+          thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
+          updatedAt: new Date(),
+          user: {
+            idx: 1,
+            name: "유저" + i,
+            avatar: "/avatar.png",
+          },
+          keywords: [{ keyword: "Next.js" }, { keyword: "JavaScript" }],
+          _count: {
+            comment: i + page * 10,
+            favorite: i + page * 10,
+          },
+        }));
+    }
+  }
   const posts = Array(20)
     .fill(null)
     .map((v, i) => ({
-      id: i + page * 10,
+      idx: i + page * 10,
       title: "대충 제목 - " + i + page * 10,
       summary:
         "대충 이런 저런\n줄바꿈하고\n👀🐲✒️➖🚨🔍🧨🌓🚀\n이모티콘도 넣어보고\n이런 내용 아무튼 - " +
@@ -38,7 +84,7 @@ export const getDummyPosts = (kinds: string, page: number): SimplePost[] => {
       thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
       updatedAt: new Date(),
       user: {
-        id: 1,
+        idx: 1,
         name: "유저" + i,
         avatar: "/avatar.png",
       },
@@ -55,7 +101,7 @@ export const getDummyPosts = (kinds: string, page: number): SimplePost[] => {
         { keyword: "styled-components" },
       ],
       _count: {
-        comments: i + page * 10,
+        comment: i + page * 10,
         favorite: i + page * 10,
       },
     }));
@@ -64,8 +110,8 @@ export const getDummyPosts = (kinds: string, page: number): SimplePost[] => {
   else return posts;
 };
 
-export const getDummyPost = (): IPostWithKeyword => ({
-  id: 0,
+export const getDummyPost = () => ({
+  idx: 0,
   title: "React.js [테스트용 게시글]",
   contents: `# 첫 번째 목록 테스트
   + 순서
@@ -99,6 +145,7 @@ export const getDummyPost = (): IPostWithKeyword => ({
 
   ###### 여섯 번째 링크, 이미지, 문구 테스트
   [링크](https://github.com/1-blue)
+  
   ![이미지](https://blemarket.s3.ap-northeast-2.amazonaws.com/images/production/germany_1650793243414)
 
   > 👉 중요한 내용 👈
@@ -108,8 +155,8 @@ export const getDummyPost = (): IPostWithKeyword => ({
   summary: "대충 요약",
   user: getMe(),
   _count: {
-    comments: 0,
-    favorite: 5,
+    comment: 12,
+    favorite: 3,
   },
   keywords: [
     { keyword: "React.js" },
@@ -118,43 +165,43 @@ export const getDummyPost = (): IPostWithKeyword => ({
   ],
 });
 
-export const getRelevantPosts = (): SimplePost[] =>
+export const getRelevantPosts = () =>
   Array(4)
     .fill(null)
     .map((v, i) => ({
-      id: i,
+      idx: i,
       title: `React.js [테스트용 연관 게시글 - ${i}]`,
       thumbnail: "/venice.jpg",
       updatedAt: new Date(Date.now()),
       summary: "대충 요약",
       user: getMe(),
       _count: {
-        comments: 0,
+        comment: 0,
         favorite: i,
       },
     }));
 
-export const getCategorizedPosts = (): SimplePost[] =>
+export const getCategorizedPosts = () =>
   Array(8)
     .fill(null)
     .map((v, i) => ({
-      id: i,
+      idx: i,
       title: `React.js [테스트용 카테고리 게시글 - ${i}]`,
       thumbnail: "/cat.jpg",
       updatedAt: new Date(Date.now()),
       summary: "대충 요약",
       user: getMe(),
       _count: {
-        comments: 0,
+        comment: 0,
         favorite: i,
       },
     }));
 
-export const getRecomments = (number: number): IRecommentWithUser[] => {
+export const getRecomments = (number: number) => {
   return Array(14)
     .fill(null)
     .map((v, i) => ({
-      idx: i,
+      idx: i + 2000,
       contents: "답글 🐲 - " + i,
       createdAt: new Date(Date.now()),
       updatedAt: new Date(Date.now()),
@@ -164,7 +211,7 @@ export const getRecomments = (number: number): IRecommentWithUser[] => {
     }));
 };
 
-export const getComments = (page: number): ICommentWithUser[] => {
+export const getComments = (page: number) => {
   if (page === 0) {
     return Array(10)
       .fill(null)
@@ -192,11 +239,11 @@ export const getComments = (page: number): ICommentWithUser[] => {
   return [];
 };
 
-export const getLikers = (): SimpleUser[] =>
+export const getLikers = () =>
   Array(3)
     .fill(null)
     .map((v, i) => ({
-      id: i,
+      idx: i,
       name: "테스트 유저" + i,
       avatar: "/avatar.png",
       introduction: "테스트 아무말" + i,

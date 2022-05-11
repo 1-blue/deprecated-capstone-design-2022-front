@@ -14,9 +14,10 @@ import useMutation from "@src/hooks/useMutation";
 import { combineClassNames } from "@src/libs/util";
 
 // type
-import { ICON, SimpleUser } from "@src/types";
+import { ICON } from "@src/types";
+import type { SimpleUser } from "@src/types";
 
-type LikerResponse = {
+type ResponseOfLikers = {
   ok: boolean;
   likers: SimpleUser[];
 };
@@ -26,7 +27,7 @@ const Like = () => {
   const { me } = useMe();
 
   // 2022/05/03 - 게시글 좋아요 누른 유저 정보 요청 - by 1-blue
-  const { data: likerResponse, mutate: likerMutate } = useSWR<LikerResponse>(
+  const { data: likerResponse, mutate: likerMutate } = useSWR<ResponseOfLikers>(
     router.query.title ? `/api/post/${router.query.title}/like` : null
   );
   // 2022/05/03 - 게시글 좋아요 추가관련 메서드 - by 1-blue
@@ -45,7 +46,7 @@ const Like = () => {
   useEffect(() => {
     if (likerResponse?.ok) {
       setIsMineLiked(
-        !!likerResponse.likers.find((liker) => liker.id === me?.id)
+        !!likerResponse.likers.find((liker) => liker.idx === me?.idx)
       );
     }
   }, [likerResponse, setIsMineLiked, me]);
@@ -64,7 +65,7 @@ const Like = () => {
         (prev) =>
           prev && {
             ...prev,
-            likers: prev.likers.filter((liker) => liker.id !== me.id),
+            likers: prev.likers.filter((liker) => liker.idx !== me.idx),
           },
         false
       );
@@ -91,7 +92,7 @@ const Like = () => {
   ]);
 
   return (
-    <aside className="fixed top-[10%] left-[4%] bg-zinc-200 text-gray-400 py-3 px-2 rounded-full flex flex-col items-center">
+    <aside className="fixed top-[14%] left-[4%] bg-zinc-200 text-gray-400 py-3 px-2 rounded-full flex flex-col items-center">
       <button
         type="button"
         className={combineClassNames(
@@ -103,9 +104,13 @@ const Like = () => {
         onClick={onClickLikeButton}
       >
         {isMineLiked ? (
-          <Icon icon={ICON.HEART} $fill className="animate-heart-beat" />
+          <Icon
+            icon={ICON.HEART}
+            $fill
+            className="w-6 h-6 animate-heart-beat"
+          />
         ) : (
-          <Icon icon={ICON.HEART} />
+          <Icon icon={ICON.HEART} className="w-6 h-6" />
         )}
       </button>
       <span className="font-semibold text-gray-600">

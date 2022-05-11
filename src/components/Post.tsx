@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 // type
-import { ICON, SimplePost } from "@src/types";
+import { ICON } from "@src/types";
+import type { IPostWithUserAndCount } from "@src/types";
 
 // util
 import { timeFormat } from "@src/libs/dateFormat";
@@ -12,7 +13,7 @@ import Photo from "@src/components/common/Photo";
 import Avatar from "@src/components/common/Avatar";
 
 type Props = {
-  post: SimplePost;
+  post: IPostWithUserAndCount;
   photoSize: string;
   $priority?: boolean;
 };
@@ -43,9 +44,9 @@ const Post = ({ post, photoSize, $priority }: Props) => {
           </a>
         </Link>
         {/* 게시글 작성 시간 */}
-        <span className="text-xs text-gray-400 px-4 mb-2">
+        <time className="text-xs text-gray-400 px-4 mb-2">
           {timeFormat(post.updatedAt)}
-        </span>
+        </time>
         <div className="border border-gray-200 dark:border-gray-600 mb-4" />
         {/* 작성자 정보와 좋아요, 댓글 개수 */}
         <div className="flex items-center px-4">
@@ -65,11 +66,11 @@ const Post = ({ post, photoSize, $priority }: Props) => {
           <div className="flex-1" />
           <div className="flex space-x-2 text-sm">
             <div className="flex items-center space-x-1">
-              <Icon icon={ICON.COMMENTS} />
-              <span>{post._count.comments}</span>
+              <Icon icon={ICON.COMMENTS} className="w-5 h-5" />
+              <span>{post._count.comment}</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Icon icon={ICON.HEART} />
+              <Icon icon={ICON.HEART} className="w-5 h-5" />
               <span>{post._count.favorite}</span>
             </div>
           </div>

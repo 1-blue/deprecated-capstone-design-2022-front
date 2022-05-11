@@ -10,7 +10,10 @@ import useSWR from "swr";
 import Link from "next/link";
 
 // type
-import { Post as PostType, SimplePost } from "@src/types";
+import type {
+  IPostWithUserAndKeywordAndCount,
+  IPostWithUserAndCount,
+} from "@src/types";
 
 // common-component
 import Spinner from "@src/components/common/Spinner";
@@ -18,6 +21,8 @@ import Photo from "@src/components/common/Photo";
 import Markdown from "@src/components/common/Markdown";
 import Post from "@src/components/Post";
 import Modal from "@src/components/common/Modal";
+import Keyword from "@src/components/common/Keyword";
+import HeadInfo from "@src/components/common/HeadInfo";
 
 // component
 import CommentContainer from "@src/components/Comment/CommentContainer";
@@ -34,37 +39,37 @@ import useModal from "@src/hooks/useModal";
 import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
-type ResponseOfDetalPost = {
+type ResponseOfDetailPost = {
   ok: boolean;
-  post: PostType;
+  post: IPostWithUserAndKeywordAndCount;
   error?: Error;
 };
-type CategorizedPostsResponse = {
+type ResponseOfCategorizedPosts = {
   ok: boolean;
   category: string;
-  posts: SimplePost[];
+  posts: IPostWithUserAndCount[];
 };
-type RelevantPostsResponse = {
+type ResponseOfRelevantPosts = {
   ok: boolean;
-  posts: SimplePost[];
+  posts: IPostWithUserAndCount[];
 };
-type PostRemoveResponse = {
+type ResponseOfRemovedPost = {
   ok: boolean;
 };
 
-const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
+const PostDetail: NextPage<ResponseOfDetailPost> = ({ ok, post }) => {
   const router = useRouter();
   const { me } = useMe();
 
   // 2022/04/30 - 현재 게시글과 같은 카테고리를 가진 게시글들 ( + 동일한 유저 ) - by 1-blue
-  const { data: categorizedPosts } = useSWR<CategorizedPostsResponse>(
+  const { data: categorizedPosts } = useSWR<ResponseOfCategorizedPosts>(
     router.query.title ? `/api/post/${router.query.title}/categorized` : null
   );
   // 2022/04/30 - 카테고리 토글 변수 - by 1-blue
   const [toggleCategory, setToggleCategory] = useState(false);
 
   // 2022/04/30 - 현재 게시글과 연관된 게시글들 - by 1-blue
-  const { data: relevantPosts } = useSWR<RelevantPostsResponse>(
+  const { data: relevantPosts } = useSWR<ResponseOfRelevantPosts>(
     router.query.title ? `/api/post/${router.query.title}/relevant` : null
   );
 
@@ -72,7 +77,7 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
   const [modalRef, isOpen, setIsOpen] = useModal();
   // 2022/05/01 - 게시글 삭제 요청 관련 메서드 - by 1-blue
   const [removePost, { data: removePostResponse, loading: removePostLoading }] =
-    useMutation<PostRemoveResponse>({
+    useMutation<ResponseOfRemovedPost>({
       url: router.query.title ? `/api/post/${router.query.title}` : null,
       method: "DELETE",
     });
@@ -88,6 +93,12 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
 
   return (
     <>
+      <HeadInfo
+        title={`${post.title}`}
+        description={`${post.title}\n${post.summary}`}
+        photo={`${post.thumbnail}`}
+      />
+
       <article className="max-w-[768px] md:w-[60vw] mx-4 md:mx-auto space-y-8 mb-40">
         {/* 제목  */}
         <section>
@@ -102,9 +113,9 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
             </a>
           </Link>
           <span>ㆍ</span>
-          <span>{dateFormat(post.updatedAt, "YYYY-MM-DD")}</span>
+          <time>{dateFormat(post.updatedAt, "YYYY-MM-DD")}</time>
           <div className="flex-1" />
-          {me?.id === post.user.id && (
+          {me?.idx === post.user.idx && (
             <>
               <button
                 type="button"
@@ -128,17 +139,7 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
 
         {/* 키워드 */}
         <section>
-          <ul className="flex flex-wrap space-x-2">
-            {post.keywords.map(({ keyword }) => (
-              <li
-                key={keyword}
-                className="bg-zinc-200 text-indigo-600 hover:bg-zinc-300 hover:text-indigo-700 dark:bg-zinc-700 dark:hover:bg-zinc-800 dark:text-indigo-300 dark:hover:text-indigo-400 font-semibold py-2 px-4 mb-2 rounded-md cursor-pointer"
-                onClick={() => router.push(`/search?keyword=${keyword}`)}
-              >
-                {keyword}
-              </li>
-            ))}
-          </ul>
+          <Keyword keywords={post.keywords} />
         </section>
 
         {/* 같은 카테고리 게시글들 */}
@@ -149,12 +150,12 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
           {toggleCategory && (
             <ul className="space-y-1">
               {categorizedPosts?.posts.map((post, index) => (
-                <li key={post.id}>
+                <li key={post.idx}>
                   <span className="dark:text-gray-400">{index + 1}. </span>
                   <Link href={`/${post.user.name}/${post.title}`}>
                     <a
                       className={combineClassNames(
-                        "font-semibold",
+                        "font-semibold hover:text-indigo-500",
                         router.query.title === post.title
                           ? "text-indigo-400"
                           : ""
@@ -177,7 +178,7 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
 
         {/* 섬네일 */}
         <section>
-          {post.thumbnail.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
+          {post.thumbnail?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
             <Photo
               photo={post.thumbnail}
               size="w-full h-80"
@@ -220,7 +221,7 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
         <hr />
 
         {/* 댓글 영역 */}
-        <CommentContainer postIdx={post.id} />
+        <CommentContainer postIdx={post.idx} allCount={post._count.comment} />
       </article>
 
       <hr />
@@ -232,7 +233,7 @@ const PostDetail: NextPage<ResponseOfDetalPost> = ({ ok, post }) => {
         </span>
         <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {relevantPosts?.posts.map((post) => (
-            <Post key={post.id} post={post} photoSize="w-full h-[200px]" />
+            <Post key={post.idx} post={post} photoSize="w-full h-[200px]" />
           ))}
         </ul>
       </section>

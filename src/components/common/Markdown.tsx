@@ -14,9 +14,18 @@ const Markdown = ({ markdown }: Props) => {
       className="py-4 px-8 prose dark:prose-invert whitespace-normal max-w-full"
       remarkPlugins={[remarkGfm]}
       components={{
-        p: ({ node, ...props }) => (
-          <p {...props} className="whitespace-pre-line" />
-        ),
+        p: ({ node, ...props }) => {
+          // <img />를 렌더링 하는 경우에 <p>내부에서 렌더링 되지 않도록 하기 위함
+          if (typeof props.children[0] === "object") {
+            const element: any = props.children[0];
+            return element.type.name === "img" ? (
+              { ...element }
+            ) : (
+              <p {...props} />
+            );
+          }
+          return <p {...props} className="whitespace-pre-line" />;
+        },
         code: ({ node, inline, ...props }) => (
           <code
             {...props}
@@ -36,18 +45,20 @@ const Markdown = ({ markdown }: Props) => {
           />
         ),
         img: ({ node, ...props }) => (
-          <>
-            {props.src?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
-              <Photo
-                {...props}
-                photo={props.src}
-                size="w-full h-80"
-                className="m-0"
-              />
-            ) : (
-              <img {...props} className="w-full h-80 m-0" />
-            )}
-          </>
+          <div>
+            <>
+              {props.src?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
+                <Photo
+                  {...props}
+                  photo={props.src}
+                  size="w-full h-80"
+                  className="m-0"
+                />
+              ) : (
+                <img {...props} className="w-full h-80 m-0" />
+              )}
+            </>
+          </div>
         ),
         h1: ({ node, ...props }) => (
           <h1 id={props.children[0]?.toString()} {...props} />

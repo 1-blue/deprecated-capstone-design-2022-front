@@ -9,13 +9,13 @@ type User = {
   avatar?: string;
   introduction?: string;
 };
-
 type SimpleUser = {
   idx: number;
   name: string;
   avatar?: string;
   introduction?: string;
 };
+
 type Post = {
   idx: number;
   title: string;
@@ -29,10 +29,20 @@ type Post = {
   userIdx: number;
   categoryIdx: number;
 };
-
-type Category = {
+type SimplePost = {
   idx: number;
-  category: string;
+  title: string;
+  updatedAt: Date;
+  summary: string;
+  thumbnail?: string;
+};
+
+type Keyword = {
+  idx: number;
+  keyword: string;
+};
+type SimpleKeyword = {
+  keyword: string;
 };
 
 type Comment = {
@@ -45,34 +55,27 @@ type Comment = {
   commentIdx?: number;
 };
 
-type PostKeyword = {
-  postIdx: number;
-  keywordIdx: number;
-  contents: string;
-};
-
-type UserPost = {
-  userIdx: number;
-  postIdx: number;
-};
-
-type Keyword = {
-  idx: number;
-  keyword: string;
-};
-
-interface IPostWithUser extends Post {
+interface IPostWithUserAndCount extends Post {
   user: SimpleUser;
+  _count: {
+    comment: number;
+    favorite: number;
+  };
 }
-interface IPostWithUserKeyword extends IPostWithUser {
-  keywords: Keyword[];
+interface IPostWithUserAndKeywordAndCount extends Post {
+  user: SimpleUser;
+  keywords: SimpleKeyword[];
+  _count: {
+    comment: number;
+    favorite: number;
+  };
+}
+interface ICommentWithUser extends Comment {
+  user: SimpleUser;
+  recomments?: ICommentWithUser[];
 }
 interface IRecommentWithUser extends Comment {
   user: SimpleUser;
-}
-interface ICommentWithUser extends Comment {
-  user: simpleUser;
-  recomments?: IRecommentWithUser[];
 }
 ```
 
@@ -210,7 +213,7 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  posts: IPostWithUser[];
+  posts: IPostWithUserAndCount[];
 }
 ```
 
@@ -223,7 +226,7 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  post: IPostWithUserKeyword[];
+  post: IPostWithUserAndKeywordAndCount[];
 }
 ```
 
@@ -236,7 +239,7 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  posts: IPostWithUser[];
+  posts: IPostWithUserAndCount[];
 }
 ```
 
@@ -249,7 +252,7 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  posts: IPostWithUser[];
+  posts: IPostWithUserAndCount[];
 }
 ```
 
@@ -411,7 +414,7 @@ interface ICommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  post: IPostWithUserKeyword;
+  post: IPostWithUserAndKeywordAndCount;
 }
 ```
 

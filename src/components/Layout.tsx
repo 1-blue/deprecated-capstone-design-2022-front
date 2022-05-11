@@ -1,5 +1,7 @@
 // component
 import Header from "@src/components/Header";
+
+// util
 import { combineClassNames } from "@src/libs/util";
 
 type Props = {
@@ -20,7 +22,7 @@ const Layout = ({
       {/* 메인 컨텐츠 */}
       <main
         className={combineClassNames(
-          "w-full mx-auto space-y-4 dark:text-white",
+          "w-full mx-auto dark:text-white",
           nonResposive
             ? ""
             : "px-4 sm:max-w-[540px] md:max-w-[868px] lg:max-w-[940px] xl:max-w-[1100px] 2xl:max-w-[1400px]"

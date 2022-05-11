@@ -10,28 +10,22 @@ import CommentForm from "./CommentForm";
 import Comment from "./Comment";
 
 // type
-import { Comment as CommentType, SimpleUser } from "@src/types";
+import type { ICommentWithUser } from "@src/types";
 
 // hook
 import useMutation from "@src/hooks/useMutation";
 
-export interface IRecommentWithUser extends CommentType {
-  user: SimpleUser;
-}
-export interface ICommentWithUser extends CommentType {
-  user: SimpleUser;
-  recomments?: IRecommentWithUser[];
-}
-export type CommentsResponse = {
+export type ResponseOfComments = {
   ok: boolean;
   comments: ICommentWithUser[];
 };
 
 type Props = {
   postIdx: number;
+  allCount: number;
 };
 
-const CommentContainer = ({ postIdx }: Props) => {
+const CommentContainer = ({ postIdx, allCount }: Props) => {
   const router = useRouter();
 
   // 2022/05/02 - 보여줄 댓글 개수 - by 1-blue
@@ -48,7 +42,7 @@ const CommentContainer = ({ postIdx }: Props) => {
     setSize,
     mutate: commentsMutate,
     isValidating: commentsLoading,
-  } = useSWRInfinite<CommentsResponse>(
+  } = useSWRInfinite<ResponseOfComments>(
     router.query.title
       ? (pageIndex, previousPageData) => {
           if (previousPageData && previousPageData.comments.length !== offset) {
@@ -72,7 +66,7 @@ const CommentContainer = ({ postIdx }: Props) => {
   return (
     <>
       <section className="space-y-2">
-        <span className="font-semibold">{"n"}개의 댓글</span>
+        <span className="font-semibold">{allCount}개의 댓글</span>
         {/* 댓글 입력 폼 */}
         <CommentForm
           postIdx={postIdx}

@@ -20,7 +20,7 @@ const TitleNav = ({ contents }: Props) => {
   }, [setTitleList, contents]);
 
   return (
-    <nav className="fixed top-[10%] right-[4%] hidden 2xl:flex flex-col space-y-1 pl-2 border-l border-gray-500 dark:border-gray-400">
+    <nav className="fixed top-[14%] right-[4%] hidden 2xl:flex flex-col space-y-1 pl-2 border-l border-gray-500 dark:border-gray-400">
       {titleList?.map(({ text, size }) => (
         <a
           href={`#${text}`}

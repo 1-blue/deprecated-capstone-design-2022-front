@@ -3,16 +3,13 @@ import { useCallback } from "react";
 // type
 import { ICON } from "@src/types";
 
-// util
-import { combineClassNames } from "@src/libs/util";
-
 type Props = {
   icon: ICON;
   className?: string;
   $fill?: boolean;
 };
 
-const Icon = ({ icon, className, $fill }: Props) => {
+const Icon = ({ icon, className = "", $fill }: Props) => {
   // 2022/04/10 - 요청한 일반 아이콘 - by 1-blue
   const getIcon = useCallback((shape: ICON) => {
     switch (shape) {
@@ -220,7 +217,7 @@ const Icon = ({ icon, className, $fill }: Props) => {
       {$fill ? (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={combineClassNames("h-5 w-5", className ? className : "")}
+          className={className}
           viewBox="0 0 20 20"
           fill="currentColor"
         >
@@ -229,7 +226,7 @@ const Icon = ({ icon, className, $fill }: Props) => {
       ) : (
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className={combineClassNames("", className ? className : "")}
+          className={className}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

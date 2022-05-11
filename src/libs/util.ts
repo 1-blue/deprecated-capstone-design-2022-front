@@ -26,3 +26,29 @@ export const getTitleList = (sentence: string) => {
 // 2022/05/07 - 이미지 경로 붙여주는 헬퍼함수 - by 1-blue
 export const combinePhotoUrl = (photo: string) =>
   `http://localhost:3000/${photo}`;
+
+// 2022/05/11 - 스로틀 헬퍼 함수 - by 1-blue
+export const throttleHelper = (callback: () => void, waitTime: number) => {
+  let timerId: ReturnType<typeof setTimeout> | null = null;
+
+  return () => {
+    if (timerId) return;
+    timerId = setTimeout(() => {
+      callback();
+      timerId = null;
+    }, waitTime);
+  };
+};
+
+// 2022/05/11 - 디바운스 헬퍼 함수 - by 1-blue
+export const dedounceHelper = (callback: () => void, waitTime: number) => {
+  let timerId: ReturnType<typeof setTimeout> | null = null;
+
+  return () => {
+    if (timerId) clearTimeout(timerId);
+    timerId = setTimeout(() => {
+      callback();
+      timerId = null;
+    }, waitTime);
+  };
+};

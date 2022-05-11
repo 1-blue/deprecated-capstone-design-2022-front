@@ -2,7 +2,7 @@
 import Photo from "@src/components/common/Photo";
 
 // type
-import { IRecommentWithUser } from "./CommentContainer";
+import type { IRecommentWithUser } from "@src/types";
 
 // hooks
 import useMe from "@src/hooks/useMe";
@@ -35,7 +35,7 @@ const Recomment = ({ recomment, onRemoveRecomment }: Props) => {
           </time>
         </div>
         <div className="flex-1" />
-        {recomment.user.id === me?.id && (
+        {recomment.user.idx === me?.idx && (
           <button
             type="button"
             className="self-start text-gray-400 hover:text-white"
@@ -47,7 +47,9 @@ const Recomment = ({ recomment, onRemoveRecomment }: Props) => {
       </div>
 
       {/* 내용 */}
-      <p className="whitespace-pre-line">{recomment.contents}</p>
+      <p className="whitespace-pre-line p-4 rounded-md bg-zinc-200 dark:bg-zinc-700">
+        {recomment.contents}
+      </p>
     </li>
   );
 };

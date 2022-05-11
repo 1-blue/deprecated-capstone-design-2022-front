@@ -7,7 +7,7 @@ import type { KeyedMutator } from "swr";
 import Button from "@src/components/common/Button";
 
 // type
-import { CommentsResponse } from "./CommentContainer";
+import type { ResponseOfComments } from "./CommentContainer";
 
 // hook
 import useMe from "@src/hooks/useMe";
@@ -23,7 +23,7 @@ type Props = {
   postIdx: number;
   addComment: (body: any) => void;
   addCommentLoading: boolean;
-  commentsMutate: KeyedMutator<CommentsResponse[]>;
+  commentsMutate: KeyedMutator<ResponseOfComments[]>;
   commentIdx?: number;
 };
 
@@ -37,7 +37,7 @@ const CommentForm = ({
   const { me } = useMe();
 
   // 2022/04/30 - 댓글 입력 관련 메서드들 - by 1-blue
-  const { handleSubmit, register } = useForm<CommentForm>();
+  const { handleSubmit, register, reset } = useForm<CommentForm>();
   // 2022/04/30 - comment Ref - by 1-blue
   const { ref, ...rest } = register("comment");
   const commentRef = useRef<HTMLTextAreaElement | null>(null);
@@ -86,8 +86,10 @@ const CommentForm = ({
           }),
         false
       );
+
+      reset();
     },
-    [addCommentLoading, addComment, commentsMutate, postIdx, me]
+    [addCommentLoading, addComment, commentsMutate, postIdx, me, reset]
   );
   // 2022/05/05 - 답글 추가 - by 1-blue
   const onAddRecomment = useCallback(
@@ -141,8 +143,18 @@ const CommentForm = ({
           })),
         false
       );
+
+      reset();
     },
-    [addCommentLoading, addComment, commentsMutate, postIdx, me, commentIdx]
+    [
+      addCommentLoading,
+      addComment,
+      commentsMutate,
+      postIdx,
+      me,
+      commentIdx,
+      reset,
+    ]
   );
 
   return (
@@ -174,6 +186,7 @@ const CommentForm = ({
         )}
         contents="댓글 작성"
         loading={addCommentLoading}
+        loadingText="댓글 생성중"
       />
     </form>
   );

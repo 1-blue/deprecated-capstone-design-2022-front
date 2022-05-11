@@ -10,7 +10,8 @@ import Recomment from "./Recomment";
 import CommentForm from "./CommentForm";
 
 // type
-import { CommentsResponse, ICommentWithUser } from "./CommentContainer";
+import type { ICommentWithUser } from "@src/types";
+import type { ResponseOfComments } from "./CommentContainer";
 
 // hooks
 import useMe from "@src/hooks/useMe";
@@ -21,7 +22,7 @@ import { timeFormat } from "@src/libs/dateFormat";
 type Props = {
   postIdx: number;
   comment: ICommentWithUser;
-  commentsMutate: KeyedMutator<CommentsResponse[]>;
+  commentsMutate: KeyedMutator<ResponseOfComments[]>;
   addComment: (body: any) => void;
   addCommentLoading: boolean;
 };
@@ -104,7 +105,7 @@ const Comment = ({
           </time>
         </div>
         <div className="flex-1" />
-        {comment.user.id === me?.id && (
+        {comment.user.idx === me?.idx && (
           <button
             type="button"
             className="self-start text-gray-400 hover:text-white"
@@ -116,7 +117,9 @@ const Comment = ({
       </div>
 
       {/* 내용 */}
-      <p className="whitespace-pre-line">{comment.contents}</p>
+      <p className="whitespace-pre-line p-4 rounded-md bg-zinc-200 dark:bg-zinc-700">
+        {comment.contents}
+      </p>
 
       {/* 답글/답글폼 토글 버튼 */}
       <button type="button" onClick={() => setToggleRecomment((prev) => !prev)}>
