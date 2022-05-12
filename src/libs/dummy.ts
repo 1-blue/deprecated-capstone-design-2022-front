@@ -248,3 +248,25 @@ export const getLikers = () =>
       avatar: "/avatar.png",
       introduction: "테스트 아무말" + i,
     }));
+
+export const getTempPosts = (page: number) => {
+  if (page === 0) {
+    return Array(6)
+      .fill(null)
+      .map((v, i) => ({
+        idx: i,
+        title: "임시 저장 게시글" + i,
+        updatedAt: Date.now(),
+        summary: "임시 저장 내🐲\n༼ つ ◕_◕ ༽つ\n( ´･･)ﾉ(._.`)" + i,
+      }));
+  } else if (page === 1) {
+    return Array(3)
+      .fill(null)
+      .map((v, i) => ({
+        idx: i,
+        title: "추가된 임시 저장 게시글" + i,
+        updatedAt: Date.now(),
+        summary: "추가된 임시 저장 내🐲" + i,
+      }));
+  }
+};

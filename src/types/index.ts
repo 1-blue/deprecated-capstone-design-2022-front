@@ -31,7 +31,7 @@ export type Post = {
 };
 // 2022/04/30 - 단축 게시글 타입 - by 1-blue
 export type SimplePost = {
-  id: number;
+  idx: number;
   title: string;
   updatedAt: Date;
   summary: string;
