@@ -486,3 +486,18 @@ interface IRecommentWithUser extends Comment {
   categorys: string[];
 }
 ```
+
+## 9. 리스트
+
+### 9.1 GET /api/lists/liked
+
+- 목적: 로그인한 유저가 좋아요 누른 게시글들 요청
+- 전송: `cookie`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  posts: IPostWithUserAndCount[];
+}
+```
