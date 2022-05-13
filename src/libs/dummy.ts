@@ -270,3 +270,22 @@ export const getTempPosts = (page: number) => {
       }));
   }
 };
+
+export const getLikedPosts = () =>
+  Array(7)
+    .fill(null)
+    .map((v, i) => ({
+      idx: i,
+      title: "좋아요 누른 게시글",
+      updatedAt: Date.now(),
+      summary: "좋아요\n༼ つ ◕_◕ ༽つ",
+      thumbnail: "/cat.jpg",
+      user: {
+        idx: 1,
+        name: "유저",
+      },
+      _count: {
+        comment: 123,
+        favorite: 25,
+      },
+    }));
