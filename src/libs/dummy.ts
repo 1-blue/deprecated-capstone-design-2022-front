@@ -1,5 +1,7 @@
 export const getMe = () => ({
   idx: 0,
+  id: "admin@naver.com",
+  password: "asld123nakkf!@#askfdas",
   name: "관리자",
   avatar: "/avatar.png",
   introduction: "기록과 정리를 좋아하는 개발자입니다! 👏",
