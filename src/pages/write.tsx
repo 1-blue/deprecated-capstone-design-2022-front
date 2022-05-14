@@ -20,7 +20,10 @@ import useToastMessage from "@src/hooks/useToastMessage";
 
 // type
 import { ICON } from "@src/types";
-import type { IPostWithUserAndKeywordAndCount } from "@src/types";
+import type {
+  IPostWithUserAndKeywordAndCount,
+  ResponseOfPhoto,
+} from "@src/types";
 
 export type WriteForm = {
   title: string;
@@ -34,10 +37,7 @@ export type ResponseOfCreatedPost = {
 interface IResponseOfCreatedTemparoryPost extends ResponseOfCreatedPost {
   tempPostIdx?: number;
 }
-export type ResponseOfPhoto = {
-  ok: boolean;
-  photoUrl: string;
-};
+
 export type PostMetadata = {
   summary: string;
   isPrivate: boolean;
