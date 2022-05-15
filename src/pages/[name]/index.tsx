@@ -97,8 +97,8 @@ const Profile: NextPage<Props> = ({ user }) => {
       <ProfileNav avatar={user.avatar} name={user.name} />
 
       {/* 게시글 리스트 */}
-      <article className="md:mx-auto md:w-3/5">
-        <ul className="space-y-4 divide-y mt-8">{list}</ul>
+      <article className="md:mx-auto md:w-3/5 mt-8">
+        <ul className="space-y-4 divide-y">{list}</ul>
       </article>
     </>
   );
