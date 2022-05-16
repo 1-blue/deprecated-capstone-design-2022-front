@@ -44,7 +44,7 @@ export type User = {
   id: string;
   password: string;
   name: string;
-  avatar?: string;
+  avatar?: string | null;
   introduction?: string;
 };
 // 2022/04/10 - 단축 유저 타입 - by 1-blue
@@ -102,3 +102,9 @@ export interface ICommentWithUser extends Comment {
 export interface IRecommentWithUser extends Comment {
   user: SimpleUser;
 }
+
+// 2022/05/14 - 이미지 생성 요청 응답 타입 - by 1-blue
+export type ResponseOfPhoto = {
+  ok: boolean;
+  photoUrl: string;
+};

@@ -18,9 +18,9 @@ import { combineClassNames } from "@src/libs/util";
 
 // type
 import { ICON } from "@src/types";
+import type { ResponseOfPhoto } from "@src/types";
 import type {
   ResponseOfCreatedPost,
-  ResponseOfPhoto,
   PostMetadata,
   WriteForm,
 } from "@src/pages/write";

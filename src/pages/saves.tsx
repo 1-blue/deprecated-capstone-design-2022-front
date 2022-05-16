@@ -117,13 +117,13 @@ const Saves: NextPage = () => {
     <>
       <h1 className="text-center font-bold text-4xl mb-16">임시 글 목록</h1>
 
-      <ul className="mx-auto w-3/5 space-y-4 divide-y">{list}</ul>
+      <ul className="md:mx-auto md:w-3/5 space-y-4 divide-y">{list}</ul>
 
       {isOpen && (
         <Modal ref={modalRef} primary noScroll>
-          <div className="w-[400px] p-6 rounded-sm space-y-4 dark:bg-zinc-800">
+          <div className="w-[400px] p-6 rounded-sm space-y-4 bg-zinc-200 dark:bg-zinc-800">
             <h4 className="text-xl font-bold">임시 게시글 삭제</h4>
-            <p className="whitespace-pre text-sm text-gray-300">
+            <p className="whitespace-pre text-sm text-gray-600 dark:text-gray-300">
               {
                 "임시 저장한 게시글을 삭제하시겠습니까?\n삭제한 게시글은 복구할 수 없습니다."
               }
@@ -131,13 +131,13 @@ const Saves: NextPage = () => {
             <div className="text-right space-x-4 pt-4">
               <button
                 type="button"
-                className="py-2 px-4 dark:bg-indigo-400 dark:hover:bg-indigo-500 rounded-lg"
+                className="py-2 px-4 text-white bg-indigo-400 hover:bg-indigo-500 rounded-lg"
               >
                 취소
               </button>
               <button
                 type="button"
-                className="py-2 px-4 dark:bg-indigo-400 dark:hover:bg-indigo-500 rounded-lg"
+                className="py-2 px-4 text-white bg-indigo-400 hover:bg-indigo-500 rounded-lg"
                 onClick={onClickRemove}
               >
                 확인
