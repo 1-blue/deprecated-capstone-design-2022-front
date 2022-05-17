@@ -18,6 +18,7 @@ import { combineClassNames } from "@src/libs/util";
 
 // type
 import { ICON } from "@src/types";
+import type { ICategoryWithCount } from "@src/types";
 import type { ResponseOfPhoto } from "@src/types";
 import type {
   ResponseOfCreatedPost,
@@ -27,7 +28,7 @@ import type {
 
 type CategoryResponse = {
   ok: true;
-  categorys: string[];
+  categorys: ICategoryWithCount[];
 };
 type CategoryForm = {
   category: string;
@@ -126,7 +127,15 @@ const InputSetting = ({
         (prev) =>
           prev && {
             ...prev,
-            categorys: [...prev?.categorys, body.category],
+            categorys: [
+              ...prev?.categorys,
+              {
+                category: body.category,
+                _count: {
+                  post: 1,
+                },
+              },
+            ],
           },
         false
       );
@@ -223,7 +232,7 @@ const InputSetting = ({
             </form>
 
             <ul className="flex flex-col divide-y bg-zinc-300 dark:bg-zinc-700 overflow-auto mb-9">
-              {categoryResponse?.categorys.map((category) => (
+              {categoryResponse?.categorys.map(({ category }) => (
                 <button
                   type="button"
                   key={category}

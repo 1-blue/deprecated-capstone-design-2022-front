@@ -9,15 +9,60 @@ export default async function handler(
   return res.status(200).json({
     ok: true,
     categorys: [
-      "React.js",
-      "Vue.js",
-      "Node.js",
-      "Docker",
-      "JavaScript",
-      "TypeScript",
-      "Next.js",
-      "HTML",
-      "CSS",
+      {
+        category: "React.js",
+        _count: {
+          post: 12,
+        },
+      },
+      {
+        category: "Vue.js",
+        _count: {
+          post: 21,
+        },
+      },
+      {
+        category: "Node.js",
+        _count: {
+          post: 5,
+        },
+      },
+      {
+        category: "Docker",
+        _count: {
+          post: 9,
+        },
+      },
+      {
+        category: "JavaScript",
+        _count: {
+          post: 11,
+        },
+      },
+      {
+        category: "TypeScript",
+        _count: {
+          post: 19,
+        },
+      },
+      {
+        category: "Next.js",
+        _count: {
+          post: 31,
+        },
+      },
+      {
+        category: "HTML",
+        _count: {
+          post: 2,
+        },
+      },
+      {
+        category: "CSS",
+        _count: {
+          post: 6,
+        },
+      },
     ],
   });
 }

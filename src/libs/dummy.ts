@@ -7,7 +7,11 @@ export const getMe = () => ({
   introduction: "기록과 정리를 좋아하는 개발자입니다! 👏",
 });
 
-export const getDummyPosts = (kinds: string, page: number, keyword: string) => {
+export const getDummyPosts = (
+  kinds: string,
+  page: number,
+  keyword?: string
+) => {
   // 검색 테스트
   if (keyword) {
     if (keyword.toLocaleLowerCase().includes("react")) {
@@ -84,7 +88,7 @@ export const getDummyPosts = (kinds: string, page: number, keyword: string) => {
         i +
         page * 10,
       thumbnail: i % 2 ? "/cat.jpg" : "/venice.jpg",
-      updatedAt: new Date(),
+      updatedAt: Date.now() - 1000 * 60 * 60 * 24 * i,
       user: {
         idx: 1,
         name: "유저" + i,
