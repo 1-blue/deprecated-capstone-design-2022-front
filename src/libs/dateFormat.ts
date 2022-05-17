@@ -71,6 +71,14 @@ export const timeFormat = (value: Date | number): string => {
   return `${Math.floor(temp / 1000 / 60 / 60 / 24 / 30 / 12)}년전`;
 };
 
+// 일주일 이내면 시간 아니면 날짜로 반환
+export const dateOrTimeFormat = (value: Date | number, format: string) => {
+  // 일주일 이후
+  if (Date.now() - new Date(value).getTime() > 1000 * 60 * 60 * 24 * 7)
+    return dateFormat(value, format);
+  else return timeFormat(value);
+};
+
 // 플레이 시간 변환기
 export const timeConverter = (duration: string | number): string => {
   if (+duration >= 60) {

@@ -55,6 +55,12 @@ type Comment = {
   commentIdx?: number;
 };
 
+interface ICategoryWithCount {
+  category: string;
+  _count: {
+    post: number;
+  }
+}
 interface IPostWithUserAndCount extends Post {
   user: SimpleUser;
   _count: {
@@ -87,11 +93,10 @@ interface IRecommentWithUser extends Comment {
 1. 게시글 좋아요 => User, Post => N : M
 
 ## 1. 유저
-
-### 1.1 GET /api/user/:userId
+### 1.1 GET /api/user/:name
 
 - 목적: 특정 유저의 간단한 정보 요청
-- 전송: `userId`
+- 전송: `name`
 - 응답
 
 ```typescript
@@ -172,6 +177,32 @@ interface IRecommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
+}
+```
+
+### 1.6 GET /api/user/:name/posts?page=page&offset=offset&kinds=kinds
+
+- 목적: 특정 유저의 게시글들 정보 요청
+- 전송: `name`, `page`, `offset`, `kinds`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  posts: IPostWithUserAndCount[];
+}
+```
+
+### 1.7 GET /api/user/:name/category/:category
+
+- 목적: 특정 유저의 특정 카테고리에 해당하는 게시글들 요청
+- 전송: `name`, `category`
+- 응답
+
+```typescript
+{
+  ok: boolean;
+  posts: IPostWithUserAndCount[];
 }
 ```
 
@@ -483,7 +514,7 @@ interface IRecommentWithUser extends Comment {
 ```typescript
 {
   ok: boolean;
-  categorys: string[];
+  categorys: ICategoryWithCount[];
 }
 ```
 
