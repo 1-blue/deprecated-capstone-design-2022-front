@@ -10,14 +10,16 @@ import CommentForm from "./CommentForm";
 import Comment from "./Comment";
 
 // type
-import type { ICommentWithUser } from "@src/types";
+import type { ICommentWithUser, ResponseStatus } from "@src/types";
 
 // hook
 import useMutation from "@src/hooks/useMutation";
 
 export type ResponseOfComments = {
-  ok: boolean;
-  comments: ICommentWithUser[];
+  status: ResponseStatus;
+  data: {
+    comments: ICommentWithUser[];
+  };
 };
 
 type Props = {
@@ -45,11 +47,17 @@ const CommentContainer = ({ postIdx, allCount }: Props) => {
   } = useSWRInfinite<ResponseOfComments>(
     router.query.title
       ? (pageIndex, previousPageData) => {
-          if (previousPageData && previousPageData.comments.length !== offset) {
+          if (
+            previousPageData?.data &&
+            previousPageData.data.comments.length !== offset
+          ) {
             setHasMoreComment(false);
             return null;
           }
-          if (previousPageData && !previousPageData.comments.length) {
+          if (
+            previousPageData?.data &&
+            !previousPageData.data.comments.length
+          ) {
             setHasMoreComment(false);
             return null;
           }
@@ -79,7 +87,7 @@ const CommentContainer = ({ postIdx, allCount }: Props) => {
       <section className="divide-y">
         <>
           {/* 댓글들 */}
-          {commentsResponse?.map(({ comments }, index) => {
+          {commentsResponse?.map(({ data: { comments } }, index) => {
             if (showCount > index)
               return (
                 <ul key={index} className="divide-y dark:divide-gray-400">

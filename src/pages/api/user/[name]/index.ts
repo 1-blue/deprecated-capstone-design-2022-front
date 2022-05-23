@@ -9,7 +9,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     case "GET":
       console.log(req.query.name, " 유저 정보 요청");
 
-      return res.status(200).json({ ok: true, user: getMe() });
+      return res
+        .status(200)
+        .json({ status: { ok: true }, data: { user: getMe() } });
 
     default:
       break;

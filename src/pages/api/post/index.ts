@@ -22,7 +22,12 @@ export default async function handler(
         }, 2000);
       });
 
-      return res.status(200).json({ ok: true, title });
+      return res.status(200).json({
+        status: {
+          ok: true,
+        },
+        data: { title },
+      });
 
     default:
       return res.status(200).json({ ok: true, message: "게시글... 아무것도" });

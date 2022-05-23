@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 
 // type
 import type { NextPage } from "next";
-import type { SimplePost } from "@src/types";
+import type { ResponseStatus, SimplePost } from "@src/types";
 
 // common-component
 import Modal from "@src/components/common/Modal";
@@ -19,8 +19,10 @@ import useModal from "@src/hooks/useModal";
 import { timeFormat } from "@src/libs/dateFormat";
 
 type ResponseOfTempPosts = {
-  ok: boolean;
-  posts: SimplePost[];
+  status: ResponseStatus;
+  data: {
+    posts: SimplePost[];
+  };
 };
 
 const Saves: NextPage = () => {
@@ -40,11 +42,14 @@ const Saves: NextPage = () => {
     setSize,
     mutate: tempPostsMutate,
   } = useSWRInfinite<ResponseOfTempPosts>((pageIndex, previousPageData) => {
-    if (previousPageData && previousPageData.posts.length !== offset) {
+    if (
+      previousPageData?.data &&
+      previousPageData?.data.posts.length !== offset
+    ) {
       setHasMorePost(false);
       return null;
     }
-    if (previousPageData && !previousPageData.posts.length) {
+    if (previousPageData?.data && !previousPageData?.data.posts.length) {
       setHasMorePost(false);
       return null;
     }
@@ -60,8 +65,8 @@ const Saves: NextPage = () => {
   // 2022/05/12 - 게시글 담기 - by 1-blue
   useEffect(() => {
     setList(
-      responseTempPosts?.map(({ posts }) =>
-        posts?.map((post) => (
+      responseTempPosts?.map(({ data: { posts } }) =>
+        posts.map((post) => (
           <li key={post.idx} className="pt-4">
             <Link href={`/write?title=${post.title}`}>
               <a className="space-y-4">
@@ -103,9 +108,11 @@ const Saves: NextPage = () => {
     tempPostsMutate(
       (prev) =>
         prev &&
-        prev.map((posts) => ({
-          ...posts,
-          posts: posts.posts.filter((post) => post.title !== title),
+        prev.map((body) => ({
+          ...body,
+          data: {
+            posts: body.data.posts.filter((post) => post.title !== title),
+          },
         })),
       false
     );

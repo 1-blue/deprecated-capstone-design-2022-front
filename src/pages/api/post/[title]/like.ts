@@ -24,8 +24,12 @@ export default async function handler(
       });
 
       return res.status(200).json({
-        ok: true,
-        likers: getLikers(),
+        status: {
+          ok: true,
+        },
+        data: {
+          likers: getLikers(),
+        },
       });
     case "POST":
       console.log("특정 게시글에 좋아요 추가 ( 1초 대기 ) >> ", title);
@@ -36,7 +40,7 @@ export default async function handler(
         }, 1000);
       });
 
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ status: { ok: true } });
     case "DELETE":
       console.log("특정 게시글에 좋아요 제거 ( 1초 대기 ) >> ", title);
 
@@ -46,7 +50,7 @@ export default async function handler(
         }, 1000);
       });
 
-      return res.status(200).json({ ok: true, message: "게시글 제거 성공" });
+      return res.status(200).json({ status: { ok: true } });
 
     default:
       return res

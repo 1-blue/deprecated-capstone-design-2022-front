@@ -23,5 +23,10 @@ export default async function handler(
     );
   }
 
-  res.status(200).json({ posts: getDummyPosts(kinds, page, keyword) });
+  res
+    .status(200)
+    .json({
+      status: { ok: true },
+      data: { posts: getDummyPosts(kinds, page, keyword) },
+    });
 }

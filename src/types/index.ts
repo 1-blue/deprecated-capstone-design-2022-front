@@ -72,6 +72,7 @@ export type Comment = {
   createdAt: Date;
   updatedAt: Date;
 
+  userIdx: number;
   postIdx: number;
   commentIdx?: number;
 };
@@ -105,8 +106,10 @@ export interface IRecommentWithUser extends Comment {
 
 // 2022/05/14 - 이미지 생성 요청 응답 타입 - by 1-blue
 export type ResponseOfPhoto = {
-  ok: boolean;
-  photoUrl: string;
+  status: ResponseStatus;
+  data: {
+    photoUrl: string;
+  };
 };
 
 // 2022/05/16 - 카테고리와 소속 게시글 개수 타입 - by 1-blue
@@ -116,3 +119,8 @@ export interface ICategoryWithCount {
     post: number;
   };
 }
+
+// 2022/05/24 - 응답 타입 - by 1-blue
+export type ResponseStatus = {
+  ok: boolean;
+};

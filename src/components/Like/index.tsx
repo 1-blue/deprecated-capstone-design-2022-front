@@ -15,11 +15,14 @@ import { combineClassNames } from "@src/libs/util";
 
 // type
 import { ICON } from "@src/types";
+import type { ResponseStatus } from "@src/types";
 import type { SimpleUser } from "@src/types";
 
 type ResponseOfLikers = {
-  ok: boolean;
-  likers: SimpleUser[];
+  status: ResponseStatus;
+  data: {
+    likers: SimpleUser[];
+  };
 };
 
 const Like = () => {
@@ -38,15 +41,15 @@ const Like = () => {
   // 2022/05/03 - 게시글 좋아요 제거관련 메서드 - by 1-blue
   const [removeLike, { loading: removeLikeLoading }] = useMutation({
     url: `/api/post/${router.query.title}/like`,
-    method: "POST",
+    method: "DELETE",
   });
   // 2022/05/03 - 본인이 좋아요 눌렀는지 여부 - by 1-blue
   const [isMineLiked, setIsMineLiked] = useState(false);
   // 2022/05/03 - 본인 좋아요 초기화 - by 1-blue
   useEffect(() => {
-    if (likerResponse?.ok) {
+    if (likerResponse?.status.ok) {
       setIsMineLiked(
-        !!likerResponse.likers.find((liker) => liker.idx === me?.idx)
+        !!likerResponse.data.likers.find((liker) => liker.idx === me?.idx)
       );
     }
   }, [likerResponse, setIsMineLiked, me]);
@@ -65,7 +68,9 @@ const Like = () => {
         (prev) =>
           prev && {
             ...prev,
-            likers: prev.likers.filter((liker) => liker.idx !== me.idx),
+            data: {
+              likers: prev.data.likers.filter((liker) => liker.idx !== me.idx),
+            },
           },
         false
       );
@@ -76,7 +81,17 @@ const Like = () => {
         (prev) =>
           prev && {
             ...prev,
-            likers: [...prev.likers, me],
+            data: {
+              likers: [
+                ...prev.data.likers,
+                {
+                  idx: me.idx,
+                  name: me.name,
+                  avatar: me.avatar || undefined,
+                  introduction: me.introduction,
+                },
+              ],
+            },
           },
         false
       );
@@ -114,7 +129,7 @@ const Like = () => {
         )}
       </button>
       <span className="font-semibold text-gray-600">
-        {likerResponse?.ok ? likerResponse.likers.length : 0}
+        {likerResponse?.status.ok ? likerResponse.data.likers.length : 0}
       </span>
     </aside>
   );

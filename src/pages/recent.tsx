@@ -3,7 +3,7 @@ import type { GetServerSideProps, NextPage } from "next";
 import useSWRInfinite from "swr/infinite";
 
 // type
-import type { IPostWithUserAndCount } from "@src/types";
+import type { IPostWithUserAndCount, ResponseStatus } from "@src/types";
 
 // component
 import Post from "@src/components/Post";
@@ -16,10 +16,13 @@ import HeadInfo from "@src/components/common/HeadInfo";
 import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
 
 type ResponseOfPosts = {
-  posts: IPostWithUserAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndCount[];
+  };
 };
 
-const Recent: NextPage<ResponseOfPosts> = ({ posts }) => {
+const Recent: NextPage<ResponseOfPosts> = (initialPosts) => {
   // 2022/05/06 - 게시글 offset - by 1-blue
   const [offset, setOffset] = useState(20);
   // 2022/05/06 - 게시글 추가 패치 가능 여부 - by 1-blue
@@ -27,11 +30,14 @@ const Recent: NextPage<ResponseOfPosts> = ({ posts }) => {
   // 2022/05/06 - 게시글 패치 관련 데이터 - by 1-blue
   const { data: responsePosts, setSize } = useSWRInfinite<ResponseOfPosts>(
     (pageIndex, previousPageData) => {
-      if (previousPageData && previousPageData.posts.length !== offset) {
+      if (
+        previousPageData?.data &&
+        previousPageData.data.posts.length !== offset
+      ) {
         setHasMorePost(false);
         return null;
       }
-      if (previousPageData && !previousPageData.posts.length) {
+      if (previousPageData?.data && !previousPageData.data.posts.length) {
         setHasMorePost(false);
         return null;
       }
@@ -39,7 +45,7 @@ const Recent: NextPage<ResponseOfPosts> = ({ posts }) => {
     },
     null,
     {
-      fallbackData: [{ posts }],
+      fallbackData: [initialPosts],
     }
   );
 
@@ -53,8 +59,8 @@ const Recent: NextPage<ResponseOfPosts> = ({ posts }) => {
   // 2022/05/06 - 게시글 담기 - by 1-blue
   useEffect(() => {
     setList(
-      responsePosts?.map(({ posts }) =>
-        posts?.map((post, i) => (
+      responsePosts?.map(({ data: { posts } }) =>
+        posts.map((post, i) => (
           <Post
             key={post.idx}
             post={post}
@@ -71,7 +77,7 @@ const Recent: NextPage<ResponseOfPosts> = ({ posts }) => {
       <HeadInfo
         title="최신 게시글"
         description="blelog의 게시글들 ( 최신순 )"
-        photo={responsePosts?.[0]?.posts?.[0]?.thumbnail}
+        photo={responsePosts?.[0].data.posts[0].thumbnail}
       />
 
       {/* 최신 게시글과 인기 게시글 네비게이터 */}

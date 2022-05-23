@@ -16,9 +16,13 @@ export default async function handler(
       console.log("같은 카테고리 게시글들 요청 >> ", title);
 
       return res.status(200).json({
-        ok: true,
-        category: "React.js",
-        posts: getCategorizedPosts(),
+        status: {
+          ok: true,
+        },
+        data: {
+          category: "React.js",
+          posts: getCategorizedPosts(),
+        },
       });
     case "POST":
       return res.status(200).json({ ok: true });

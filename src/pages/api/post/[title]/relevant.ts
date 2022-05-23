@@ -20,8 +20,12 @@ export default async function handler(
       console.log("게시글의 연관 게시글들 >> ", title);
 
       return res.status(200).json({
-        ok: true,
-        posts: getRelevantPosts(),
+        status: {
+          ok: true,
+        },
+        data: {
+          posts: getRelevantPosts(),
+        },
       });
     case "POST":
       return res.status(200).json({ ok: true });

@@ -47,9 +47,15 @@ const Comment = ({
       commentsMutate(
         (prev) =>
           prev &&
-          prev.map(({ comments }) => ({
-            ok: true,
-            comments: comments.filter((comment) => comment.idx !== commentIdx),
+          prev.map(({ data: { comments } }) => ({
+            status: {
+              ok: true,
+            },
+            data: {
+              comments: comments.filter(
+                (comment) => comment.idx !== commentIdx
+              ),
+            },
           })),
         false
       );
@@ -69,18 +75,22 @@ const Comment = ({
       commentsMutate(
         (prev) =>
           prev &&
-          prev.map(({ comments }) => ({
-            ok: true,
-            comments: comments.map((comment) => {
-              if (!comment.recomments) return comment;
+          prev.map(({ data: { comments } }) => ({
+            status: {
+              ok: true,
+            },
+            data: {
+              comments: comments.map((comment) => {
+                if (!comment.recomments) return comment;
 
-              return {
-                ...comment,
-                recomments: comment.recomments.filter(
-                  (recomment) => recomment.idx !== recommentIdx
-                ),
-              };
-            }),
+                return {
+                  ...comment,
+                  recomments: comment.recomments.filter(
+                    (recomment) => recomment.idx !== recommentIdx
+                  ),
+                };
+              }),
+            },
           })),
         false
       );

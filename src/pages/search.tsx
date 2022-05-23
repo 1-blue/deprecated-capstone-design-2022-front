@@ -19,12 +19,14 @@ import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
 import { dateFormat } from "@src/libs/dateFormat";
 
 // type
-import { ICON } from "@src/types";
+import { ICON, ResponseStatus } from "@src/types";
 import type { IPostWithUserAndKeywordAndCount } from "@src/types";
 
 type ResponseOfDetailPosts = {
-  ok: boolean;
-  posts: IPostWithUserAndKeywordAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndKeywordAndCount[];
+  };
 };
 
 const Search: NextPage = () => {
@@ -69,11 +71,14 @@ const Search: NextPage = () => {
   } = useSWRInfinite<ResponseOfDetailPosts>(
     debounce && (currentKeyword || router.query.keyword)
       ? (pageIndex, previousPageData) => {
-          if (previousPageData && previousPageData.posts.length !== offset) {
+          if (
+            previousPageData?.data &&
+            previousPageData.data.posts.length !== offset
+          ) {
             setHasMorePost(false);
             return null;
           }
-          if (previousPageData && !previousPageData.posts.length) {
+          if (previousPageData?.data && !previousPageData.data.posts.length) {
             setHasMorePost(false);
             return null;
           }
@@ -96,7 +101,7 @@ const Search: NextPage = () => {
     if (!responsePosts || responsePosts?.length === 0) return;
 
     setList(
-      responsePosts.map(({ posts }) =>
+      responsePosts.map(({ data: { posts } }) =>
         posts?.map((post) => (
           <li key={post.idx} className="space-y-4 pt-8">
             <Link href={`/${post.user.name}`}>

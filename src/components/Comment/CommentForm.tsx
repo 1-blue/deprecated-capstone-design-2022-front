@@ -80,7 +80,7 @@ const CommentForm = ({
                   user: me,
                   commentIdx: undefined,
                 },
-                ...comments.comments,
+                ...comments.data.comments,
               ],
             };
           }),
@@ -107,9 +107,9 @@ const CommentForm = ({
       commentsMutate(
         (prev) =>
           prev &&
-          prev.map((comments) => ({
-            ...comments,
-            comments: comments.comments.map((comment) => {
+          prev.map((commentBody) => ({
+            ...commentBody,
+            comments: commentBody.data.comments.map((comment) => {
               if (comment.idx !== commentIdx) return comment;
 
               return {
