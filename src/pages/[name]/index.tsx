@@ -22,13 +22,20 @@ import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
 import { dateOrTimeFormat } from "@src/libs/dateFormat";
 
 // type
-import type { IPostWithUserAndKeywordAndCount, SimpleUser } from "@src/types";
+import type {
+  IPostWithUserAndKeywordAndCount,
+  ResponseStatus,
+  SimpleUser,
+} from "@src/types";
 
 type Props = {
   user: SimpleUser;
 };
 type ResponseOfPosts = {
-  posts: IPostWithUserAndKeywordAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndKeywordAndCount[];
+  };
 };
 
 const Profile: NextPage<Props> = ({ user }) => {
@@ -39,15 +46,18 @@ const Profile: NextPage<Props> = ({ user }) => {
   // 2022/05/15 - 게시글 패치 관련 데이터 - by 1-blue
   const { data: responsePosts, setSize } = useSWRInfinite<ResponseOfPosts>(
     (pageIndex, previousPageData) => {
-      if (previousPageData && previousPageData.posts.length !== offset) {
+      if (
+        previousPageData?.data &&
+        previousPageData.data.posts.length !== offset
+      ) {
         setHasMorePost(false);
         return null;
       }
-      if (previousPageData && !previousPageData.posts.length) {
+      if (previousPageData?.data && !previousPageData.data.posts.length) {
         setHasMorePost(false);
         return null;
       }
-      return `/api/user/${user.name}/posts?page=${pageIndex}&offset=${offset}&kinds=latest`;
+      return `/api/posts?page=${pageIndex}&offset=${offset}&kinds=latest&username=${user.name}`;
     }
   );
   // 2022/05/15 - 게시글 스크롤링 시 패치하는 이벤트 등록 - by 1-blue
@@ -60,7 +70,7 @@ const Profile: NextPage<Props> = ({ user }) => {
   // 2022/05/15 - 게시글 담기 - by 1-blue
   useEffect(() => {
     setList(
-      responsePosts?.map(({ posts }) =>
+      responsePosts?.map(({ data: { posts } }) =>
         posts?.map((post) => (
           <li key={post.idx} className="space-y-4 pb-4 pt-8">
             <Link href={`/${post.user.name}/${post.title}`}>
@@ -113,7 +123,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   return {
     props: {
-      user: response?.user,
+      user: response?.data.user,
     },
   };
 };

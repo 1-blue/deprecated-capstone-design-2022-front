@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import type { KeyedMutator } from "swr";
 
@@ -165,4 +165,4 @@ const Comment = ({
   );
 };
 
-export default Comment;
+export default React.memo(Comment);

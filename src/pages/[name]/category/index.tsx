@@ -60,7 +60,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   return {
     props: {
-      user: response?.user,
+      user: response?.data.user,
     },
   };
 };

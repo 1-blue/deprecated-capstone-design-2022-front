@@ -79,7 +79,7 @@ interface IPostWithUserAndKeywordAndCount extends Post {
 }
 interface ICommentWithUser extends Comment {
   user: SimpleUser;
-  recomments?: ICommentWithUser[];
+  recomments?: IRecommentWithUser[];
 }
 interface IRecommentWithUser extends Comment {
   user: SimpleUser;
@@ -189,6 +189,8 @@ type ResponseStatus = {
   status: ResponseStatus
 }
 ```
+
+// >>> `1.6`과 `1.7`은 `2.2`로 통합
 // >>> 논의 후 수정 /pages/[name]/index.tsx
 ### 1.6 GET /api/user/:name/posts?page=page&offset=offset&kinds=kinds
 
@@ -251,11 +253,11 @@ type ResponseStatus = {
   }
 }
 ```
-// >>> 수정 완료 ( + `keywords` 추가 )
-### 2.2 GET /api/posts?page=page&offset=offset&kinds=kinds&keywords=keywords
+// >>> 수정 완료 ( + `keywords`, `username`, `category` 추가 )
+### 2.2 GET /api/posts?page=page&offset=offset&kinds=kinds&keywords=keywords&username=username&category=category
 
-- 목적: ( 특정 키워드를 가진 ) 최신/인기순 게시글들 일부 요청
-- 전송: `page`, `offset`, `kinds`, `keywords` ( `kinds` -> `latest`, `popular` )
+- 목적: ( 특정 키워드를 가진 or 특정 유저의 or 특정 유저의 특정 카테고리를 가진 ) 최신/인기순 게시글들 `page`와 `offset` 만큼 요청
+- 전송: `page`, `offset`, `kinds`, `keywords`, `username`, `category` ( `kinds` -> `latest`, `popular` )
 - 응답
 
 ```typescript

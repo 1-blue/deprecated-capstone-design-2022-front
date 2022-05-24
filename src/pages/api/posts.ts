@@ -10,8 +10,10 @@ export default async function handler(
   const offset = req.query.offset as string;
   const keyword = req.query.keyword as string;
   const page = +(req.query.page as string);
+  const username = req.query.username as string;
+  const category = req.query.category as string;
 
-  console.log(page, offset, kinds, keyword);
+  console.log(page, offset, kinds, keyword, username, category);
 
   if (keyword) {
     console.log("검색 요청... 1.5초 대기");
@@ -23,10 +25,15 @@ export default async function handler(
     );
   }
 
-  res
-    .status(200)
-    .json({
-      status: { ok: true },
-      data: { posts: getDummyPosts(kinds, page, keyword) },
-    });
+  let posts;
+
+  if (keyword) posts = getDummyPosts(kinds, page, keyword);
+  else if (username) posts = getDummyPosts(kinds, page);
+  else if (category) posts = getDummyPosts("popular", 0);
+  else posts = getDummyPosts(kinds, page);
+
+  res.status(200).json({
+    status: { ok: true },
+    data: { posts },
+  });
 }

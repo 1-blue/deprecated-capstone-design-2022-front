@@ -51,7 +51,7 @@ export type User = {
 export type SimpleUser = {
   idx: number;
   name: string;
-  avatar?: string;
+  avatar?: string | null;
   introduction?: string;
 };
 
@@ -97,7 +97,7 @@ export interface IPostWithUserAndKeywordAndCount extends Post {
 // 2022/05/10 - 댓글 + 작성자 - by 1-blue
 export interface ICommentWithUser extends Comment {
   user: SimpleUser;
-  recomments?: ICommentWithUser[];
+  recomments?: IRecommentWithUser[];
 }
 // 2022/05/10 - 답글 + 작성자 - by 1-blue
 export interface IRecommentWithUser extends Comment {
