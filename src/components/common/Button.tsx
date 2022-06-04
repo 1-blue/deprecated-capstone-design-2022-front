@@ -32,7 +32,7 @@ const Button = ({
       {...props}
     >
       {loading ? (
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 justify-center">
           <span>{loadingText}</span>
           <Spinner kinds="button" />
         </div>

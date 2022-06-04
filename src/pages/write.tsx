@@ -184,10 +184,13 @@ const Write: NextPage = () => {
         formData.append("photo", e.dataTransfer.files[0]);
         const {
           data: { photoUrl },
-        }: ResponseOfPhoto = await fetch("/api/photo", {
-          method: "POST",
-          body: formData,
-        }).then((res) => res.json());
+        }: ResponseOfPhoto = await fetch(
+          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
+          {
+            method: "POST",
+            body: formData,
+          }
+        ).then((res) => res.json());
         setValue(
           "contents",
           getValues("contents") + `\n![이미지](${photoUrl})`
@@ -212,10 +215,13 @@ const Write: NextPage = () => {
         formData.append("photo", e.target.files[0]);
         const {
           data: { photoUrl },
-        }: ResponseOfPhoto = await fetch("/api/photo", {
-          method: "POST",
-          body: formData,
-        }).then((res) => res.json());
+        }: ResponseOfPhoto = await fetch(
+          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
+          {
+            method: "POST",
+            body: formData,
+          }
+        ).then((res) => res.json());
         setValue(
           "contents",
           getValues("contents") + `\n![이미지](${photoUrl})`
