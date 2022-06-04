@@ -4,7 +4,7 @@ import Image from "next/image";
 import { combineClassNames } from "@src/libs/util";
 
 type Props = {
-  photo?: string;
+  photo?: string | null;
   size: string;
   className?: string;
   alt?: string;

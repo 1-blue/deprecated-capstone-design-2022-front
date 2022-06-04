@@ -20,6 +20,7 @@ import useToastMessage from "@src/hooks/useToastMessage";
 
 // type
 import { ICON } from "@src/types";
+import type { ResponseStatus } from "@src/types";
 import type {
   IPostWithUserAndKeywordAndCount,
   ResponseOfPhoto,
@@ -30,12 +31,12 @@ export type WriteForm = {
   keyword: string;
   contents: string;
 };
-export type ResponseOfCreatedPost = {
-  ok: boolean;
-  title: string;
-};
-interface IResponseOfCreatedTemparoryPost extends ResponseOfCreatedPost {
-  tempPostIdx?: number;
+interface IResponseOfCreatedTemparoryPost {
+  status: ResponseStatus;
+  data: {
+    title: string;
+    tempPostIdx?: number;
+  };
 }
 
 export type PostMetadata = {
@@ -45,8 +46,10 @@ export type PostMetadata = {
   thumbnail: string;
 };
 type ResponseOfPosts = {
-  ok: boolean;
-  post: IPostWithUserAndKeywordAndCount;
+  status: ResponseStatus;
+  data: {
+    post: IPostWithUserAndKeywordAndCount;
+  };
 };
 
 const Write: NextPage = () => {
@@ -63,6 +66,7 @@ const Write: NextPage = () => {
     resetState,
   ] = useMutation<IResponseOfCreatedTemparoryPost>({
     url: "/api/temp",
+    method: "POST",
   });
 
   // 2022/04/27 - 게시글 임시 저장 - by 1-blue
@@ -77,7 +81,7 @@ const Write: NextPage = () => {
       title,
       contents,
       keywords,
-      tempPostIdx: createTemporaryPostResponse?.tempPostIdx,
+      tempPostIdx: createTemporaryPostResponse?.data.tempPostIdx,
     });
   }, [getValues, keywords, createTemporaryPost, createTemporaryPostResponse]);
 
@@ -157,8 +161,8 @@ const Write: NextPage = () => {
 
   // 2022/04/27 - 게시글 임시 생성 성공 시 toast - by 1-blue
   useToastMessage({
-    ok: createTemporaryPostResponse?.ok,
-    message: `"${createTemporaryPostResponse?.title}" 게시글을 임시저장 했습니다.`,
+    ok: createTemporaryPostResponse?.status.ok,
+    message: `"${createTemporaryPostResponse?.data.title}" 게시글을 임시저장 했습니다.`,
     excute: resetState,
   });
 
@@ -178,7 +182,9 @@ const Write: NextPage = () => {
       try {
         const formData = new FormData();
         formData.append("photo", e.dataTransfer.files[0]);
-        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
+        const {
+          data: { photoUrl },
+        }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -204,7 +210,9 @@ const Write: NextPage = () => {
       try {
         const formData = new FormData();
         formData.append("photo", e.target.files[0]);
-        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
+        const {
+          data: { photoUrl },
+        }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -238,11 +246,12 @@ const Write: NextPage = () => {
     );
   // 2022/05/01 - 수정이라면 데이터 채우기 - by 1-blue
   useEffect(() => {
-    if (!currentPost || !currentPost?.ok || !currentPost?.post) return;
+    if (!currentPost || !currentPost?.status.ok || !currentPost?.data.post)
+      return;
 
-    setValue("title", currentPost.post.title);
-    setValue("contents", currentPost.post.contents);
-    setKeywords(currentPost.post.keywords.map(({ keyword }) => keyword));
+    setValue("title", currentPost.data.post.title);
+    setValue("contents", currentPost.data.post.contents);
+    setKeywords(currentPost.data.post.keywords.map(({ keyword }) => keyword));
   }, [currentPost, setValue]);
 
   return (
@@ -360,7 +369,7 @@ const Write: NextPage = () => {
           getValues={getValues}
           keywords={keywords}
           setIsPreview={setIsPreview}
-          tempPostIdx={createTemporaryPostResponse?.tempPostIdx}
+          tempPostIdx={createTemporaryPostResponse?.data.tempPostIdx}
           postMetadata={postMetadata}
           setPostMetadata={setPostMetadata}
         />

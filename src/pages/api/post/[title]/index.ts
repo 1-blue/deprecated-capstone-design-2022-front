@@ -21,8 +21,12 @@ export default async function handler(
       });
 
       return res.status(200).json({
-        ok: true,
-        post: getDummyPost(),
+        status: {
+          ok: true,
+        },
+        data: {
+          post: getDummyPost(),
+        },
       });
     case "POST":
       return res.status(200).json({ ok: true });
@@ -35,7 +39,11 @@ export default async function handler(
         }, 2000);
       });
 
-      return res.status(200).json({ ok: true, message: "게시글 제거 성공" });
+      return res.status(200).json({
+        status: {
+          ok: true,
+        },
+      });
 
     default:
       return res

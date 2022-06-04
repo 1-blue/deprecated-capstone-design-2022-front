@@ -20,7 +20,7 @@ export default async function handler(
         }, 1000)
       );
 
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ status: { ok: true } });
     case "DELETE":
       console.log("계정 삭제 ( 3초 대기 ) >> ");
 
@@ -30,8 +30,7 @@ export default async function handler(
         }, 3000)
       );
 
-      return res.status(200).json({ ok: true });
-
+      return res.status(200).json({ status: { ok: true } });
     default:
       break;
   }

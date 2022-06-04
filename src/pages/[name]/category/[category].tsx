@@ -12,7 +12,11 @@ import useSWR from "swr";
 import ProfileNav from "@src/components/ProfileNav";
 
 // type
-import type { IPostWithUserAndCount, SimpleUser } from "@src/types";
+import type {
+  IPostWithUserAndCount,
+  ResponseStatus,
+  SimpleUser,
+} from "@src/types";
 
 // common-component
 import Photo from "@src/components/common/Photo";
@@ -57,8 +61,10 @@ type Props = {
   user: SimpleUser;
 };
 type ReponseOfPosts = {
-  ok: boolean;
-  posts: IPostWithUserAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndCount[];
+  };
 };
 
 const CategoryPost: NextPage<Props> = ({ user }) => {
@@ -68,7 +74,7 @@ const CategoryPost: NextPage<Props> = ({ user }) => {
   // 2022/05/16 - 특정 유저의 해당 카테고리를 가진 게시글들 요청 - by 1-blue
   const { data: responseOfPosts } = useSWR<ReponseOfPosts>(
     router.query?.category
-      ? `/api/user/${user.name}/category/${router.query.category}`
+      ? `/api/posts?username=${user.name}&category=${router.query.category}`
       : null
   );
 
@@ -102,13 +108,13 @@ const CategoryPost: NextPage<Props> = ({ user }) => {
         </button>
 
         <ul className="space-y-12">
-          {responseOfPosts?.posts && isLatest
-            ? [...responseOfPosts.posts]
+          {responseOfPosts?.data.posts && isLatest
+            ? [...responseOfPosts.data.posts]
                 .reverse()
                 .map((post, i) => (
                   <Post key={post.idx} post={post} user={user} i={i} />
                 ))
-            : responseOfPosts?.posts.map((post, i) => (
+            : responseOfPosts?.data.posts.map((post, i) => (
                 <Post key={post.idx} post={post} user={user} i={i} />
               ))}
         </ul>
@@ -126,7 +132,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   return {
     props: {
-      user: response?.user,
+      user: response?.data.user,
     },
   };
 };

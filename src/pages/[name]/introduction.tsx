@@ -42,7 +42,7 @@ const Introduction: NextPage<Props> = ({ user }) => {
   const { ref, ...rest } = register("introduction");
 
   // 2022/05/17 - 자기 소개 수정 요청관련 메서드 - by 1-blue
-  const [updateIntroduction, { data, loading }] = useMutation({
+  const [updateIntroduction, { loading }] = useMutation({
     url: "/api/user",
     method: "PATCH",
   });
@@ -114,7 +114,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   return {
     props: {
-      user: response?.user,
+      user: response?.data.user,
     },
   };
 };

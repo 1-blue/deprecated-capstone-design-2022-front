@@ -13,8 +13,12 @@ export default async function handler(
   });
 
   return res.status(201).json({
-    ok: true,
-    photoUrl:
-      "https://blemarket.s3.ap-northeast-2.amazonaws.com/images/production/venice_1650792768710",
+    status: {
+      ok: true,
+    },
+    data: {
+      photoUrl:
+        "https://blemarket.s3.ap-northeast-2.amazonaws.com/images/production/venice_1650792768710",
+    },
   });
 }

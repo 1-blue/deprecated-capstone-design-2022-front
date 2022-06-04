@@ -18,17 +18,22 @@ import { combineClassNames } from "@src/libs/util";
 
 // type
 import { ICON } from "@src/types";
+import type { ResponseStatus } from "@src/types";
 import type { ICategoryWithCount } from "@src/types";
 import type { ResponseOfPhoto } from "@src/types";
-import type {
-  ResponseOfCreatedPost,
-  PostMetadata,
-  WriteForm,
-} from "@src/pages/write";
+import type { PostMetadata, WriteForm } from "@src/pages/write";
 
+type ResponseOfCreatedPost = {
+  status: ResponseStatus;
+  data: {
+    title: string;
+  };
+};
 type CategoryResponse = {
-  ok: true;
-  categorys: ICategoryWithCount[];
+  status: ResponseStatus;
+  data: {
+    categorys: ICategoryWithCount[];
+  };
 };
 type CategoryForm = {
   category: string;
@@ -74,9 +79,9 @@ const InputSetting = ({
   }, [getValues, createPost, keywords, tempPostIdx, postMetadata]);
   // 2022/04/27 - 게시글 생성 성공 시 toast + 페이지 이동 - by 1-blue
   useToastMessage({
-    ok: createPostResponse?.ok,
-    message: `"${createPostResponse?.title}" 게시글을 생성했습니다.`,
-    go: `/${me?.name}/${createPostResponse?.title}`,
+    ok: createPostResponse?.status.ok,
+    message: `"${createPostResponse?.data.title}" 게시글을 생성했습니다.`,
+    go: `/${me?.name}/${createPostResponse?.data.title}`,
   });
 
   // 2022/04/29 - 섬네일 - by 1-blue
@@ -90,7 +95,9 @@ const InputSetting = ({
       try {
         const formData = new FormData();
         formData.append("photo", e.target.files[0]);
-        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
+        const {
+          data: { photoUrl },
+        }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -127,15 +134,17 @@ const InputSetting = ({
         (prev) =>
           prev && {
             ...prev,
-            categorys: [
-              ...prev?.categorys,
-              {
-                category: body.category,
-                _count: {
-                  post: 1,
+            data: {
+              categorys: [
+                ...prev?.data.categorys,
+                {
+                  category: body.category,
+                  _count: {
+                    post: 1,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         false
       );
@@ -232,7 +241,7 @@ const InputSetting = ({
             </form>
 
             <ul className="flex flex-col divide-y bg-zinc-300 dark:bg-zinc-700 overflow-auto mb-9">
-              {categoryResponse?.categorys.map(({ category }) => (
+              {categoryResponse?.data.categorys.map(({ category }) => (
                 <button
                   type="button"
                   key={category}

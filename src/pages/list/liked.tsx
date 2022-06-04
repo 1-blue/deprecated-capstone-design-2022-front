@@ -5,11 +5,13 @@ import useSWR from "swr";
 import Post from "@src/components/Post";
 
 // type
-import type { IPostWithUserAndCount } from "@src/types";
+import type { IPostWithUserAndCount, ResponseStatus } from "@src/types";
 
 type ResponseOfLikedPosts = {
-  ok: boolean;
-  posts: IPostWithUserAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndCount[];
+  };
 };
 
 const Liked: NextPage = () => {
@@ -20,7 +22,7 @@ const Liked: NextPage = () => {
       <h1 className="mb-4 font-bold text-2xl">좋아요를 누른 게시글들</h1>
 
       <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {likedPosts?.posts.map((post, i) => (
+        {likedPosts?.data.posts.map((post, i) => (
           <Post
             key={post.idx}
             post={post}

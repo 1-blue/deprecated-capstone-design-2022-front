@@ -1,3 +1,5 @@
+import React from "react";
+
 // common-component
 import Photo from "@src/components/common/Photo";
 
@@ -54,4 +56,4 @@ const Recomment = ({ recomment, onRemoveRecomment }: Props) => {
   );
 };
 
-export default Recomment;
+export default React.memo(Recomment);

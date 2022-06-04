@@ -16,17 +16,17 @@ import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
 // type
-import type { ResponseOfPhoto } from "@src/types";
+import type { ResponseOfPhoto, ResponseStatus } from "@src/types";
 
 type ModifyForm = {
   name: string;
   introduction: string;
 };
 type ResponseOfModifyProfile = {
-  ok: boolean;
+  status: ResponseStatus;
 };
 type ResponseOfRemoveProfile = {
-  ok: boolean;
+  status: ResponseStatus;
 };
 
 const Setting: NextPage = () => {
@@ -44,7 +44,9 @@ const Setting: NextPage = () => {
       try {
         const formData = new FormData();
         formData.append("photo", e.target.files[0]);
-        const { photoUrl }: ResponseOfPhoto = await fetch("/api/photo", {
+        const {
+          data: { photoUrl },
+        }: ResponseOfPhoto = await fetch("/api/photo", {
           method: "POST",
           body: formData,
         }).then((res) => res.json());
@@ -63,9 +65,11 @@ const Setting: NextPage = () => {
           (prev) =>
             prev && {
               ...prev,
-              user: {
-                ...prev.user,
-                avatar: photoUrl,
+              data: {
+                user: {
+                  ...prev.data.user,
+                  avatar: photoUrl,
+                },
               },
             },
           false
@@ -73,6 +77,8 @@ const Setting: NextPage = () => {
 
         toast.success("아바타를 업로드했습니다.");
       } catch (error) {
+        console.error(error);
+
         toast.error("아바타 업로드에 실패했습니다.");
       }
 
@@ -99,9 +105,11 @@ const Setting: NextPage = () => {
         (prev) =>
           prev && {
             ...prev,
-            user: {
-              ...prev.user,
-              avatar: null,
+            data: {
+              user: {
+                ...prev.data.user,
+                avatar: null,
+              },
             },
           },
         false
@@ -144,9 +152,11 @@ const Setting: NextPage = () => {
       (prev) =>
         prev && {
           ...prev,
-          user: {
-            ...prev.user,
-            ...getValues(),
+          data: {
+            user: {
+              ...prev.data.user,
+              ...getValues(),
+            },
           },
         },
       false
@@ -156,7 +166,7 @@ const Setting: NextPage = () => {
   }, [meMutate, setToggleModifyForm, profileModifyResetState, getValues]);
   // 2022/05/14 - 프로실 수정 성공 시 토스트 메시지 - by 1-blue
   useToastMessage({
-    ok: responseOfModifyProfile?.ok,
+    ok: responseOfModifyProfile?.status.ok,
     message: "프로필을 수정했습니다.",
     excute: onModifySuccessed,
   });
@@ -176,7 +186,7 @@ const Setting: NextPage = () => {
   );
   // 2022/05/14 - 회원 탈퇴 성공 시 토스트 메시지 - by 1-blue
   useToastMessage({
-    ok: responseOfRemoveProfile?.ok,
+    ok: responseOfRemoveProfile?.status.ok,
     message: "계정을 삭제했습니다.",
     go: "/",
   });

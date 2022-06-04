@@ -20,8 +20,12 @@ export default async function handler(
       });
 
       return res.status(200).json({
-        ok: true,
-        comments: getComments(+req.query.page),
+        status: {
+          ok: true,
+        },
+        data: {
+          comments: getComments(+req.query.page),
+        },
       });
     case "POST":
       console.log("댓글 생성 요청 ( 2초 대기 ) >> ", req.query, req.body);

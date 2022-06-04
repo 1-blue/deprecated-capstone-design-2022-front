@@ -9,15 +9,21 @@ import useSWR from "swr";
 import ProfileNav from "@src/components/ProfileNav";
 
 // type
-import type { ICategoryWithCount, SimpleUser } from "@src/types";
+import type {
+  ICategoryWithCount,
+  ResponseStatus,
+  SimpleUser,
+} from "@src/types";
 import Link from "next/link";
 
 type Props = {
   user: SimpleUser;
 };
 type ResponseOfCategorys = {
-  ok: boolean;
-  categorys: ICategoryWithCount[];
+  status: ResponseStatus;
+  data: {
+    categorys: ICategoryWithCount[];
+  };
 };
 
 const Category: NextPage<Props> = ({ user }) => {
@@ -29,7 +35,7 @@ const Category: NextPage<Props> = ({ user }) => {
       <ProfileNav avatar={user.avatar} name={user.name} />
 
       <ul className="md:mx-auto md:w-3/5 my-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {responseOfCategorys?.categorys.map(({ category, _count }) => (
+        {responseOfCategorys?.data.categorys.map(({ category, _count }) => (
           <li key={category}>
             <Link href={`/${user.name}/category/${category}`}>
               <a className="space-y-1">
@@ -54,7 +60,7 @@ export const getServerSideProps: GetServerSideProps = async (
 
   return {
     props: {
-      user: response?.user,
+      user: response?.data.user,
     },
   };
 };

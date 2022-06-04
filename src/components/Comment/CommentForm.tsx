@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import type { KeyedMutator } from "swr";
@@ -70,18 +70,26 @@ const CommentForm = ({
 
             return {
               ...comments,
-              comments: [
-                {
-                  idx: Date.now(),
-                  contents: body.comment,
-                  postIdx: postIdx,
-                  createdAt: new Date(Date.now()),
-                  updatedAt: new Date(Date.now()),
-                  user: me,
-                  commentIdx: undefined,
-                },
-                ...comments.comments,
-              ],
+              data: {
+                comments: [
+                  {
+                    idx: Date.now(),
+                    contents: body.comment,
+                    postIdx: postIdx,
+                    createdAt: new Date(Date.now()),
+                    updatedAt: new Date(Date.now()),
+                    user: {
+                      idx: me.idx,
+                      name: me.name,
+                      avatar: me.avatar,
+                      introduction: me.introduction,
+                    },
+                    userIdx: me.idx,
+                    commentIdx: undefined,
+                  },
+                  ...comments.data.comments,
+                ],
+              },
             };
           }),
         false
@@ -107,39 +115,43 @@ const CommentForm = ({
       commentsMutate(
         (prev) =>
           prev &&
-          prev.map((comments) => ({
-            ...comments,
-            comments: comments.comments.map((comment) => {
-              if (comment.idx !== commentIdx) return comment;
+          prev.map((commentBody) => ({
+            ...commentBody,
+            data: {
+              comments: commentBody.data.comments.map((comment) => {
+                if (comment.idx !== commentIdx) return comment;
 
-              return {
-                ...comment,
-                recomments: comment.recomments
-                  ? [
-                      ...comment.recomments,
-                      {
-                        idx: Date.now(),
-                        contents: body.comment,
-                        postIdx: postIdx,
-                        createdAt: new Date(Date.now()),
-                        updatedAt: new Date(Date.now()),
-                        user: me,
-                        commentIdx: undefined,
-                      },
-                    ]
-                  : [
-                      {
-                        idx: Date.now(),
-                        contents: body.comment,
-                        postIdx: postIdx,
-                        createdAt: new Date(Date.now()),
-                        updatedAt: new Date(Date.now()),
-                        user: me,
-                        commentIdx: undefined,
-                      },
-                    ],
-              };
-            }),
+                return {
+                  ...comment,
+                  recomments: comment.recomments
+                    ? [
+                        ...comment.recomments,
+                        {
+                          idx: Date.now(),
+                          contents: body.comment,
+                          createdAt: new Date(Date.now()),
+                          updatedAt: new Date(Date.now()),
+                          user: me,
+                          userIdx: me.idx,
+                          postIdx: postIdx,
+                          commentIdx,
+                        },
+                      ]
+                    : [
+                        {
+                          idx: Date.now(),
+                          contents: body.comment,
+                          createdAt: new Date(Date.now()),
+                          updatedAt: new Date(Date.now()),
+                          user: me,
+                          userIdx: me.idx,
+                          postIdx: postIdx,
+                          commentIdx,
+                        },
+                      ],
+                };
+              }),
+            },
           })),
         false
       );
@@ -192,4 +204,4 @@ const CommentForm = ({
   );
 };
 
-export default CommentForm;
+export default React.memo(CommentForm);

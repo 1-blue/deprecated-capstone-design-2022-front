@@ -51,7 +51,7 @@ export type User = {
 export type SimpleUser = {
   idx: number;
   name: string;
-  avatar?: string;
+  avatar?: string | null;
   introduction?: string;
 };
 
@@ -72,6 +72,7 @@ export type Comment = {
   createdAt: Date;
   updatedAt: Date;
 
+  userIdx: number;
   postIdx: number;
   commentIdx?: number;
 };
@@ -96,7 +97,7 @@ export interface IPostWithUserAndKeywordAndCount extends Post {
 // 2022/05/10 - 댓글 + 작성자 - by 1-blue
 export interface ICommentWithUser extends Comment {
   user: SimpleUser;
-  recomments?: ICommentWithUser[];
+  recomments?: IRecommentWithUser[];
 }
 // 2022/05/10 - 답글 + 작성자 - by 1-blue
 export interface IRecommentWithUser extends Comment {
@@ -105,8 +106,10 @@ export interface IRecommentWithUser extends Comment {
 
 // 2022/05/14 - 이미지 생성 요청 응답 타입 - by 1-blue
 export type ResponseOfPhoto = {
-  ok: boolean;
-  photoUrl: string;
+  status: ResponseStatus;
+  data: {
+    photoUrl: string;
+  };
 };
 
 // 2022/05/16 - 카테고리와 소속 게시글 개수 타입 - by 1-blue
@@ -116,3 +119,8 @@ export interface ICategoryWithCount {
     post: number;
   };
 }
+
+// 2022/05/24 - 응답 타입 - by 1-blue
+export type ResponseStatus = {
+  ok: boolean;
+};

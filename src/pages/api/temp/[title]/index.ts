@@ -17,7 +17,7 @@ export default async function handler(
         }, 1500);
       });
 
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ status: { ok: true } });
 
     default:
       return res.status(200).json({ ok: true, message: "게시글... 아무것도" });

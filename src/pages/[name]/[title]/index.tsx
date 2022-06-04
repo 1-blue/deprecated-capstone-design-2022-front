@@ -13,6 +13,7 @@ import Link from "next/link";
 import type {
   IPostWithUserAndKeywordAndCount,
   IPostWithUserAndCount,
+  ResponseStatus,
 } from "@src/types";
 
 // common-component
@@ -40,24 +41,33 @@ import useMutation from "@src/hooks/useMutation";
 import useToastMessage from "@src/hooks/useToastMessage";
 
 type ResponseOfDetailPost = {
-  ok: boolean;
-  post: IPostWithUserAndKeywordAndCount;
-  error?: Error;
+  status: ResponseStatus;
+  data: {
+    post: IPostWithUserAndKeywordAndCount;
+    error?: Error;
+  };
 };
 type ResponseOfCategorizedPosts = {
-  ok: boolean;
-  category: string;
-  posts: IPostWithUserAndCount[];
+  status: ResponseStatus;
+  data: {
+    category: string;
+    posts: IPostWithUserAndCount[];
+  };
 };
 type ResponseOfRelevantPosts = {
-  ok: boolean;
-  posts: IPostWithUserAndCount[];
+  status: ResponseStatus;
+  data: {
+    posts: IPostWithUserAndCount[];
+  };
 };
 type ResponseOfRemovedPost = {
-  ok: boolean;
+  status: ResponseStatus;
 };
 
-const PostDetail: NextPage<ResponseOfDetailPost> = ({ ok, post }) => {
+const PostDetail: NextPage<ResponseOfDetailPost> = ({
+  status: { ok },
+  data: { post },
+}) => {
   const router = useRouter();
   const { me } = useMe();
 
@@ -83,7 +93,7 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({ ok, post }) => {
     });
   // 2022/05/01 - 게시글 삭제 시 성공 토스트 및 페이지 이동 - by 1-blue
   useToastMessage({
-    ok: removePostResponse?.ok,
+    ok: removePostResponse?.status.ok,
     message: `"${router.query.title}" 게시글을 삭제했습니다.`,
     go: "/",
   });
@@ -145,11 +155,11 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({ ok, post }) => {
         {/* 같은 카테고리 게시글들 */}
         <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
           <h2 className="text-xl font-semibold">
-            {categorizedPosts?.category}
+            {categorizedPosts?.data.category}
           </h2>
           {toggleCategory && (
             <ul className="space-y-1">
-              {categorizedPosts?.posts.map((post, index) => (
+              {categorizedPosts?.data.posts.map((post, index) => (
                 <li key={post.idx}>
                   <span className="dark:text-gray-400">{index + 1}. </span>
                   <Link href={`/${post.user.name}/${post.title}`}>
@@ -232,7 +242,7 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({ ok, post }) => {
           관심 있을만한 게시글
         </span>
         <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {relevantPosts?.posts.map((post) => (
+          {relevantPosts?.data.posts.map((post) => (
             <Post key={post.idx} post={post} photoSize="w-full h-[200px]" />
           ))}
         </ul>
@@ -301,9 +311,13 @@ export const getStaticProps: GetStaticProps = async (
 
     return {
       props: {
-        ok: false,
-        post: {},
-        error,
+        status: {
+          ok: false,
+        },
+        data: {
+          post: {},
+          error,
+        },
       },
     };
   }
