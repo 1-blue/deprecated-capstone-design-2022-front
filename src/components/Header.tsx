@@ -85,7 +85,7 @@ const Header = ({ hasHeader }: Props) => {
               </button>
               {/* search */}
               <Link href="/search">
-                <a className="w-10 h-10 rounded-full hover:bg-slate-200 inline-flex justify-center items-center dark:hover:text-black">
+                <a className="w-10 h-10 rounded-full hover:bg-zinc-400 dark:hover:bg-slate-200 inline-flex justify-center items-center dark:hover:text-black">
                   <Icon icon={ICON.SEARCH} className="w-7 h-7" />
                 </a>
               </Link>
@@ -150,12 +150,18 @@ const Header = ({ hasHeader }: Props) => {
                   </button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  className="h-10 rounded-r-full rounded-l-full px-4 hover:bg-slate-200 dark:hover:text-black"
-                >
-                  <span>로그인</span>
-                </button>
+                <>
+                  <Link href="/login">
+                    <a className="h-10 rounded-r-full rounded-l-full px-4 hover:bg-zinc-400 dark:hover:bg-slate-200 dark:hover:text-black flex justify-center items-center">
+                      <b>로그인</b>
+                    </a>
+                  </Link>
+                  <Link href="/register">
+                    <a className="h-10 rounded-r-full rounded-l-full px-4 hover:bg-zinc-400 dark:hover:bg-slate-200 dark:hover:text-black flex justify-center items-center">
+                      <b>회원가입</b>
+                    </a>
+                  </Link>
+                </>
               )}
             </nav>
           </header>
