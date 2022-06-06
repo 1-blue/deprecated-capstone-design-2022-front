@@ -22,7 +22,7 @@ type ResponseOfPosts = {
   };
 };
 
-const Home: NextPage<ResponseOfPosts> = (initialPosts) => {
+const Recent: NextPage<ResponseOfPosts> = (initialPosts) => {
   // 2022/05/06 - 게시글 offset - by 1-blue
   const [offset, setOffset] = useState(20);
   // 2022/05/06 - 게시글 추가 패치 가능 여부 - by 1-blue
@@ -41,7 +41,7 @@ const Home: NextPage<ResponseOfPosts> = (initialPosts) => {
         setHasMorePost(false);
         return null;
       }
-      return `/api/posts?page=${pageIndex}&offset=${offset}&kinds=popular`;
+      return `/api/posts?page=${pageIndex}&offset=${offset}&kinds=latest`;
     },
     null,
     {
@@ -75,8 +75,8 @@ const Home: NextPage<ResponseOfPosts> = (initialPosts) => {
   return (
     <>
       <HeadInfo
-        title="인기 게시글"
-        description="blelog의 게시글들 ( 인기순 )"
+        title="최신 게시글"
+        description="blelog의 게시글들 ( 최신순 )"
         photo={responsePosts?.[0].data.posts[0].thumbnail}
       />
 
@@ -98,7 +98,7 @@ const Home: NextPage<ResponseOfPosts> = (initialPosts) => {
 export const getServerSideProps: GetServerSideProps = async () => {
   const posts = await fetch(
     process.env.NEXT_PUBLIC_SERVER_URL +
-      "/api/posts?page=0&offset=20&kinds=popular"
+      "/api/posts?page=0&offset=20&kinds=latest"
   ).then((res) => res.json());
 
   return {
@@ -108,4 +108,4 @@ export const getServerSideProps: GetServerSideProps = async () => {
   };
 };
 
-export default Home;
+export default Recent;
