@@ -67,7 +67,7 @@ const Setting: NextPage = () => {
               ...prev,
               data: {
                 user: {
-                  ...prev.data.user,
+                  ...prev.data!.user,
                   avatar: photoUrl,
                 },
               },
@@ -107,7 +107,7 @@ const Setting: NextPage = () => {
             ...prev,
             data: {
               user: {
-                ...prev.data.user,
+                ...prev.data!.user,
                 avatar: null,
               },
             },
@@ -154,7 +154,7 @@ const Setting: NextPage = () => {
           ...prev,
           data: {
             user: {
-              ...prev.data.user,
+              ...prev.data!.user,
               ...getValues(),
             },
           },
