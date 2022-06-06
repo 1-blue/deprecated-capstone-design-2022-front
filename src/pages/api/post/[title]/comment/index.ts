@@ -11,13 +11,7 @@ export default async function handler(
 
   switch (method) {
     case "GET":
-      console.log("특정 게시글의 댓글들 요청 ( 2초 대기 ) >> ", req.query);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("특정 게시글의 댓글들 요청 >> ", req.query);
 
       return res.status(200).json({
         status: {
@@ -28,13 +22,7 @@ export default async function handler(
         },
       });
     case "POST":
-      console.log("댓글 생성 요청 ( 2초 대기 ) >> ", req.query, req.body);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("댓글 생성 요청 >> ", req.query, req.body);
 
       return res.status(200).json({ ok: true, message: "댓글 생성 완료" });
 

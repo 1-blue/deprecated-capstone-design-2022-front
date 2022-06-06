@@ -6,12 +6,6 @@ export default async function handler(
 ) {
   console.log("이미지 파일 받고 -> 업로드 -> 업로드 url반환");
 
-  await new Promise((reject, resolve) => {
-    setTimeout(() => {
-      reject("1");
-    }, 2000);
-  });
-
   return res.status(201).json({
     status: {
       ok: true,

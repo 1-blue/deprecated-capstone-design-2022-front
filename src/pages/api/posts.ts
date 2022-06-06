@@ -16,13 +16,7 @@ export default async function handler(
   console.log(page, offset, kinds, keyword, username, category);
 
   if (keyword) {
-    console.log("검색 요청... 1.5초 대기");
-
-    await new Promise((resolve) =>
-      setTimeout(() => {
-        resolve(1);
-      }, 1500)
-    );
+    console.log("검색 요청");
   }
 
   let posts;

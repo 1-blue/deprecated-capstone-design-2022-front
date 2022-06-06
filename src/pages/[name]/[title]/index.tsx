@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
   GetStaticPaths,
   GetStaticProps,
   GetStaticPropsContext,
@@ -98,7 +100,6 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
     go: "/",
   });
 
-  if (router.isFallback) return <Spinner kinds="page" />;
   if (!ok) return <span>에러 페이지</span>;
 
   return (
@@ -286,15 +287,8 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
   );
 };
 
-export const getStaticPaths: GetStaticPaths = () => {
-  return {
-    paths: [],
-    fallback: false,
-  };
-};
-
-export const getStaticProps: GetStaticProps = async (
-  context: GetStaticPropsContext
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext
 ) => {
   try {
     const post = await fetch(
