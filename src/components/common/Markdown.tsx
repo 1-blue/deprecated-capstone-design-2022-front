@@ -61,22 +61,22 @@ const Markdown = ({ markdown }: Props) => {
           </div>
         ),
         h1: ({ node, ...props }) => (
-          <h1 id={props.children[0]?.toString()} {...props} />
+          <h1 id={props.children?.[0]?.toString()} {...props} />
         ),
         h2: ({ node, ...props }) => (
-          <h2 id={props.children[0]?.toString()} {...props} />
+          <h2 id={props.children?.[0]?.toString()} {...props} />
         ),
         h3: ({ node, ...props }) => (
-          <h3 id={props.children[0]?.toString()} {...props} />
+          <h3 id={props.children?.[0]?.toString()} {...props} />
         ),
         h4: ({ node, ...props }) => (
-          <h4 id={props.children[0]?.toString()} {...props} />
+          <h4 id={props.children?.[0]?.toString()} {...props} />
         ),
         h5: ({ node, ...props }) => (
-          <h5 id={props.children[0]?.toString()} {...props} />
+          <h5 id={props.children?.[0]?.toString()} {...props} />
         ),
         h6: ({ node, ...props }) => (
-          <h6 id={props.children[0]?.toString()} {...props} />
+          <h6 id={props.children?.[0]?.toString()} {...props} />
         ),
       }}
     >
