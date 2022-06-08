@@ -9,12 +9,6 @@ export default async function handler(
 
   console.log(id, password);
 
-  await new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(1);
-    }, 1500)
-  );
-
   res.status(200).json({
     status: {
       ok: true,

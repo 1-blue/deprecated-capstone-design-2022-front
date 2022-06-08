@@ -14,13 +14,7 @@ export default async function handler(
 
       console.log(req.body);
 
-      console.log("대충 게시글 생성 + 2초 대기");
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("대충 게시글 생성");
 
       return res.status(200).json({
         status: {

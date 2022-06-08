@@ -12,16 +12,7 @@ export default async function handler(
 
   switch (method) {
     case "GET":
-      console.log(
-        "특정 게시글에 좋아요 누른 사람들 정보 정보 요청 ( 2초 대기 ) >> ",
-        title
-      );
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("특정 게시글에 좋아요 누른 사람들 정보 정보 요청 >> ", title);
 
       return res.status(200).json({
         status: {
@@ -32,23 +23,11 @@ export default async function handler(
         },
       });
     case "POST":
-      console.log("특정 게시글에 좋아요 추가 ( 1초 대기 ) >> ", title);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 1000);
-      });
+      console.log("특정 게시글에 좋아요 추가 >> ", title);
 
       return res.status(200).json({ status: { ok: true } });
     case "DELETE":
-      console.log("특정 게시글에 좋아요 제거 ( 1초 대기 ) >> ", title);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 1000);
-      });
+      console.log("특정 게시글에 좋아요 제거 >> ", title);
 
       return res.status(200).json({ status: { ok: true } });
 

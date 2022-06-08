@@ -1,4 +1,3 @@
-import { getTempPosts } from "@src/libs/dummy";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -9,13 +8,7 @@ export default async function handler(
 
   switch (method) {
     case "DELETE":
-      console.log("임시 게시글 제거 ( 1.5초 대기 )");
-
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(1);
-        }, 1500);
-      });
+      console.log("임시 게시글 제거");
 
       return res.status(200).json({ status: { ok: true } });
 

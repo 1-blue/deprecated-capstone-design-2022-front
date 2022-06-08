@@ -12,13 +12,7 @@ export default async function handler(
 
   switch (method) {
     case "GET":
-      console.log("특정 게시글 상세 정보 요청 ( 2초 대기 ) >> ", title);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("특정 게시글 상세 정보 요청 >> ", title);
 
       return res.status(200).json({
         status: {
@@ -31,13 +25,7 @@ export default async function handler(
     case "POST":
       return res.status(200).json({ ok: true });
     case "DELETE":
-      console.log("특정 게시글 제거 요청 ( 2초 대기 ) >> ", title);
-
-      await new Promise((reject, resolve) => {
-        setTimeout(() => {
-          reject("1");
-        }, 2000);
-      });
+      console.log("특정 게시글 제거 요청 >> ", title);
 
       return res.status(200).json({
         status: {

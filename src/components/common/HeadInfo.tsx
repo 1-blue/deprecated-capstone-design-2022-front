@@ -25,7 +25,6 @@ const HeadInfo = ({ title, description, photo }: Props) => {
       />
       <meta property="og:title" content={`blelog | ${title}`} />
       <meta property="og:description" content={description} />
-      {/* >>> 나중에 대표 이미지 추가하고 이미지 경로 수정하기 */}
       <meta
         property="og:image"
         content={
@@ -39,7 +38,6 @@ const HeadInfo = ({ title, description, photo }: Props) => {
       <meta name="twitter:card" content={`blelog | ${title}\n${description}`} />
       <meta name="twitter:title" content={`blelog | ${title}`} />
       <meta name="twitter:description" content={description} />
-      {/* >>> 나중에 대표 이미지 추가하고 이미지 경로 수정하기 */}
       <meta
         name="twitter:image"
         content={
