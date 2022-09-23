@@ -1,5 +1,10 @@
 // 2022/09/23 - 자주 사용할 타입 - by 1-blue
-export type { PhotoKinds, SimpleUser } from "./data";
+export type {
+  PhotoKinds,
+  PostKinds,
+  SimpleUser,
+  PostWithSimpleData,
+} from "./data";
 
 // 2022/09/23 - api 요청 관련 타입 - by 1-blue
 export type {
@@ -9,6 +14,8 @@ export type {
   ApiSignUpResponse,
   ApiLogInBody,
   ApiLogInResponse,
+  ApiGetPostsBody,
+  ApiGetPostsResponse,
 } from "./api";
 
 // 2022/04/10 - 아이콘 형태 - by 1-blue

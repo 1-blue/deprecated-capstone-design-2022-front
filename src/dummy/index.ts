@@ -3,16 +3,16 @@ import type { Post, User } from "@prisma/client";
 
 // 예시 이미지들
 const photos = [
-  "photos/development/cat.jpg",
-  "photos/development/chick.jpg",
-  "photos/development/dog.jpg",
-  "photos/development/giraffe.jpg",
-  "photos/development/jellyfish.jpg",
-  "photos/development/parrot.jpg",
-  "photos/development/rabbit.jpg",
-  "photos/development/reindeer.jpg",
-  "photos/development/squirrel.jpg",
-  "photos/development/toucan.jpg",
+  "photos/development/seed/cat.jpg",
+  "photos/development/seed/chick.jpg",
+  "photos/development/seed/dog.jpg",
+  "photos/development/seed/giraffe.jpg",
+  "photos/development/seed/jellyfish.jpg",
+  "photos/development/seed/parrot.jpg",
+  "photos/development/seed/rabbit.jpg",
+  "photos/development/seed/reindeer.jpg",
+  "photos/development/seed/squirrel.jpg",
+  "photos/development/seed/toucan.jpg",
 ];
 
 // 예시 키워드들

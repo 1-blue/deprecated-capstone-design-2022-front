@@ -48,8 +48,8 @@ model Post {
   photo       String?
 
   // 유저와 게시글 => 1:N
-  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
-  userIdx Int?
+  User    User @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int
 
   // 게시글과 키워드 => N:M
   keywords PostsOnKeywords[]

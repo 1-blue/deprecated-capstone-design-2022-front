@@ -8,6 +8,7 @@ export const axiosInstance = axios.create({
 
 import photoService from "./photo";
 import authService from "./auth";
+import postService from "./post";
 
 /**
  * 2022/09/23 - api요청 관련 메서드들을 가진 객체 - by 1-blue
@@ -15,6 +16,7 @@ import authService from "./auth";
 const apiService = {
   photoService,
   authService,
+  postService,
 };
 
 export default apiService;
