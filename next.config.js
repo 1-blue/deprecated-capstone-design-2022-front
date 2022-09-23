@@ -16,7 +16,7 @@ const nextConfig = {
     };
   },
   images: {
-    domains: ["blemarket.s3.ap-northeast-2.amazonaws.com"],
+    domains: ["blelog.s3.ap-northeast-2.amazonaws.com", "k.kakaocdn.net"],
   },
 };
 

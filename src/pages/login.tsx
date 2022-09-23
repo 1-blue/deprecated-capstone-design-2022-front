@@ -1,66 +1,64 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-
-// type
-import type { ResponseStatus } from "@src/types";
+import { signIn } from "next-auth/react";
 
 // common-component
-import Button from "@src/components/common/Button";
-import Input from "@src/components/common/Input";
+import Button from "@src/components/common/Tool/Button";
+import Input from "@src/components/common/Tool/Input";
 import Spinner from "@src/components/common/Spinner";
 
-// hook
-import useMe from "@src/hooks/useMe";
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
+// type
+import type { ApiLogInBody } from "@src/types";
+import { AxiosError } from "axios";
 
-export type LoginForm = {
-  id: string;
-  password: string;
-};
-type LoginResponse = {
-  status: ResponseStatus;
-};
-
+export type LoginForm = ApiLogInBody;
 const Login = () => {
   const router = useRouter();
-  const { me } = useMe();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginForm>();
-  const [loginMutation, { data, loading }] = useMutation<LoginResponse>({
-    url: "/api/auth/login",
-    method: "POST",
-  });
 
-  // 2022/06/04 - 로그인 요청 - by 1-blue
-  const onSubmit = useCallback(
-    (body: LoginForm) => loginMutation(body),
-    [loginMutation]
+  // 2022/09/23 - 로그인중인지 여부 - by 1-blue
+  const [isLogIn, setIsLogIn] = useState(false);
+
+  // 2022/09/23 - 로그인 요청 - by 1-blue
+  const onLogIn = useCallback(
+    async (body: ApiLogInBody) => {
+      setIsLogIn(true);
+
+      try {
+        const result = await signIn("credentials", {
+          redirect: false,
+          ...body,
+        });
+
+        if (result?.error) return toast.error(result.error);
+
+        toast.success("로그인 성공. 메인 페이지로 이동합니다.");
+        router.push("/");
+      } catch (error) {
+        console.error(error);
+
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data.message);
+        } else {
+          toast.error("알 수 없는 에러가 발생했습니다.");
+        }
+      } finally {
+        setIsLogIn(false);
+      }
+    },
+    [router]
   );
-
-  // 2022/06/04 - 로그인 요청 - by 1-blue
-  useToastMessage({
-    message: "로그인에 성공했습니다!\n메인 페이지로 이동합니다.",
-    go: "/",
-    ok: data?.status.ok,
-  });
-
-  // 2022/06/04 - 로그인한 이후에 접근 - by 1-blue
-  if (me) {
-    toast.error("로그아웃하고 접근해주세요!");
-    router.push("/");
-    return null;
-  }
 
   return (
     <>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onLogIn)}
         className="flex flex-col max-w-[500px] mx-auto"
       >
         <Input
@@ -69,7 +67,7 @@ const Login = () => {
           register={register("id", {
             required: "아이디를 입력하세요!",
           })}
-          errorMessage={errors.id?.message}
+          infoMessage={errors.id?.message}
         />
         <Input
           name="password"
@@ -77,18 +75,24 @@ const Login = () => {
           register={register("password", {
             required: "비밀번호를 입력하세요!",
           })}
-          errorMessage={errors.password?.message}
+          infoMessage={errors.password?.message}
         />
         <Button
           type="submit"
           contents="로그인"
           className="bg-indigo-400 py-2 font-bold text-xl mt-4"
-          loading={loading}
+          loading={isLogIn}
           loadingText="로그인중입니다... "
+        />
+        <Button
+          type="button"
+          contents="Kakao"
+          className="bg-yellow-300 dark:bg-yellow-400 py-2 font-bold text-xl mt-4"
+          onClick={() => signIn("kakao")}
         />
       </form>
 
-      {loading && <Spinner kinds="page" />}
+      {isLogIn && <Spinner kinds="page" />}
     </>
   );
 };

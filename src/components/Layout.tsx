@@ -18,7 +18,7 @@ const Layout = ({
   return (
     <>
       {/* 상단 네비게이션 */}
-      <Header hasHeader={hasHeader} />
+      {hasHeader && <Header />}
       {/* 메인 컨텐츠 */}
       <main
         className={combineClassNames(
@@ -32,6 +32,9 @@ const Layout = ({
       </main>
       {/* 하단 footer */}
       {/* <footer className="max-w-xl w-full mx-auto">footer</footer> */}
+
+      {/* >>> 임시 하단 margin 처리 */}
+      <div className="mb-[10vh]"></div>
     </>
   );
 };
