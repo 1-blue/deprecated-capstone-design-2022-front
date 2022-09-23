@@ -1,3 +1,16 @@
+// 2022/09/23 - 자주 사용할 타입 - by 1-blue
+export type { PhotoKinds, SimpleUser } from "./data";
+
+// 2022/09/23 - api 요청 관련 타입 - by 1-blue
+export type {
+  ApiCreatePhotoBody,
+  ApiCreatePhotoResponse,
+  ApiSignUpBody,
+  ApiSignUpResponse,
+  ApiLogInBody,
+  ApiLogInResponse,
+} from "./api";
+
 // 2022/04/10 - 아이콘 형태 - by 1-blue
 export enum ICON {
   SEARCH = "SEARCH",
@@ -47,13 +60,6 @@ export type User = {
   avatar?: string | null;
   introduction?: string;
 };
-// 2022/04/10 - 단축 유저 타입 - by 1-blue
-export type SimpleUser = {
-  idx: number;
-  name: string;
-  avatar?: string | null;
-  introduction?: string;
-};
 
 // 2022/05/10 - 키워드 타입 ( 뭔가 빠진 부분이 있다고 느껴짐 ) - by 1-blue
 export type Keyword = {
@@ -77,32 +83,32 @@ export type Comment = {
   commentIdx?: number;
 };
 
-// 2022/05/10 - 게시글 + 작성자 + 댓글, 좋아요 개수 타입 - by 1-blue
-export interface IPostWithUserAndCount extends Post {
-  user: SimpleUser;
-  _count: {
-    comment: number;
-    favorite: number;
-  };
-}
-// 2022/05/10 - 게시글 + 작성자 + 키워드 + 댓글, 좋아요 개수 타입 - by 1-blue
-export interface IPostWithUserAndKeywordAndCount extends Post {
-  user: SimpleUser;
-  keywords: SimpleKeyword[];
-  _count: {
-    comment: number;
-    favorite: number;
-  };
-}
-// 2022/05/10 - 댓글 + 작성자 - by 1-blue
-export interface ICommentWithUser extends Comment {
-  user: SimpleUser;
-  recomments?: IRecommentWithUser[];
-}
-// 2022/05/10 - 답글 + 작성자 - by 1-blue
-export interface IRecommentWithUser extends Comment {
-  user: SimpleUser;
-}
+// // 2022/05/10 - 게시글 + 작성자 + 댓글, 좋아요 개수 타입 - by 1-blue
+// export interface IPostWithUserAndCount extends Post {
+//   user: SimpleUser;
+//   _count: {
+//     comment: number;
+//     favorite: number;
+//   };
+// }
+// // 2022/05/10 - 게시글 + 작성자 + 키워드 + 댓글, 좋아요 개수 타입 - by 1-blue
+// export interface IPostWithUserAndKeywordAndCount extends Post {
+//   user: SimpleUser;
+//   keywords: SimpleKeyword[];
+//   _count: {
+//     comment: number;
+//     favorite: number;
+//   };
+// }
+// // 2022/05/10 - 댓글 + 작성자 - by 1-blue
+// export interface ICommentWithUser extends Comment {
+//   user: SimpleUser;
+//   recomments?: IRecommentWithUser[];
+// }
+// // 2022/05/10 - 답글 + 작성자 - by 1-blue
+// export interface IRecommentWithUser extends Comment {
+//   user: SimpleUser;
+// }
 
 // 2022/05/14 - 이미지 생성 요청 응답 타입 - by 1-blue
 export type ResponseOfPhoto = {

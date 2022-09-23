@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Provider {
+  Credentials
+  KAKAO
+}
+
+// 유저
+model User {
+  idx          Int      @id @default(autoincrement())
+  name         String   @db.VarChar(20)
+  id           String?  @unique @db.VarChar(20)
+  password     String?
+  photo        String?
+  introduction String?  @db.VarChar(100)
+  role         Role     @default(USER)
+  provider     Provider @default(Credentials)
+
+  // 유저와 게시글 => 1:N
+  posts Post[]
+
+  // 유저와 댓글 => 1:N
+  comments Comment[]
+
+  // 유저와 (게시글)좋아요 => 1:N
+  favorites Favorite[]
+}
+
+// 게시글
+model Post {
+  idx         Int      @id @default(autoincrement())
+  title       String
+  contents    String   @db.VarChar(4000)
+  updatedAt   DateTime @updatedAt
+  isTemporary Boolean  @default(true)
+  photo       String?
+
+  // 유저와 게시글 => 1:N
+  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int?
+
+  // 게시글과 키워드 => N:M
+  keywords PostsOnKeywords[]
+
+  // 게시글과 댓글 => 1:N
+  comments Comment[]
+
+  // 게시글과 좋아요 => 1:N
+  favorites Favorite[]
+}
+
+// 키워드
+model Keyword {
+  keyword String @id @unique
+
+  // 상품과 키워드 => N:M
+  posts PostsOnKeywords[]
+}
+
+// 상품과 키워드 중간 테이블 ( N:M )
+model PostsOnKeywords {
+  post       Post    @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  postIdx    Int
+  keyword    Keyword @relation(fields: [keywordIdx], references: [keyword], onDelete: Cascade, onUpdate: Cascade)
+  keywordIdx String
+
+  @@id([postIdx, keywordIdx])
+}
+
+// 댓글과 답글
+model Comment {
+  idx        Int      @id @default(autoincrement())
+  contents   String   @db.VarChar(400)
+  updatedAt  DateTime @updatedAt
+  commentIdx Int?
+
+  // 유저와 댓글 => 1:N
+  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int?
+
+  // 게시글과 댓글 => 1:N
+  Post    Post? @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  postIdx Int?
+
+  // 댓글과 답글 => 1:N ( 자기자신과의 관계 )
+  Reply  Comment?  @relation("Reply", fields: [commentIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  replys Comment[] @relation("Reply")
+}
+
+// 좋아요 ( 게시글 좋아요 )
+model Favorite {
+  idx       Int      @id @default(autoincrement())
+  updatedAt DateTime @updatedAt
+
+  // 유저와 좋아요 => 1:N
+  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int?
+
+  // 게시글과 좋아요 => 1:N
+  Post    Post? @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  postIdx Int?
+}

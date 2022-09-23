@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 // util
-import { combineClassNames } from "@src/libs/util";
+import { combineClassNames, combinePhotoUrl } from "@src/libs";
 
 type Props = {
   photo?: string | null;
@@ -34,7 +34,7 @@ const Photo = ({
         )}
       >
         <Image
-          src={photo ? photo : "/temporary.jpg"}
+          src={photo ? combinePhotoUrl(photo) : "/temporary.jpg"}
           layout="fill"
           alt={alt}
           className={combineClassNames(

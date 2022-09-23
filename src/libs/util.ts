@@ -1,3 +1,11 @@
+/**
+ * 2022/09/23 - 이미지 경로 붙여주는 헬퍼함수 - by 1-blue
+ * @param path 이미지 후반부 경로
+ * @returns "aws-s3"의 전체 이미지 경로
+ */
+export const combinePhotoUrl = (path: string) =>
+  process.env.NEXT_PUBLIC_PHOTO_BASE_URL + "/" + path;
+
 // 2022/03/21 - 나열된 클래스명을 공백기준으로 합친 문자열로 만들어주는 헬퍼함수 - by 1-blue
 export const combineClassNames = (...classname: string[]) =>
   classname.join(" ");
@@ -21,11 +29,6 @@ export const getTitleList = (sentence: string) => {
 
   return titleList;
 };
-
-// >>> 이미지 저장 위치 결정되면 배포 전에 수정하기!
-// 2022/05/07 - 이미지 경로 붙여주는 헬퍼함수 - by 1-blue
-export const combinePhotoUrl = (photo: string) =>
-  `http://localhost:3000/${photo}`;
 
 // 2022/05/11 - 스로틀 헬퍼 함수 - by 1-blue
 export const throttleHelper = (callback: () => void, waitTime: number) => {
