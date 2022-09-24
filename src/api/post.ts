@@ -2,6 +2,10 @@ import { axiosInstance } from ".";
 
 // type
 import type {
+  ApiCreateFavoriteBody,
+  ApiCreateFavoriteResponse,
+  ApiDeleteFavoriteBody,
+  ApiDeleteFavoriteResponse,
   ApiDeletePostBody,
   ApiDeletePostResponse,
   ApiGetPostBody,
@@ -36,10 +40,30 @@ const apiGetPost = ({ name, title }: ApiGetPostBody) =>
 
 /**
  * 2022/09/24 - 특정 게시글 제거 - by 1-blue
+ * @param body postIdx: 게시글 식별자
+ * @returns 결과 메시지
  */
 const apiDeletePost = ({ postIdx }: ApiDeletePostBody) =>
-  axiosInstance.delete<ApiDeletePostResponse>(
-    encodeURI(`/post?postIdx=${postIdx}`)
+  axiosInstance.delete<ApiDeletePostResponse>(`/post?postIdx=${postIdx}`);
+
+/**
+ * 2022/09/24 - 특정 게시글에 좋아요 생성 - by 1-blue
+ * @param body postIdx: 게시글 식별자
+ * @returns 결과 메시지
+ */
+const apiCreateFavorite = ({ postIdx }: ApiCreateFavoriteBody) =>
+  axiosInstance.post<ApiCreateFavoriteResponse>(
+    `/post/favorite?postIdx=${postIdx}`
+  );
+
+/**
+ * 2022/09/24 - 특정 게시글에 좋아요 제거 - by 1-blue
+ * @param body postIdx: 게시글 식별자
+ * @returns 결과 메시지
+ */
+const apiDeleteFavorite = ({ postIdx }: ApiDeleteFavoriteBody) =>
+  axiosInstance.delete<ApiDeleteFavoriteResponse>(
+    `/post/favorite?postIdx=${postIdx}`
   );
 
 /**
@@ -49,6 +73,8 @@ const postService = {
   apiGetPosts,
   apiGetPost,
   apiDeletePost,
+  apiCreateFavorite,
+  apiDeleteFavorite,
 };
 
 export default postService;

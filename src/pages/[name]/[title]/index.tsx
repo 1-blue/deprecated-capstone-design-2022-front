@@ -20,7 +20,7 @@ import Post from "@src/components/Post";
 import Modal from "@src/components/common/Modal";
 import Keyword from "@src/components/common/Keyword";
 import CommentContainer from "@src/components/Comment/CommentContainer";
-import Like from "@src/components/Like";
+import Favorite from "@src/components/Favorite";
 import TitleNav from "@src/components/TitleNav";
 
 // util
@@ -40,9 +40,21 @@ import type {
 } from "next";
 import { AxiosError } from "axios";
 
-const PostDetail: NextPage<ApiGetPostResponse> = ({ post }) => {
+const PostDetail: NextPage<ApiGetPostResponse> = ({
+  post: postData,
+  message,
+}) => {
   const router = useRouter();
   const { status, data } = useSession();
+
+  // 2022/09/24 - 현재 게시글 상세 데이터 요청 - by 1-blue
+  const { data: responsePost, mutate: postMutate } = useSWR<ApiGetPostResponse>(
+    postData
+      ? `/api/post?name=${postData.User.name}&title=${postData.title}`
+      : null,
+    null,
+    { fallbackData: { post: postData, message } }
+  );
 
   // >>> 카테고리 게시글 생성 로직 처리하고 나서 수정!
   // // 2022/04/30 - 현재 게시글과 같은 카테고리를 가진 게시글들 ( + 동일한 유저 ) - by 1-blue
@@ -54,7 +66,7 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({ post }) => {
 
   // 2022/09/24 - 현재 게시글과 연관된 게시글들 - by 1-blue
   const { data: relevantResult } = useSWR<ApiGetPostByRelevantResponse>(
-    post ? `/api/post/relevant?postIdx=${post.idx}` : null
+    postData ? `/api/post/relevant?postIdx=${postData.idx}` : null
   );
 
   // 2022/05/01 - 게시글 삭제 모달 - by 1-blue
@@ -63,12 +75,12 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({ post }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   // 2022/09/24 - 현재 게시글 제거 요청 - by 1-blue
   const onDeletePost = useCallback(() => {
-    if (!post) return;
+    if (!postData) return;
 
     setIsDeleting(true);
 
     apiService.postService
-      .apiDeletePost({ postIdx: post.idx })
+      .apiDeletePost({ postIdx: postData.idx })
       .then(({ data: { message } }) => {
         toast.success(message);
         router.push("/");
@@ -85,10 +97,85 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({ post }) => {
       .finally(() => {
         setIsDeleting(false);
       });
-  }, [post, router]);
+  }, [postData, router]);
+
+  // 2022/09/24 - 좋아요 요청 - by 1-blue
+  const onCreateFavorite = useCallback(async () => {
+    if (status !== "authenticated")
+      return toast.error("로그인을 해야 누를 수 있습니다.");
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiCreateFavorite({
+        postIdx: postData.idx,
+      });
+
+      toast.success(message);
+
+      postMutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            post: {
+              ...prev.post,
+              favorites: [...prev.post.favorites, { userIdx: data.user.idx }],
+            },
+          },
+        false
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
+      }
+    }
+  }, [status, data, postMutate, postData]);
+  // 2022/09/24 - 좋아요 취소 요청 - by 1-blue
+  const onDeleteFavorite = useCallback(async () => {
+    if (status !== "authenticated")
+      return toast.error("로그인을 해야 누를 수 있습니다.");
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiDeleteFavorite({
+        postIdx: postData.idx,
+      });
+
+      toast.success(message);
+
+      postMutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            post: {
+              ...prev.post,
+              favorites: prev.post.favorites.filter(
+                ({ userIdx }) => userIdx !== data.user.idx
+              ),
+            },
+          },
+        false
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
+      }
+    }
+  }, [status, data, postMutate, postData]);
 
   // >>> 에러 페이지
-  if (!post) return <span>에러 페이지!</span>;
+  if (!responsePost || !responsePost.post) return <span>에러 페이지!</span>;
+
+  const post = responsePost.post;
 
   return (
     <>
@@ -226,7 +313,11 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({ post }) => {
       <TitleNav contents={post.contents} />
 
       {/* 좋아요 버튼 */}
-      <Like />
+      <Favorite
+        favorites={post.favorites}
+        onCreateFavorite={onCreateFavorite}
+        onDeleteFavorite={onDeleteFavorite}
+      />
 
       {/* 게시글 삭제 모달 */}
       {isOpen && (

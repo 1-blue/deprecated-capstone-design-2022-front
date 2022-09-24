@@ -28,9 +28,8 @@ export type PostWithSimpleData = Post & {
 export type PostWithData = Post & {
   User: Pick<User, "idx" | "name" | "photo" | "introduction">;
   keywords: { keyword: Keyword }[];
-  _count: {
-    comments: number;
-  };
+  favorites: { userIdx: number }[];
+  _count: { comments: number };
 };
 
 /**

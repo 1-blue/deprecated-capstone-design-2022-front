@@ -71,7 +71,7 @@ export type ApiGetPostBody = {
 /**
  * 2022/09/24 - 특정 게시글 요청 수신 타입 - by 1-blue
  */
-export type ApiGetPostResponse = ApiResponse & { post: PostWithData | null };
+export type ApiGetPostResponse = ApiResponse & { post: PostWithData };
 
 /**
  * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 송신 타입 - by 1-blue
@@ -160,3 +160,25 @@ export type ApiDeleteReplyBody = {
  * 2022/09/24 - 답글 제거 수신 타입 - by 1-blue
  */
 export type ApiDeleteReplyResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 게시글에 좋아요 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreateFavoriteBody = {
+  postIdx: number;
+};
+/**
+ * 2022/09/24 - 게시글에 좋아요 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreateFavoriteResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 게시글에 좋아요 제거 송신 타입 - by 1-blue
+ */
+export type ApiDeleteFavoriteBody = {
+  postIdx: number;
+};
+/**
+ * 2022/09/24 - 게시글에 좋아요 제거 수신 타입 - by 1-blue
+ */
+export type ApiDeleteFavoriteResponse = ApiResponse & {};

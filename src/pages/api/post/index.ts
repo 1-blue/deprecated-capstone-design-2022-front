@@ -16,7 +16,7 @@ export default async function handler(
     if (typeof name !== "string" || typeof title !== "string") {
       return res
         .status(418)
-        .json({ post: null, message: "잘못된 데이터를 전송받았습니다." });
+        .json({ message: "잘못된 데이터를 전송받았습니다." });
     }
 
     const post = await prisma.post.findFirst({
@@ -30,12 +30,14 @@ export default async function handler(
             introduction: true,
           },
         },
-        keywords: {
-          select: { keyword: true },
-        },
+        keywords: { select: { keyword: true } },
+        favorites: { select: { userIdx: true } },
         _count: { select: { comments: true } },
       },
     });
+
+    if (!post)
+      return res.status(404).json({ message: "게시글이 존재하지 않습니다." });
 
     return res
       .status(200)
