@@ -1,6 +1,7 @@
 namespace NodeJS {
   interface ProcessEnv extends NodeJS.ProcessEnv {
     DATABASE_URL: string;
+    SECRET: string;
 
     NEXT_PUBLIC_SERVER_URL: string;
     NEXT_PUBLIC_PHOTO_BASE_URL: string;

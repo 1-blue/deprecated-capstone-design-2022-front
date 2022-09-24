@@ -1,6 +1,12 @@
 // type
 import type { User } from "@prisma/client";
-import type { PhotoKinds, PostKinds, PostWithSimpleData } from "@src/types";
+import type {
+  PhotoKinds,
+  PostKinds,
+  PostWithSimpleData,
+  PostWithData,
+  CommentWithData,
+} from "@src/types";
 
 /**
  * 2022/09/23 - 모든 api요청이 공통으로 갖는 타입 - by 1-blue
@@ -54,3 +60,103 @@ export type ApiGetPostsBody = {
  * 2022/09/23 - 게시글들 요청 수신 타입 - by 1-blue
  */
 export type ApiGetPostsResponse = ApiResponse & { posts: PostWithSimpleData[] };
+
+/**
+ * 2022/09/23 - 특정 게시글 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostBody = {
+  name: string;
+  title: string;
+};
+/**
+ * 2022/09/24 - 특정 게시글 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostResponse = ApiResponse & { post: PostWithData | null };
+
+/**
+ * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 송신 타입 - by 1-blue
+ * 연관된 게시글 === 하나라도 같은 키워드를 가지는 게시글
+ */
+export type ApiGetPostsByRelevantBody = {
+  postIdx: number;
+};
+/**
+ * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 수신 타입 - by 1-blue
+ * 연관된 게시글 === 하나라도 같은 키워드를 가지는 게시글
+ */
+export type ApiGetPostByRelevantResponse = ApiResponse & {
+  relenvantPosts: PostWithSimpleData[];
+};
+
+/**
+ * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 송신 타입 - by 1-blue
+ */
+export type ApiDeletePostBody = {
+  postIdx: number;
+};
+/**
+ * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 수신 타입 - by 1-blue
+ */
+export type ApiDeletePostResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 특정 게시글의 댓글들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetCommentsBody = {
+  postIdx: number;
+  lastIdx: number;
+  limit: number;
+};
+/**
+ * 2022/09/24 - 특정 게시글의 댓글들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetCommentsResponse = ApiResponse & {
+  comments: CommentWithData[];
+};
+
+/**
+ * 2022/09/24 - 특정 게시글에 댓글 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreateCommentBody = {
+  postIdx: number;
+  contents: string;
+};
+/**
+ * 2022/09/24 - 특정 게시글에 댓글 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreateCommentResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 특정 댓글 제거 송신 타입 - by 1-blue
+ */
+export type ApiDeleteCommentBody = {
+  commentIdx: number;
+};
+/**
+ * 2022/09/24 - 특정 댓글 제거 수신 타입 - by 1-blue
+ */
+export type ApiDeleteCommentResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 답글 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreateReplyBody = {
+  postIdx: number;
+  commentIdx: number;
+  contents: string;
+};
+/**
+ * 2022/09/24 - 답글 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreateReplyResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 답글 제거 송신 타입 - by 1-blue
+ */
+export type ApiDeleteReplyBody = {
+  replyIdx: number;
+};
+/**
+ * 2022/09/24 - 답글 제거 수신 타입 - by 1-blue
+ */
+export type ApiDeleteReplyResponse = ApiResponse & {};

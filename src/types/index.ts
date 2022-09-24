@@ -4,6 +4,9 @@ export type {
   PostKinds,
   SimpleUser,
   PostWithSimpleData,
+  PostWithData,
+  CommentWithUser,
+  CommentWithData,
 } from "./data";
 
 // 2022/09/23 - api 요청 관련 타입 - by 1-blue
@@ -16,6 +19,22 @@ export type {
   ApiLogInResponse,
   ApiGetPostsBody,
   ApiGetPostsResponse,
+  ApiGetPostBody,
+  ApiGetPostResponse,
+  ApiGetPostByRelevantResponse,
+  ApiGetPostsByRelevantBody,
+  ApiDeletePostBody,
+  ApiDeletePostResponse,
+  ApiCreateCommentBody,
+  ApiCreateCommentResponse,
+  ApiGetCommentsBody,
+  ApiGetCommentsResponse,
+  ApiDeleteCommentBody,
+  ApiDeleteCommentResponse,
+  ApiCreateReplyBody,
+  ApiCreateReplyResponse,
+  ApiDeleteReplyBody,
+  ApiDeleteReplyResponse,
 } from "./api";
 
 // 2022/04/10 - 아이콘 형태 - by 1-blue
