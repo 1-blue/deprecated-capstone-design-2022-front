@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import type {
   ApiGetPostByRelevantResponse,
   ApiGetPostResponse,
+  ApiGetPostsByCategoryResponse,
 } from "@src/types";
 
 // component
@@ -24,7 +25,7 @@ import Favorite from "@src/components/Favorite";
 import TitleNav from "@src/components/TitleNav";
 
 // util
-import { dateOrTimeFormat } from "@src/libs";
+import { combineClassNames, dateOrTimeFormat } from "@src/libs";
 
 // hook
 import useModal from "@src/hooks/useModal";
@@ -40,10 +41,12 @@ import type {
 } from "next";
 import { AxiosError } from "axios";
 
-const PostDetail: NextPage<ApiGetPostResponse> = ({
-  post: postData,
-  message,
-}) => {
+type Props = {
+  post: ApiGetPostResponse["post"];
+  posts: ApiGetPostsByCategoryResponse["posts"];
+};
+
+const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
   const router = useRouter();
   const { status, data } = useSession();
 
@@ -53,16 +56,11 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({
       ? `/api/post?name=${postData.User.name}&title=${postData.title}`
       : null,
     null,
-    { fallbackData: { post: postData, message } }
+    { fallbackData: { post: postData, message: "" } }
   );
 
-  // >>> 카테고리 게시글 생성 로직 처리하고 나서 수정!
-  // // 2022/04/30 - 현재 게시글과 같은 카테고리를 가진 게시글들 ( + 동일한 유저 ) - by 1-blue
-  // const { data: categorizedPosts } = useSWR<ResponseOfCategorizedPosts>(
-  //   router.query.title ? `/api/post/${router.query.title}/categorized` : null
-  // );
-  // // 2022/04/30 - 카테고리 토글 변수 - by 1-blue
-  // const [toggleCategory, setToggleCategory] = useState(false);
+  // 2022/04/30 - 카테고리 토글 변수 - by 1-blue
+  const [toggleCategory, setToggleCategory] = useState(false);
 
   // 2022/09/24 - 현재 게시글과 연관된 게시글들 - by 1-blue
   const { data: relevantResult } = useSWR<ApiGetPostByRelevantResponse>(
@@ -230,24 +228,20 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({
 
         {/* 같은 카테고리 게시글들 */}
         <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
-          {/* <h2 className="text-xl font-semibold">
-            {categorizedPosts?.data.category}
-          </h2>
+          <h2 className="text-xl font-semibold">{post.cateogoryIdx}</h2>
           {toggleCategory && (
             <ul className="space-y-1">
-              {categorizedPosts?.data.posts.map((post, index) => (
-                <li key={post.idx}>
+              {posts.map(({ title }, index) => (
+                <li key={title}>
                   <span className="dark:text-gray-400">{index + 1}. </span>
-                  <Link href={`/${post.user.name}/${post.title}`}>
+                  <Link href={`/${data?.user.name}/${title}`}>
                     <a
                       className={combineClassNames(
                         "font-semibold hover:text-indigo-500",
-                        router.query.title === post.title
-                          ? "text-indigo-400"
-                          : ""
+                        router.query.title === title ? "text-indigo-400" : ""
                       )}
                     >
-                      {post.title}
+                      {title}
                     </a>
                   </Link>
                 </li>
@@ -259,7 +253,7 @@ const PostDetail: NextPage<ApiGetPostResponse> = ({
             onClick={() => setToggleCategory((prev) => !prev)}
           >
             {toggleCategory ? "▲ 숨기기" : "▼ 목록 보기"}
-          </button> */}
+          </button>
         </section>
 
         {/* 섬네일 */}
@@ -361,11 +355,20 @@ export const getServerSideProps: GetServerSideProps = async (
       return { props: {} };
     }
 
-    const { data } = await apiService.postService.apiGetPost({ name, title });
+    const {
+      data: { post },
+    } = await apiService.postService.apiGetPost({ name, title });
+    const {
+      data: { posts },
+    } = await apiService.postService.apiGetPostsByCategory({
+      postIdx: post.idx,
+      userIdx: post.User.idx,
+    });
 
     return {
       props: {
-        ...JSON.parse(JSON.stringify(data)),
+        post: JSON.parse(JSON.stringify(post)),
+        posts: JSON.parse(JSON.stringify(posts)),
       },
     };
   } catch (error) {

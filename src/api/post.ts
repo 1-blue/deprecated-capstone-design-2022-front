@@ -4,6 +4,8 @@ import { axiosInstance } from ".";
 import type {
   ApiCreateFavoriteBody,
   ApiCreateFavoriteResponse,
+  ApiCreatePostBody,
+  ApiCreatePostResponse,
   ApiDeleteFavoriteBody,
   ApiDeleteFavoriteResponse,
   ApiDeletePostBody,
@@ -11,6 +13,8 @@ import type {
   ApiGetPostBody,
   ApiGetPostResponse,
   ApiGetPostsBody,
+  ApiGetPostsByCategoryBody,
+  ApiGetPostsByCategoryResponse,
   ApiGetPostsResponse,
 } from "@src/types";
 
@@ -67,6 +71,35 @@ const apiDeleteFavorite = ({ postIdx }: ApiDeleteFavoriteBody) =>
   );
 
 /**
+ * 2022/09/24 - 게시글 생성 - by 1-blue
+ * @param body 게시글 생성에 필요한 데이터
+ * @returns 결과 메시지
+ */
+const apiCreatePost = (body: ApiCreatePostBody) =>
+  axiosInstance.post<ApiCreatePostResponse>(`/post`, body);
+
+/**
+ * 2022/09/24 - 게시글 임시 생성 - by 1-blue
+ * @param body 게시글 임시 생성에 필요한 데이터
+ * @returns 결과 메시지
+ */
+const apiCreateTemporaryPost = (body: ApiCreatePostBody) =>
+  axiosInstance.post<ApiCreatePostResponse>(`/post/temporary`, body);
+
+/**
+ * 2022/09/25 - 특정 게시글과 같은 작성자면서 같은 카테고리를 가진 게시글들 요청 - by 1-blue
+ * @param body postIdx: 게시글 식별자, userIdx: 게시글 작성자 식별자
+ * @returns 게시글들의 제목
+ */
+const apiGetPostsByCategory = ({
+  postIdx,
+  userIdx,
+}: ApiGetPostsByCategoryBody) =>
+  axiosInstance.get<ApiGetPostsByCategoryResponse>(
+    `/post/category?postIdx=${postIdx}&userIdx=${userIdx}`
+  );
+
+/**
  * 2022/09/23 - 게시글 관련 api 요청 객체 - by 1-blue
  */
 const postService = {
@@ -75,6 +108,9 @@ const postService = {
   apiDeletePost,
   apiCreateFavorite,
   apiDeleteFavorite,
+  apiCreatePost,
+  apiCreateTemporaryPost,
+  apiGetPostsByCategory,
 };
 
 export default postService;

@@ -39,6 +39,16 @@ export type {
   ApiCreateFavoriteResponse,
   ApiDeleteFavoriteBody,
   ApiDeleteFavoriteResponse,
+  ApiCreatePostBody,
+  ApiCreatePostResponse,
+  ApiGetPostByUpdateBody,
+  ApiGetPostByUpdateResponse,
+  ApiCreateCategoryBody,
+  ApiCreateCategoryResponse,
+  ApiGetCategoriesBody,
+  ApiGetCategoriesResponse,
+  ApiGetPostsByCategoryBody,
+  ApiGetPostsByCategoryResponse,
 } from "./api";
 
 // 2022/04/10 - 아이콘 형태 - by 1-blue

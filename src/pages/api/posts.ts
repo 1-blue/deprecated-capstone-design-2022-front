@@ -1,7 +1,8 @@
+import prisma from "@src/prisma";
+
 // type
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { ApiGetPostsResponse, PostKinds } from "@src/types";
-import prisma from "@src/prisma";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,9 +12,12 @@ export default async function handler(
   const limit = Number(req.query.limit);
   const lastIdx = Number(req.query.lastIdx);
 
-  let where = {};
+  let where = {
+    NOT: {
+      OR: [{ isPrivate: true }, { isTemporary: true }],
+    },
+  };
 
-  // >>> 좋아요 개수에 따른 정렬 적용 필요!
   if (kinds === "popular") {
     const posts = await prisma.post.findMany({
       where,
@@ -24,11 +28,17 @@ export default async function handler(
             photo: true,
           },
         },
+        _count: {
+          select: {
+            comments: true,
+            favorites: true,
+          },
+        },
       },
       take: limit,
       skip: lastIdx === -1 ? 0 : 1,
       ...(lastIdx !== -1 && { cursor: { idx: lastIdx } }),
-      // orderBy: { updatedAt: "desc" },
+      orderBy: [{ favorites: { _count: "desc" } }],
     });
 
     res.status(200).json({
@@ -46,11 +56,17 @@ export default async function handler(
             photo: true,
           },
         },
+        _count: {
+          select: {
+            comments: true,
+            favorites: true,
+          },
+        },
       },
       take: limit,
       skip: lastIdx === -1 ? 0 : 1,
       ...(lastIdx !== -1 && { cursor: { idx: lastIdx } }),
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ updatedAt: "desc" }],
     });
 
     res.status(200).json({

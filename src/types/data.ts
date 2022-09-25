@@ -20,6 +20,10 @@ export type SimpleUser = Pick<User, "idx" | "name" | "photo" | "introduction">;
  */
 export type PostWithSimpleData = Post & {
   User: Pick<User, "name" | "photo">;
+  _count: {
+    comments: number;
+    favorites: number;
+  };
 };
 
 /**

@@ -36,6 +36,9 @@ model User {
 
   // 유저와 (게시글)좋아요 => 1:N
   favorites Favorite[]
+
+  // 유저와 카테고리 => N:M
+  users UsersOnCategories[]
 }
 
 // 게시글
@@ -43,8 +46,10 @@ model Post {
   idx         Int      @id @default(autoincrement())
   title       String
   contents    String   @db.VarChar(4000)
+  summary     String?  @db.VarChar(200)
   updatedAt   DateTime @updatedAt
   isTemporary Boolean  @default(true)
+  isPrivate   Boolean  @default(false)
   photo       String?
 
   // 유저와 게시글 => 1:N
@@ -59,6 +64,12 @@ model Post {
 
   // 게시글과 좋아요 => 1:N
   favorites Favorite[]
+
+  // 카테고리와 게시글 => 1:N
+  Category     Category? @relation(fields: [cateogoryIdx], references: [category], onDelete: Cascade, onUpdate: Cascade)
+  cateogoryIdx String?
+
+  @@index([title, userIdx])
 }
 
 // 키워드
@@ -87,12 +98,12 @@ model Comment {
   commentIdx Int?
 
   // 유저와 댓글 => 1:N
-  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
-  userIdx Int?
+  User    User @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int
 
   // 게시글과 댓글 => 1:N
-  Post    Post? @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
-  postIdx Int?
+  Post    Post @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  postIdx Int
 
   // 댓글과 답글 => 1:N ( 자기자신과의 관계 )
   Reply  Comment?  @relation("Reply", fields: [commentIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
@@ -101,14 +112,36 @@ model Comment {
 
 // 좋아요 ( 게시글 좋아요 )
 model Favorite {
-  idx       Int      @id @default(autoincrement())
   updatedAt DateTime @updatedAt
 
   // 유저와 좋아요 => 1:N
-  User    User? @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
-  userIdx Int?
+  User    User @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx Int
 
   // 게시글과 좋아요 => 1:N
-  Post    Post? @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
-  postIdx Int?
+  Post    Post @relation(fields: [postIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  postIdx Int
+
+  @@id([userIdx, postIdx])
+}
+
+// 카테고리 ( 게시글 카테고리 )
+model Category {
+  category String @id @unique
+
+  // 유저와 카테고리 => N:M
+  categories UsersOnCategories[]
+
+  // 카테고리와 게시글 => 1:N
+  posts Post[]
+}
+
+// 유저와 카테고리 중간 테이블 ( N:M )
+model UsersOnCategories {
+  user        User     @relation(fields: [userIdx], references: [idx], onDelete: Cascade, onUpdate: Cascade)
+  userIdx     Int
+  category    Category @relation(fields: [categoryIdx], references: [category], onDelete: Cascade, onUpdate: Cascade)
+  categoryIdx String
+
+  @@id([userIdx, categoryIdx])
 }

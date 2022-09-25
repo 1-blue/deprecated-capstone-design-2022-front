@@ -69,13 +69,13 @@ const createPosts = async (number: number) => {
 
 async function main() {
   // 관리자 유저 생성
-  // await createAdminUser();
+  await createAdminUser();
 
   // 가짜(예시) 키워드들 생성
   await createKeywords();
 
   // 가짜 게시글들 생성
-  await createPosts(35);
+  await createPosts(5);
 }
 
 main()

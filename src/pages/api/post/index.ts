@@ -1,3 +1,5 @@
+import { getSession } from "next-auth/react";
+
 import prisma from "@src/prisma";
 
 // type
@@ -42,6 +44,45 @@ export default async function handler(
     return res
       .status(200)
       .json({ post, message: "특정 게시글을 가져왔습니다." });
+  }
+  if (method === "POST") {
+    const session = await getSession({ req });
+
+    if (!session)
+      return res.status(403).json({ message: "로그인후에 접근해주세요!" });
+
+    const { title, contents, keywords, photo, category, isPrivate, summary } =
+      req.body;
+
+    if (!Array.isArray(keywords))
+      return res.status(418).json({ message: "잘못된 데이터입니다." });
+
+    const createdPost = await prisma.post.create({
+      data: {
+        title,
+        contents,
+        photo,
+        summary,
+        isPrivate,
+        isTemporary: false,
+        userIdx: session.user.idx,
+        cateogoryIdx: category,
+      },
+    });
+
+    await prisma.post.update({
+      where: { idx: createdPost.idx },
+      data: {
+        keywords: {
+          createMany: {
+            data: keywords.map((keyword) => ({ keywordIdx: keyword })),
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+
+    return res.status(201).json({ message: "게시글을 생성했습니다." });
   }
   if (method === "DELETE") {
     if (typeof req.query.postIdx !== "string")

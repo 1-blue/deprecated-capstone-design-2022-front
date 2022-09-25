@@ -36,7 +36,15 @@ export default async function handler(
           some: { OR: keywords.map((keyword) => ({ keywordIdx: keyword })) },
         },
       },
-      include: { User: { select: { name: true, photo: true } } },
+      include: {
+        User: { select: { name: true, photo: true } },
+        _count: {
+          select: {
+            comments: true,
+            favorites: true,
+          },
+        },
+      },
       take: 20,
     });
 

@@ -1,5 +1,5 @@
 // type
-import type { User } from "@prisma/client";
+import type { Category, Keyword, Post, User } from "@prisma/client";
 import type {
   PhotoKinds,
   PostKinds,
@@ -182,3 +182,79 @@ export type ApiDeleteFavoriteBody = {
  * 2022/09/24 - 게시글에 좋아요 제거 수신 타입 - by 1-blue
  */
 export type ApiDeleteFavoriteResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 게시글 (임시) 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreatePostBody = {
+  title: string;
+  contents: string;
+  summary?: string;
+  photo?: string;
+  keywords: string[];
+  category?: string;
+};
+/**
+ * 2022/09/24 - 게시글 (임시) 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreatePostResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 게시글 수정 정보 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostByUpdateBody = {
+  title: string;
+};
+/**
+ * 2022/09/24 - 게시글 수정 정보 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostByUpdateResponse = ApiResponse & {
+  post:
+    | (Post & {
+        keywords: {
+          keyword: Keyword;
+        }[];
+        Category: {
+          category: string;
+        } | null;
+      })
+    | null;
+};
+
+/**
+ * 2022/09/25 - 카테고리들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetCategoriesBody = {};
+/**
+ * 2022/09/24 - 카테고리들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetCategoriesResponse = ApiResponse & {
+  categories: Category[];
+};
+
+/**
+ * 2022/09/25 - 카테고리 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreateCategoryBody = {
+  category: string;
+};
+/**
+ * 2022/09/24 - 카테고리 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreateCategoryResponse = ApiResponse & {};
+
+/**
+ * 2022/09/25 - 특정 유저의 특정 카테고리를 가진 게시글들 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsByCategoryBody = {
+  postIdx: number;
+  userIdx: number;
+};
+/**
+ * 2022/09/24 - 특정 유저의 특정 카테고리를 가진 게시글들 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsByCategoryResponse = ApiResponse & {
+  posts: {
+    title: string;
+  }[];
+};

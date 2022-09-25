@@ -19,7 +19,7 @@ type Props = {
 
 const Post = ({ post, priority }: Props) => {
   return (
-    <li className="group bg-zinc-300 dark:bg-zinc-700 rounded-md overflow-hidden hover:-translate-y-2 duration-500 min-w-[300px] mb-8">
+    <li className="flex flex-col group bg-zinc-300 dark:bg-zinc-700 rounded-md overflow-hidden hover:-translate-y-2 duration-500 min-w-[300px] mb-8">
       {/* 게시글 섬네일 */}
       <Link href={`/${post.User.name}/${post.title}`}>
         <a className="inline-block w-full h-[300px]">
@@ -34,12 +34,14 @@ const Post = ({ post, priority }: Props) => {
         </a>
       </Link>
 
-      <section className="flex flex-col py-4">
+      <section className="flex-1 flex flex-col py-4">
         {/* 게시글 제목과 내용 */}
         <Link href={`/${post.User.name}/${post.title}`}>
-          <a>
+          <a className="flex-1 flex flex-col">
             <h3 className="text-lg font-bold px-4 mb-1">{post.title}</h3>
-            <p className="whitespace-pre text-sm px-4 mb-4">{post.contents}</p>
+            <p className="flex-1 whitespace-pre text-sm px-4 mb-4">
+              {post.summary}
+            </p>
           </a>
         </Link>
         {/* 게시글 작성 시간 */}
@@ -67,11 +69,11 @@ const Post = ({ post, priority }: Props) => {
           <div className="flex space-x-2 text-sm">
             <div className="flex items-center space-x-1">
               <Icon icon={ICON.COMMENTS} className="w-5 h-5" />
-              {/* <span>{post?._count?.comment || 0}</span> */}
+              <span>{post._count.comments}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Icon icon={ICON.HEART} className="w-5 h-5" />
-              {/* <span>{post?._count?.favorite || 0}</span> */}
+              <span>{post._count.favorites}</span>
             </div>
           </div>
         </div>
