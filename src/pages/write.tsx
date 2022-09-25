@@ -1,43 +1,34 @@
-import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useSWRImmutable from "swr/immutable";
+import { useSession } from "next-auth/react";
+
+// api
+import apiService from "@src/api";
+
+// util
+import { combinePhotoUrl } from "@src/libs";
 
 // component
 import InputSetting from "@src/components/Write/InputSetting";
-
-// common-component
 import Markdown from "@src/components/common/Markdown";
 import Spinner from "@src/components/common/Spinner";
 import Icon from "@src/components/common/Icon";
 import HeadInfo from "@src/components/common/HeadInfo";
 
-// hook
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
-
 // type
+import type { NextPage } from "next";
+import type { ApiGetPostByUpdateResponse } from "@src/types";
 import { ICON } from "@src/types";
-import type { ResponseStatus } from "@src/types";
-import type {
-  IPostWithUserAndKeywordAndCount,
-  ResponseOfPhoto,
-} from "@src/types";
+import { AxiosError } from "axios";
 
 export type WriteForm = {
   title: string;
   keyword: string;
   contents: string;
 };
-interface IResponseOfCreatedTemparoryPost {
-  status: ResponseStatus;
-  data: {
-    title: string;
-    tempPostIdx?: number;
-  };
-}
 
 export type PostMetadata = {
   summary: string;
@@ -45,45 +36,44 @@ export type PostMetadata = {
   category: string;
   thumbnail: string;
 };
-type ResponseOfPosts = {
-  status: ResponseStatus;
-  data: {
-    post: IPostWithUserAndKeywordAndCount;
-  };
-};
 
 const Write: NextPage = () => {
+  const { data } = useSession();
   const router = useRouter();
 
   // 2022/04/26 - markdown관련 헬퍼 함수들 - by 1-blue
   const { register, watch, getValues, setValue } = useForm<WriteForm>();
   // 2022/04/27 - 태그가 들어갈 배열 - by 1-blue
   const [keywords, setKeywords] = useState<string[]>([]);
-  // 2022/04/27 - 게시글 임시 생성 함수 - by 1-blue
-  const [
-    createTemporaryPost,
-    { data: createTemporaryPostResponse },
-    resetState,
-  ] = useMutation<IResponseOfCreatedTemparoryPost>({
-    url: "/api/temp",
-    method: "POST",
-  });
 
-  // 2022/04/27 - 게시글 임시 저장 - by 1-blue
-  const onTemporarySave = useCallback(() => {
+  // 2022/09/24 - 게시글 임시 저장 - by 1-blue
+  const onTemporarySave = useCallback(async () => {
     const title = getValues("title");
     const contents = getValues("contents");
 
     if (!title) return toast.error("제목을 입력해주세요!");
     if (!contents) return toast.error("내용을 입력해주세요!");
 
-    createTemporaryPost({
-      title,
-      contents,
-      keywords,
-      tempPostIdx: createTemporaryPostResponse?.data.tempPostIdx,
-    });
-  }, [getValues, keywords, createTemporaryPost, createTemporaryPostResponse]);
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiCreateTemporaryPost({
+        title,
+        contents,
+        keywords,
+      });
+
+      toast.success(message);
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("알 수 없는 에러입니다.");
+      }
+    }
+  }, [getValues, keywords]);
 
   // 2022/04/27 - ctrl + s 감지 핸들러 - by 1-blue
   const handleSave = useCallback(
@@ -159,80 +149,91 @@ const Write: NextPage = () => {
     router.back();
   }, [router]);
 
-  // 2022/04/27 - 게시글 임시 생성 성공 시 toast - by 1-blue
-  useToastMessage({
-    ok: createTemporaryPostResponse?.status.ok,
-    message: `"${createTemporaryPostResponse?.data.title}" 게시글을 임시저장 했습니다.`,
-    excute: resetState,
-  });
-
   // 2022/04/28 - 이미지 input ref - by 1-blue
   const photoRef = useRef<HTMLInputElement>(null);
   // 2022/04/28 - 이미지 드래그중인지 판단할 변수 - by 1-blue
   const [isDragging, setIsDragging] = useState(false);
   // 2022/04/28 - 이미지 업로드 로딩 변수 - by 1-blue
   const [uploadLoading, setUploadLoading] = useState(false);
-  // 2022/04/28 - 이미지 업로드 ( 드래그 앤 드랍 ) - by 1-blue
+  // 2022/09/24 - 이미지 업로드 ( 드래그 앤 드랍 ) - by 1-blue
   const onUploadPhotoByDrop = useCallback(
     async (e: any) => {
       e.preventDefault();
 
       setUploadLoading(true);
 
+      if (!e.dataTransfer.files) return;
+      if (e.dataTransfer.files?.length === 0) return;
+
+      const file = e.dataTransfer.files[0];
+
       try {
-        const formData = new FormData();
-        formData.append("photo", e.dataTransfer.files[0]);
-        const {
-          data: { photoUrl },
-        }: ResponseOfPhoto = await fetch(
-          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
-          {
-            method: "POST",
-            body: formData,
-          }
-        ).then((res) => res.json());
+        const { photoURL } = await apiService.photoService.apiCreatePhoto({
+          file,
+          kinds: "post",
+        });
+
+        // 알 수 없는 이유로 이미지 업로드 실패
+        if (!photoURL) return toast.warning("이미지를 업로드하지 못했습니다.");
+
         setValue(
           "contents",
-          getValues("contents") + `\n![이미지](${photoUrl})`
+          getValues("contents") + `\n![이미지](${combinePhotoUrl(photoURL)})`
         );
+
         toast.success("이미지를 업로드했습니다.");
       } catch (error) {
-        toast.error("이미지 업로드에 실패했습니다.");
-      }
+        console.error("error >> ", error);
 
-      setUploadLoading(false);
-      setIsDragging(false);
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data.message);
+        } else {
+          toast.error("알 수 없는 에러가 발생했습니다.");
+        }
+      } finally {
+        setUploadLoading(false);
+        setIsDragging(false);
+      }
     },
     [getValues, setValue, setUploadLoading, setIsDragging]
   );
-  // 2022/04/28 - 이미지 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+  // 2022/09/24 - 이미지 업로드 ( 파일 탐색기 이용 ) - by 1-blue
   const onUploadPhotoByExplorer = useCallback(
     async (e: any) => {
       setUploadLoading(true);
 
+      if (!e.target.files) return;
+      if (e.target.files?.length === 0) return;
+
+      const file = e.target.files[0];
+
       try {
-        const formData = new FormData();
-        formData.append("photo", e.target.files[0]);
-        const {
-          data: { photoUrl },
-        }: ResponseOfPhoto = await fetch(
-          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
-          {
-            method: "POST",
-            body: formData,
-          }
-        ).then((res) => res.json());
+        const { photoURL } = await apiService.photoService.apiCreatePhoto({
+          file,
+          kinds: "post",
+        });
+
+        // 알 수 없는 이유로 이미지 업로드 실패
+        if (!photoURL) return toast.warning("이미지를 업로드하지 못했습니다.");
+
         setValue(
           "contents",
-          getValues("contents") + `\n![이미지](${photoUrl})`
+          getValues("contents") + `\n![이미지](${combinePhotoUrl(photoURL)})`
         );
+
         toast.success("이미지를 업로드했습니다.");
       } catch (error) {
-        toast.error("이미지 업로드에 실패했습니다.");
-      }
+        console.error("error >> ", error);
 
-      setUploadLoading(false);
-      setIsDragging(false);
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data.message);
+        } else {
+          toast.error("알 수 없는 에러가 발생했습니다.");
+        }
+      } finally {
+        setUploadLoading(false);
+        setIsDragging(false);
+      }
     },
     [setUploadLoading, getValues, setValue, setIsDragging]
   );
@@ -244,20 +245,57 @@ const Write: NextPage = () => {
     summary: "",
     thumbnail: "",
   });
+  // 2022/09/25 - 게시글 생성 요청 - by 1-blue
+  const onCreatePost = useCallback(async () => {
+    const title = getValues("title");
+    const contents = getValues("contents");
+    if (!title) return toast.error("제목을 입력해주세요!");
+    if (!contents) return toast.error("내용을 입력해주세요!");
 
-  // 2022/05/01 - 수정이라면 게시글 정보 가져오기 - by 1-blue
+    const { thumbnail, ...rest } = postMetadata;
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiCreatePost({
+        title,
+        contents,
+        keywords,
+        photo: thumbnail,
+        ...rest,
+      });
+
+      toast.success(message);
+
+      router.push(`/${data?.user.name}/${title}`);
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("알 수 없는 에러입니다.");
+      }
+    }
+  }, [getValues, keywords, postMetadata, router, data]);
+
+  // 2022/09/24 - 수정이라면 게시글 정보 가져오기 - by 1-blue
   const { data: currentPost, isValidating: currentPostLoading } =
-    useSWRImmutable<ResponseOfPosts>(
-      router.query?.title ? `/api/post/${router.query?.title}` : null
+    useSWRImmutable<ApiGetPostByUpdateResponse>(
+      router.query?.title
+        ? encodeURI(`/api/post/temporary?title=${router.query.title}`)
+        : null
     );
-  // 2022/05/01 - 수정이라면 데이터 채우기 - by 1-blue
-  useEffect(() => {
-    if (!currentPost || !currentPost?.status.ok || !currentPost?.data.post)
-      return;
 
-    setValue("title", currentPost.data.post.title);
-    setValue("contents", currentPost.data.post.contents);
-    setKeywords(currentPost.data.post.keywords.map(({ keyword }) => keyword));
+  // 2022/09/24 - 수정이라면 데이터 채우기 - by 1-blue
+  useEffect(() => {
+    if (!currentPost || !currentPost.post) return;
+
+    setValue("title", currentPost.post.title);
+    setValue("contents", currentPost.post.contents);
+    setKeywords(
+      currentPost.post.keywords.map(({ keyword }) => keyword.keyword)
+    );
   }, [currentPost, setValue]);
 
   return (
@@ -372,10 +410,9 @@ const Write: NextPage = () => {
       {/* 게시글 미리보기 및 설정 */}
       {isPreview && (
         <InputSetting
-          getValues={getValues}
-          keywords={keywords}
+          onCreatePost={onCreatePost}
+          title={getValues("title")}
           setIsPreview={setIsPreview}
-          tempPostIdx={createTemporaryPostResponse?.data.tempPostIdx}
           postMetadata={postMetadata}
           setPostMetadata={setPostMetadata}
         />

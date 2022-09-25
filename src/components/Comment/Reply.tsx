@@ -1,47 +1,46 @@
 import React from "react";
-
-// common-component
-import Photo from "@src/components/common/Photo";
-
-// type
-import type { IRecommentWithUser } from "@src/types";
-
-// hooks
-import useMe from "@src/hooks/useMe";
+import { useSession } from "next-auth/react";
 
 // util
 import { timeFormat } from "@src/libs/dateFormat";
 
+// component
+import Photo from "@src/components/common/Photo";
+
+// type
+import type { CommentWithUser } from "@src/types";
+
 type Props = {
-  recomment: IRecommentWithUser;
-  onRemoveRecomment: (recommentIdx: number) => () => Promise<void>;
+  reply: CommentWithUser;
+  deleteReply: (replyIdx: number) => () => void;
 };
 
-const Recomment = ({ recomment, onRemoveRecomment }: Props) => {
-  const { me } = useMe();
+const Reply = ({ reply, deleteReply }: Props) => {
+  const { data, status } = useSession();
 
   return (
     <li className="space-y-4 pt-4">
       {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
       <div className="flex space-x-2">
         <Photo
-          photo={recomment.user.avatar}
-          size="w-10 h-10"
+          photo={reply.User.photo}
+          className="w-10 h-10"
           alt="유저 이미지"
           $rouneded
+          $cover
         />
         <div className="flex flex-col">
-          <span className="font-semibold">{recomment.user.name}</span>
+          <span className="font-semibold">{reply.User.name}</span>
           <time className="text-sm dark:text-gray-400">
-            {timeFormat(recomment.updatedAt)}
+            {timeFormat(reply.updatedAt)}
           </time>
         </div>
         <div className="flex-1" />
-        {recomment.user.idx === me?.idx && (
+        {status === "authenticated" && reply.User.idx === data.user.idx && (
           <button
             type="button"
             className="self-start text-gray-400 hover:text-white"
-            onClick={onRemoveRecomment(recomment.idx)}
+            onClick={deleteReply(reply.idx)}
           >
             삭제
           </button>
@@ -50,10 +49,10 @@ const Recomment = ({ recomment, onRemoveRecomment }: Props) => {
 
       {/* 내용 */}
       <p className="whitespace-pre-line p-4 rounded-md bg-zinc-200 dark:bg-zinc-700">
-        {recomment.contents}
+        {reply.contents}
       </p>
     </li>
   );
 };
 
-export default React.memo(Recomment);
+export default React.memo(Reply);

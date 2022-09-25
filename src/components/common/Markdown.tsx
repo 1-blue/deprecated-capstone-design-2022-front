@@ -51,8 +51,7 @@ const Markdown = ({ markdown }: Props) => {
                 <Photo
                   {...props}
                   photo={props.src}
-                  size="w-full h-80"
-                  className="m-0"
+                  className="w-full h-80 m-0"
                 />
               ) : (
                 <img {...props} className="w-full h-80 m-0" />

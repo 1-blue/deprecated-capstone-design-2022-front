@@ -5,34 +5,26 @@ import { combineClassNames, combinePhotoUrl } from "@src/libs";
 
 type Props = {
   photo?: string | null;
-  size: string;
-  className?: string;
+  className: string;
   alt?: string;
   $scale?: boolean;
   $cover?: boolean;
   $rouneded?: boolean;
-  $priority?: boolean;
+  priority?: boolean;
 };
 
 const Photo = ({
   photo,
-  size,
   className,
   alt = "이미지",
   $scale,
   $cover,
   $rouneded,
-  $priority,
+  priority,
 }: Props) => {
   return (
     <>
-      <figure
-        className={combineClassNames(
-          "relative",
-          size,
-          className ? className : ""
-        )}
-      >
+      <figure className={combineClassNames("relative", className)}>
         <Image
           src={photo ? combinePhotoUrl(photo) : "/temporary.jpg"}
           layout="fill"
@@ -43,7 +35,7 @@ const Photo = ({
             $rouneded ? "rounded-full" : "",
             photo ? "" : "blur"
           )}
-          priority={$priority}
+          priority={priority}
         />
       </figure>
     </>

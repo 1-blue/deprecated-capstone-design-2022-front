@@ -83,6 +83,7 @@ const Register = () => {
     [setValue, setUploadLoading, setIsDragging]
   );
   // 2022/09/23 - 유저 프로필 사진 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+  // >>> 정확한 타입 적용 필요
   const onUploadAvatarByExplorer = useCallback(
     async (e: any) => {
       setUploadLoading(true);
@@ -238,7 +239,7 @@ const Register = () => {
                     photo={watch("photo")}
                     alt="프로필 사진"
                     $cover
-                    size="w-full h-full"
+                    className="w-full h-full"
                   />
                 </figure>
               ) : (
