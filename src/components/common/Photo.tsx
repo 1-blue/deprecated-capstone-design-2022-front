@@ -22,11 +22,17 @@ const Photo = ({
   $rouneded,
   priority,
 }: Props) => {
+  const src = photo
+    ? photo.includes("http")
+      ? photo
+      : combinePhotoUrl(photo)
+    : "/temporary.jpg";
+
   return (
     <>
       <figure className={combineClassNames("relative", className)}>
         <Image
-          src={photo ? combinePhotoUrl(photo) : "/temporary.jpg"}
+          src={src}
           layout="fill"
           alt={alt}
           className={combineClassNames(

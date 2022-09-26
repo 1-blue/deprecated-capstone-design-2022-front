@@ -10,7 +10,7 @@ import React, { useCallback, useRef, useState } from "react";
 import ProfileNav from "@src/components/ProfileNav";
 
 // common-component
-import Button from "@src/components/common/Button";
+import Button from "@src/components/common/Tool/Button";
 
 // type
 import type { SimpleUser } from "@src/types";
@@ -109,7 +109,7 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/${context.params?.name}`
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/${context.params?.name}`
   ).then((res) => res.json());
 
   return {

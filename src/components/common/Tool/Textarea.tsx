@@ -34,7 +34,7 @@ const Textarea = ({ name, register, placeholder, infoMessage }: Props) => {
         rows={5}
         placeholder={placeholder}
         {...restRegister}
-        className="py-2 px-4 resize-none focus:outline-none bg-slate-300 dark:bg-slate-600 rounded-sm placeholder:text-sm"
+        className="py-2 px-4 resize-none sm:text-lg focus:outline-none bg-slate-300 dark:bg-slate-600 rounded-sm placeholder:text-xs sm:placeholder:text-sm"
         ref={(e) => {
           ref(e);
           textRef.current = e;

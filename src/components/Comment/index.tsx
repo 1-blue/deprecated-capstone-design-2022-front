@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { timeFormat } from "@src/libs";
 
 // component
-import Photo from "@src/components/common/Photo";
+import Avatar from "@src/components/common/Avatar";
 import Reply from "@src/components/Comment/Reply";
 import CommentForm from "@src/components/Comment/CommentForm";
 
@@ -36,12 +36,10 @@ const Comment = ({
     <li className="space-y-4 py-6">
       {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
       <div className="flex space-x-2">
-        <Photo
+        <Avatar
           photo={comment.User.photo}
           className="w-12 h-12"
           alt="유저 이미지"
-          $rouneded
-          $cover
         />
         <div className="flex flex-col">
           <span className="font-semibold">{comment.User.name}</span>

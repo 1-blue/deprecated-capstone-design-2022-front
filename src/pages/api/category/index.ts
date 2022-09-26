@@ -21,28 +21,28 @@ export default async function handler(
 
   const userIdx = session.user.idx;
 
-  if (method === "GET") {
-    const categories = await prisma.category.findMany({
-      where: {
-        categories: {
-          some: {
-            userIdx,
+  try {
+    if (method === "GET") {
+      const categories = await prisma.category.findMany({
+        where: {
+          categories: {
+            some: {
+              userIdx,
+            },
           },
         },
-      },
-    });
+      });
 
-    return res
-      .status(200)
-      .json({ categories, message: "모든 카테고리들을 가져왔습니다." });
-  }
-  if (method === "POST") {
-    if (typeof req.body.category !== "string")
-      return res.status(418).json({ message: "잘못된 데이터입니다." });
+      return res
+        .status(200)
+        .json({ categories, message: "모든 카테고리들을 가져왔습니다." });
+    }
+    if (method === "POST") {
+      if (typeof req.body.category !== "string")
+        return res.status(418).json({ message: "잘못된 데이터입니다." });
 
-    const { category } = req.body;
+      const { category } = req.body;
 
-    try {
       await prisma.category.create({
         data: {
           category,
@@ -60,8 +60,12 @@ export default async function handler(
       return res
         .status(201)
         .json({ message: "새로운 카테고리를 생성했습니다." });
-    } catch (error) {
-      console.error(error);
     }
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({ message: "서버측 오류입니다." });
   }
+
+  return res.status(404).json({ message: "잘못된 접근입니다." });
 }

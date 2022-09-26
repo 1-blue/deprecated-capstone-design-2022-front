@@ -6,6 +6,8 @@ import type {
   ApiCreateFavoriteResponse,
   ApiCreatePostBody,
   ApiCreatePostResponse,
+  ApiCreateTemporaryPostBody,
+  ApiCreateTemporaryPostResponse,
   ApiDeleteFavoriteBody,
   ApiDeleteFavoriteResponse,
   ApiDeletePostBody,
@@ -83,8 +85,8 @@ const apiCreatePost = (body: ApiCreatePostBody) =>
  * @param body 게시글 임시 생성에 필요한 데이터
  * @returns 결과 메시지
  */
-const apiCreateTemporaryPost = (body: ApiCreatePostBody) =>
-  axiosInstance.post<ApiCreatePostResponse>(`/post/temporary`, body);
+const apiCreateTemporaryPost = (body: ApiCreateTemporaryPostBody) =>
+  axiosInstance.post<ApiCreateTemporaryPostResponse>(`/post/temporary`, body);
 
 /**
  * 2022/09/25 - 특정 게시글과 같은 작성자면서 같은 카테고리를 가진 게시글들 요청 - by 1-blue

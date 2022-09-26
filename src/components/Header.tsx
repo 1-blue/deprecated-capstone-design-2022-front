@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
 
 // util
-import { combineClassNames, throttleHelper } from "@src/libs/util";
+import { combineClassNames, throttleHelper } from "@src/libs";
 
 // hook
 import useModal from "@src/hooks/useModal";
@@ -27,13 +27,13 @@ const Header = () => {
   // 2022/05/11 - 현재 스크롤 위치값 저장할 변수 - by 1-blue
   const [pageY, setPageY] = useState(0);
   // 2022/05/11 - 현재 스크롤을 내렸는지 올렸는지 확인할 스크롤 이벤트 함수 - by 1-blue
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     const { pageYOffset } = window;
     const deltaY = pageYOffset - pageY;
     const hide = pageYOffset !== 0 && deltaY >= 0;
     setHide(hide);
     setPageY(pageYOffset);
-  };
+  }, [pageY]);
   // 2022/05/11 - 스크롤 이벤트에 스로틀링 적용 - by 1-blue
   const throttleScroll = throttleHelper(handleScroll, 50);
   // 2022/05/11 - 스크롤 이벤트 등록 - by 1-blue
@@ -76,24 +76,24 @@ const Header = () => {
               <Icon
                 icon={theme === "dark" ? ICON.SUN : ICON.MOON}
                 $fill
-                className="w-7 h-7"
+                className="w-6 h-6 sm:w-7 sm:h-7"
               />
             ) : (
-              <Icon icon={ICON.MOON} $fill className="w-7 h-7" />
+              <Icon icon={ICON.MOON} $fill className="w-6 h-6 sm:w-7 sm:h-" />
             )}
           </button>
           {/* search */}
           <Link href="/search">
             <a className="w-10 h-10 rounded-full hover:bg-zinc-400 dark:hover:bg-slate-200 inline-flex justify-center items-center dark:hover:text-black">
-              <Icon icon={ICON.SEARCH} className="w-7 h-7" />
+              <Icon icon={ICON.SEARCH} className="w-6 h-6 sm:w-7 sm:h-" />
             </a>
           </Link>
           {/* ( 게시글 작성 and 모달창 ) or 로그인 */}
           {status === "authenticated" ? (
             <>
               <Link href="/write">
-                <a className="h-10 rounded-r-full rounded-l-full px-4 border-2 border-black dark:border-white  hover:bg-black dark:hover:bg-slate-200 hover:text-white dark:hover:text-black leading-10">
-                  새 글 작성
+                <a className="flex justify-center items-center h-10 rounded-r-full rounded-l-full px-3 sm:px-4 border-2 border-black dark:border-white hover:bg-black dark:hover:bg-slate-200 hover:text-white dark:hover:text-black leading-10">
+                  <span className="text-sm sm:text-base">새 글 작성</span>
                 </a>
               </Link>
               <button
@@ -103,10 +103,9 @@ const Header = () => {
               >
                 <Avatar
                   photo={data.user.photo}
-                  size="w-10 h-10"
+                  className="w-10 h-10"
                   alt="유저 프로필 이미지"
-                  $cover
-                  $rouneded
+                  priority
                 />
                 <Icon
                   icon={ICON.CHEVRON_DOWN}

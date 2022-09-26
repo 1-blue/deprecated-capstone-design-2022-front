@@ -3,7 +3,7 @@ namespace NodeJS {
     DATABASE_URL: string;
     SECRET: string;
 
-    NEXT_PUBLIC_SERVER_URL: string;
+    NEXT_PUBLIC_BASE_URL: string;
     NEXT_PUBLIC_PHOTO_BASE_URL: string;
 
     NEXT_PUBLIC_BUCKET_NAME: string;

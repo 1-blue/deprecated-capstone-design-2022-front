@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 
-// type
-import type {
-  ApiGetPostByRelevantResponse,
-  ApiGetPostResponse,
-  ApiGetPostsByCategoryResponse,
-} from "@src/types";
+// api
+import apiService from "@src/api";
+
+// util
+import { combineClassNames, dateOrTimeFormat } from "@src/libs";
+
+// hook
+import useModal from "@src/hooks/useModal";
 
 // component
 import HeadInfo from "@src/components/common/HeadInfo";
@@ -23,15 +25,8 @@ import Keyword from "@src/components/common/Keyword";
 import CommentContainer from "@src/components/Comment/CommentContainer";
 import Favorite from "@src/components/Favorite";
 import TitleNav from "@src/components/TitleNav";
-
-// util
-import { combineClassNames, dateOrTimeFormat } from "@src/libs";
-
-// hook
-import useModal from "@src/hooks/useModal";
-
-// api
-import apiService from "@src/api";
+import NotFoundPage from "@src/pages/404";
+import Avatar from "@src/components/common/Avatar";
 
 // type
 import type {
@@ -39,6 +34,11 @@ import type {
   GetServerSidePropsContext,
   NextPage,
 } from "next";
+import type {
+  ApiGetPostByRelevantResponse,
+  ApiGetPostResponse,
+  ApiGetPostsByCategoryResponse,
+} from "@src/types";
 import { AxiosError } from "axios";
 
 type Props = {
@@ -46,17 +46,20 @@ type Props = {
   posts: ApiGetPostsByCategoryResponse["posts"];
 };
 
-const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
+const PostDetail: NextPage<Props> = ({
+  post: initialPost,
+  posts: relatedPosts,
+}) => {
   const router = useRouter();
   const { status, data } = useSession();
 
   // 2022/09/24 - 현재 게시글 상세 데이터 요청 - by 1-blue
   const { data: responsePost, mutate: postMutate } = useSWR<ApiGetPostResponse>(
-    postData
-      ? `/api/post?name=${postData.User.name}&title=${postData.title}`
+    initialPost
+      ? `/api/post?name=${initialPost.User.name}&title=${initialPost.title}`
       : null,
     null,
-    { fallbackData: { post: postData, message: "" } }
+    { fallbackData: { post: initialPost, message: "" } }
   );
 
   // 2022/04/30 - 카테고리 토글 변수 - by 1-blue
@@ -64,7 +67,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
 
   // 2022/09/24 - 현재 게시글과 연관된 게시글들 - by 1-blue
   const { data: relevantResult } = useSWR<ApiGetPostByRelevantResponse>(
-    postData ? `/api/post/relevant?postIdx=${postData.idx}` : null
+    initialPost ? `/api/post/relevant?postIdx=${initialPost.idx}` : null
   );
 
   // 2022/05/01 - 게시글 삭제 모달 - by 1-blue
@@ -73,12 +76,12 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   // 2022/09/24 - 현재 게시글 제거 요청 - by 1-blue
   const onDeletePost = useCallback(() => {
-    if (!postData) return;
+    if (!initialPost) return;
 
     setIsDeleting(true);
 
     apiService.postService
-      .apiDeletePost({ postIdx: postData.idx })
+      .apiDeletePost({ postIdx: initialPost.idx })
       .then(({ data: { message } }) => {
         toast.success(message);
         router.push("/");
@@ -95,7 +98,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
       .finally(() => {
         setIsDeleting(false);
       });
-  }, [postData, router]);
+  }, [initialPost, router]);
 
   // 2022/09/24 - 좋아요 요청 - by 1-blue
   const onCreateFavorite = useCallback(async () => {
@@ -106,7 +109,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
       const {
         data: { message },
       } = await apiService.postService.apiCreateFavorite({
-        postIdx: postData.idx,
+        postIdx: initialPost.idx,
       });
 
       toast.success(message);
@@ -131,7 +134,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
         toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
       }
     }
-  }, [status, data, postMutate, postData]);
+  }, [status, data, postMutate, initialPost]);
   // 2022/09/24 - 좋아요 취소 요청 - by 1-blue
   const onDeleteFavorite = useCallback(async () => {
     if (status !== "authenticated")
@@ -141,7 +144,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
       const {
         data: { message },
       } = await apiService.postService.apiDeleteFavorite({
-        postIdx: postData.idx,
+        postIdx: initialPost.idx,
       });
 
       toast.success(message);
@@ -168,17 +171,18 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
         toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
       }
     }
-  }, [status, data, postMutate, postData]);
+  }, [status, data, postMutate, initialPost]);
 
   // >>> 에러 페이지
-  if (!responsePost || !responsePost.post) return <span>에러 페이지!</span>;
+  if (!responsePost || !responsePost.post)
+    return <NotFoundPage text="존재하지 않는 게시글입니다." />;
 
   const post = responsePost.post;
 
   return (
     <>
       <HeadInfo
-        title={post.title}
+        title={`Jslog | ${post.title}`}
         description={`${post.title}\n${post.contents}`}
         photo={post.photo}
       />
@@ -231,7 +235,7 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
           <h2 className="text-xl font-semibold">{post.cateogoryIdx}</h2>
           {toggleCategory && (
             <ul className="space-y-1">
-              {posts.map(({ title }, index) => (
+              {relatedPosts.map(({ title }, index) => (
                 <li key={title}>
                   <span className="dark:text-gray-400">{index + 1}. </span>
                   <Link href={`/${data?.user.name}/${title}`}>
@@ -270,12 +274,10 @@ const PostDetail: NextPage<Props> = ({ post: postData, posts }) => {
 
         {/* 작성자 정보 */}
         <section className="flex items-center space-x-4">
-          <Photo
+          <Avatar
             photo={post.User.photo}
             className="w-[80px] h-[80px] self-start"
             alt="유저 이미지"
-            $cover
-            $rouneded
           />
           <div className="flex flex-col">
             <span className="text-xl font-bold">{post.User.name}</span>

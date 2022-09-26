@@ -6,6 +6,7 @@ import apiService from "@src/api";
 
 // component
 import HeadInfo from "@src/components/common/HeadInfo";
+import Info from "@src/components/common/Support/Info";
 import Post from "@src/components/Post";
 import MainNav from "@src/components/MainNav";
 
@@ -23,23 +24,22 @@ const Home: NextPage<ApiGetPostsResponse> = (initialPosts) => {
   const [hasMorePost, setHasMorePost] = useState(true);
   // 2022/09/23 - 게시글 패치 관련 데이터 - by 1-blue
   const {
-    data: responsePosts,
+    data: arrayOfPosts,
     setSize,
     isValidating: isFetchPosts,
   } = useSWRInfinite<ApiGetPostsResponse>(
-    (pageIndex, previousPageData) => {
+    (pageIndex, prevData) => {
       // 모든 게시글을 불러온 경우 ( 총 요청 개수 !== 응답 개수 || 응답 개수 === 0 )
-      if (previousPageData && previousPageData.posts.length !== limit) {
+      if (prevData && prevData.posts.length !== limit) {
         setHasMorePost(false);
         return null;
       }
-      if (previousPageData && previousPageData.posts.length === 0) {
+      if (prevData && prevData.posts.length === 0) {
         setHasMorePost(false);
         return null;
       }
 
-      const lastIdx =
-        previousPageData?.posts?.[previousPageData.posts.length - 1].idx || -1;
+      const lastIdx = prevData?.posts?.[prevData.posts.length - 1].idx || -1;
 
       return `/api/posts?lastIdx=${lastIdx}&limit=${limit}&kinds=popular`;
     },
@@ -58,9 +58,9 @@ const Home: NextPage<ApiGetPostsResponse> = (initialPosts) => {
   return (
     <>
       <HeadInfo
-        title="인기 게시글"
-        description="blelog의 게시글들 ( 인기순 )"
-        photo={responsePosts?.[0].posts[0].photo}
+        title="Jslog | 인기 게시글"
+        description="Jslog의 게시글들 ( 인기순 )"
+        photo={arrayOfPosts?.[0].posts[0].photo}
       />
 
       {/* 최신 게시글과 인기 게시글 네비게이터 */}
@@ -70,34 +70,36 @@ const Home: NextPage<ApiGetPostsResponse> = (initialPosts) => {
 
       {/* 게시글 리스트 */}
       <article>
-        {responsePosts ? (
+        {arrayOfPosts ? (
           <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {responsePosts.map(({ posts }) =>
+            {arrayOfPosts.map(({ posts }) =>
               posts.map((post) => <Post key={post.idx} post={post} />)
             )}
           </ul>
         ) : (
-          <span>게시글이 없습니다.</span>
+          <Info text="게시글이 없습니다." />
         )}
       </article>
     </>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  const {
-    data: { posts },
-  } = await apiService.postService.apiGetPosts({
-    lastIdx: -1,
-    limit: 10,
-    kinds: "popular",
-  });
+export const getServerSideProps: GetServerSideProps<
+  ApiGetPostsResponse
+> = async () => {
+  try {
+    const { data } = await apiService.postService.apiGetPosts({
+      lastIdx: -1,
+      limit: 10,
+      kinds: "popular",
+    });
 
-  return {
-    props: {
-      posts: posts,
-    },
-  };
+    return { props: { ...JSON.parse(JSON.stringify(data)) } };
+  } catch (error) {
+    console.error("getServerSideProps index.tsx >> ", error);
+  }
+
+  return { props: { posts: [], message: "게시글 패치 실패" } };
 };
 
 export default Home;

@@ -1,5 +1,5 @@
 // util
-import { getSignedURL, movePhoto } from "@src/libs";
+import { getSignedURL } from "@src/libs";
 
 // type
 import type { NextApiRequest, NextApiResponse } from "next";

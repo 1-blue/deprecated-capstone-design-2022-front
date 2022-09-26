@@ -1,20 +1,21 @@
+import { SWRConfig } from "swr";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
+import { ToastContainer } from "react-toastify";
+
+// css
 import "../styles/globals.css";
 import "react-toastify/dist/ReactToastify.css";
-import type { AppProps } from "next/app";
-import { SWRConfig } from "swr";
-import { ToastContainer } from "react-toastify";
-import { ThemeProvider } from "next-themes";
-import { useRouter } from "next/router";
 
-// layout
+// component
 import Layout from "@src/components/Layout";
+
+// type
+import type { AppProps } from "next/app";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-
   return (
     //@ts-ignore
     <SWRConfig value={{ fetcher }}>
@@ -22,12 +23,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         {/* theme-provider */}
         <ThemeProvider attribute="class">
           {/* 전체 레이아웃 */}
-          <Layout
-            nonResposive={router.asPath.includes("/write")}
-            hasHeader={!router.asPath.includes("/write")}
-          >
+          <Layout>
             <Component {...pageProps} />
           </Layout>
+
           {/* 토스트 메시지 */}
           <ToastContainer
             position="top-right"

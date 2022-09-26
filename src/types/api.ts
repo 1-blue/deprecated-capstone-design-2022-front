@@ -89,13 +89,13 @@ export type ApiGetPostByRelevantResponse = ApiResponse & {
 };
 
 /**
- * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 송신 타입 - by 1-blue
+ * 2022/09/24 - 게시글 제거 요청 송신 타입 - by 1-blue
  */
 export type ApiDeletePostBody = {
   postIdx: number;
 };
 /**
- * 2022/09/24 - 특정 게시글과 연관된 게시글 요청 수신 타입 - by 1-blue
+ * 2022/09/24 - 게시글 제거 요청 수신 타입 - by 1-blue
  */
 export type ApiDeletePostResponse = ApiResponse & {};
 
@@ -184,7 +184,7 @@ export type ApiDeleteFavoriteBody = {
 export type ApiDeleteFavoriteResponse = ApiResponse & {};
 
 /**
- * 2022/09/24 - 게시글 (임시) 생성 송신 타입 - by 1-blue
+ * 2022/09/24 - 게시글 생성 송신 타입 - by 1-blue
  */
 export type ApiCreatePostBody = {
   title: string;
@@ -193,11 +193,30 @@ export type ApiCreatePostBody = {
   photo?: string;
   keywords: string[];
   category?: string;
+  temporaryPostIdx: number | null;
 };
 /**
- * 2022/09/24 - 게시글 (임시) 생성 수신 타입 - by 1-blue
+ * 2022/09/24 - 게시글 생성 수신 타입 - by 1-blue
  */
 export type ApiCreatePostResponse = ApiResponse & {};
+
+/**
+ * 2022/09/24 - 임시 게시글 생성 송신 타입 - by 1-blue
+ */
+export type ApiCreateTemporaryPostBody = {
+  title: string;
+  contents: string;
+  summary?: string;
+  photo?: string;
+  keywords: string[];
+  category?: string;
+};
+/**
+ * 2022/09/24 - 임시 게시글 생성 수신 타입 - by 1-blue
+ */
+export type ApiCreateTemporaryPostResponse = ApiResponse & {
+  temporaryPostIdx: number;
+};
 
 /**
  * 2022/09/24 - 게시글 수정 정보 요청 송신 타입 - by 1-blue

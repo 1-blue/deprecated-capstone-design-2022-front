@@ -55,10 +55,8 @@ const Post = ({ post, priority }: Props) => {
             <a className="flex space-x-2 items-center">
               <Avatar
                 photo={post.User.photo}
-                size="w-6 h-6"
+                className="w-6 h-6"
                 alt="유저 이미지"
-                $cover
-                $rouneded
               />
               <span className="hover:underline underline-offset-4 text-sm">
                 {post.User.name}

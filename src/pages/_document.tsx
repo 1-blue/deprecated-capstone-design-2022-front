@@ -6,7 +6,7 @@ class MyDocument extends Document {
       <Html>
         <Head>
           {/* favicon */}
-          <link href="/fav1.ico" rel="shortcut icon" />
+          <link href="/favicon.ico" rel="shortcut icon" />
 
           {/* Nanum Gothic ( https://fonts.google.com/specimen/Nanum+Gothic?subset=korean ) */}
           <link

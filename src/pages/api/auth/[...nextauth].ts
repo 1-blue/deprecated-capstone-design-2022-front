@@ -1,8 +1,9 @@
-import prisma from "@src/prisma";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import KakaoProvider from "next-auth/providers/kakao";
 import bcrypt from "bcrypt";
+
+import prisma from "@src/prisma";
 
 export default NextAuth({
   providers: [

@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { timeFormat } from "@src/libs/dateFormat";
 
 // component
-import Photo from "@src/components/common/Photo";
+import Avatar from "@src/components/common/Avatar";
 
 // type
 import type { CommentWithUser } from "@src/types";
@@ -22,12 +22,10 @@ const Reply = ({ reply, deleteReply }: Props) => {
     <li className="space-y-4 pt-4">
       {/* 아바타, 이름, 작성시간, 삭제 버튼 */}
       <div className="flex space-x-2">
-        <Photo
+        <Avatar
           photo={reply.User.photo}
           className="w-10 h-10"
           alt="유저 이미지"
-          $rouneded
-          $cover
         />
         <div className="flex flex-col">
           <span className="font-semibold">{reply.User.name}</span>

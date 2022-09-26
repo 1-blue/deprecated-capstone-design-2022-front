@@ -1,5 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useSWRImmutable from "swr/immutable";
@@ -11,6 +11,9 @@ import apiService from "@src/api";
 // util
 import { combinePhotoUrl } from "@src/libs";
 
+// hook
+import usePhoto from "@src/hooks/usePhoto";
+
 // component
 import InputSetting from "@src/components/Write/InputSetting";
 import Markdown from "@src/components/common/Markdown";
@@ -20,6 +23,7 @@ import HeadInfo from "@src/components/common/HeadInfo";
 
 // type
 import type { NextPage } from "next";
+import type { ChangeEvent, DragEvent, KeyboardEvent } from "react";
 import type { ApiGetPostByUpdateResponse } from "@src/types";
 import { ICON } from "@src/types";
 import { AxiosError } from "axios";
@@ -41,6 +45,8 @@ const Write: NextPage = () => {
   const { data } = useSession();
   const router = useRouter();
 
+  // 2022/09/25 - 임시 저장한 게시글의 식별자 - by 1-blue
+  const [temporaryPostIdx, setTemporaryPostIdx] = useState<number | null>(null);
   // 2022/04/26 - markdown관련 헬퍼 함수들 - by 1-blue
   const { register, watch, getValues, setValue } = useForm<WriteForm>();
   // 2022/04/27 - 태그가 들어갈 배열 - by 1-blue
@@ -56,12 +62,14 @@ const Write: NextPage = () => {
 
     try {
       const {
-        data: { message },
+        data: { message, temporaryPostIdx },
       } = await apiService.postService.apiCreateTemporaryPost({
         title,
         contents,
         keywords,
       });
+
+      setTemporaryPostIdx(temporaryPostIdx);
 
       toast.success(message);
     } catch (error) {
@@ -94,7 +102,10 @@ const Write: NextPage = () => {
       if (e.key === "Enter") {
         e.preventDefault();
 
-        const keyword = getValues("keyword").toLocaleLowerCase();
+        // 소문자화 / 공백 제거
+        const keyword = getValues("keyword")
+          .toLocaleLowerCase()
+          .replace(/ /g, "");
         if (!keyword) return;
 
         setKeywords((prev) => {
@@ -155,87 +166,46 @@ const Write: NextPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   // 2022/04/28 - 이미지 업로드 로딩 변수 - by 1-blue
   const [uploadLoading, setUploadLoading] = useState(false);
-  // 2022/09/24 - 이미지 업로드 ( 드래그 앤 드랍 ) - by 1-blue
-  const onUploadPhotoByDrop = useCallback(
-    async (e: any) => {
-      e.preventDefault();
 
-      setUploadLoading(true);
-
-      if (!e.dataTransfer.files) return;
-      if (e.dataTransfer.files?.length === 0) return;
-
-      const file = e.dataTransfer.files[0];
-
-      try {
-        const { photoURL } = await apiService.photoService.apiCreatePhoto({
-          file,
-          kinds: "post",
-        });
-
-        // 알 수 없는 이유로 이미지 업로드 실패
-        if (!photoURL) return toast.warning("이미지를 업로드하지 못했습니다.");
-
-        setValue(
-          "contents",
-          getValues("contents") + `\n![이미지](${combinePhotoUrl(photoURL)})`
-        );
-
-        toast.success("이미지를 업로드했습니다.");
-      } catch (error) {
-        console.error("error >> ", error);
-
-        if (error instanceof AxiosError) {
-          toast.error(error.response?.data.message);
-        } else {
-          toast.error("알 수 없는 에러가 발생했습니다.");
-        }
-      } finally {
-        setUploadLoading(false);
-        setIsDragging(false);
-      }
-    },
-    [getValues, setValue, setUploadLoading, setIsDragging]
-  );
-  // 2022/09/24 - 이미지 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+  // 2022/09/25 - 게시글 이미지 업로드 함수 - by 1-blue
+  const [uploadPhotoByClick, uploadPhotoByDrop] = usePhoto({
+    kinds: "post",
+  });
+  // 2022/09/25 - 이미지 업로드 ( 파일 탐색기 이용 ) - by 1-blue
   const onUploadPhotoByExplorer = useCallback(
-    async (e: any) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
       setUploadLoading(true);
 
-      if (!e.target.files) return;
-      if (e.target.files?.length === 0) return;
+      const photoURL = await uploadPhotoByClick(e);
 
-      const file = e.target.files[0];
-
-      try {
-        const { photoURL } = await apiService.photoService.apiCreatePhoto({
-          file,
-          kinds: "post",
-        });
-
-        // 알 수 없는 이유로 이미지 업로드 실패
-        if (!photoURL) return toast.warning("이미지를 업로드하지 못했습니다.");
-
+      if (photoURL)
         setValue(
           "contents",
           getValues("contents") + `\n![이미지](${combinePhotoUrl(photoURL)})`
         );
 
-        toast.success("이미지를 업로드했습니다.");
-      } catch (error) {
-        console.error("error >> ", error);
-
-        if (error instanceof AxiosError) {
-          toast.error(error.response?.data.message);
-        } else {
-          toast.error("알 수 없는 에러가 발생했습니다.");
-        }
-      } finally {
-        setUploadLoading(false);
-        setIsDragging(false);
-      }
+      setUploadLoading(false);
+      setIsDragging(false);
     },
-    [setUploadLoading, getValues, setValue, setIsDragging]
+    [uploadPhotoByClick, setUploadLoading, getValues, setValue, setIsDragging]
+  );
+  // 2022/09/25 - 이미지 업로드 ( 드래그 앤 드랍 ) - by 1-blue
+  const onUploadPhotoByDrop = useCallback(
+    async (e: DragEvent<HTMLDivElement>) => {
+      setUploadLoading(true);
+
+      const photoURL = await uploadPhotoByDrop(e);
+
+      if (photoURL)
+        setValue(
+          "contents",
+          getValues("contents") + `\n![이미지](${combinePhotoUrl(photoURL)})`
+        );
+
+      setUploadLoading(false);
+      setIsDragging(false);
+    },
+    [uploadPhotoByDrop, getValues, setValue, setUploadLoading, setIsDragging]
   );
 
   // 2022/04/29 - 게시글 생성 관련 옵션값들 ( 하위 컴포넌트에서 사용하지만 상위에 두는 이유는 하위 컴포넌트가 제거되어도 값을 보존하기 위함 ) - by 1-blue
@@ -262,6 +232,7 @@ const Write: NextPage = () => {
         contents,
         keywords,
         photo: thumbnail,
+        temporaryPostIdx,
         ...rest,
       });
 
@@ -277,7 +248,7 @@ const Write: NextPage = () => {
         toast.error("알 수 없는 에러입니다.");
       }
     }
-  }, [getValues, keywords, postMetadata, router, data]);
+  }, [getValues, keywords, postMetadata, router, data, temporaryPostIdx]);
 
   // 2022/09/24 - 수정이라면 게시글 정보 가져오기 - by 1-blue
   const { data: currentPost, isValidating: currentPostLoading } =
@@ -300,7 +271,10 @@ const Write: NextPage = () => {
 
   return (
     <>
-      <HeadInfo title="게시글 생성" description="blelog의 게시글 생성" />
+      <HeadInfo
+        title="Jslog | 게시글 생성"
+        description="Jslog의 게시글 생성 페이지입니다."
+      />
 
       <article
         className="flex h-screen"
@@ -318,7 +292,7 @@ const Write: NextPage = () => {
               onDrop={onUploadPhotoByDrop}
             >
               <span>🖼️이미지를 여기에 드래그 해주세요!</span>
-              <Icon icon={ICON.PHOTO} className="w-40 h-40" />
+              <Icon icon={ICON.PHOTO} className="w-32 h-32" />
             </div>
           ) : (
             <form className="flex flex-col h-full">

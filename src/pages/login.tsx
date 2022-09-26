@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { signIn } from "next-auth/react";
 
-// common-component
+// component
+import HeadInfo from "@src/components/common/HeadInfo";
 import Button from "@src/components/common/Tool/Button";
 import Input from "@src/components/common/Tool/Input";
 import Spinner from "@src/components/common/Spinner";
@@ -39,6 +40,7 @@ const Login = () => {
         if (result?.error) return toast.error(result.error);
 
         toast.success("로그인 성공. 메인 페이지로 이동합니다.");
+
         router.push("/");
       } catch (error) {
         console.error(error);
@@ -57,6 +59,11 @@ const Login = () => {
 
   return (
     <>
+      <HeadInfo
+        title="Jslog | 로그인"
+        description="Jslog의 로그인페이지입니다."
+      />
+
       <form
         onSubmit={handleSubmit(onLogIn)}
         className="flex flex-col max-w-[500px] mx-auto"
@@ -80,14 +87,14 @@ const Login = () => {
         <Button
           type="submit"
           contents="로그인"
-          className="bg-indigo-400 py-2 font-bold text-xl mt-4"
+          className="bg-indigo-400 py-2 font-bold sm:text-lg mt-4 text-white hover:bg-indigo-500 transition-all"
           loading={isLogIn}
           loadingText="로그인중입니다... "
         />
         <Button
           type="button"
           contents="Kakao"
-          className="bg-yellow-300 dark:bg-yellow-400 py-2 font-bold text-xl mt-4"
+          className="bg-yellow-400 dark:bg-yellow-400 py-2 font-bold sm:text-lg mt-4 text-white hover:bg-yellow-500 dark:hover:bg-yellow-500 transition-all"
           onClick={() => signIn("kakao")}
         />
       </form>

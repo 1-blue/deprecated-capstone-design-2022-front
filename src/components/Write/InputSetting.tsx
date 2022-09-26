@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { toast } from "react-toastify";
@@ -7,7 +7,10 @@ import { toast } from "react-toastify";
 import apiService from "@src/api";
 
 // util
-import { combineClassNames } from "@src/libs/util";
+import { combineClassNames } from "@src/libs";
+
+// hook
+import usePhoto from "@src/hooks/usePhoto";
 
 // component
 import Photo from "@src/components/common/Photo";
@@ -15,6 +18,7 @@ import Icon from "@src/components/common/Icon";
 import Spinner from "@src/components/common/Spinner";
 
 // type
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import type { ApiGetCategoriesResponse } from "@src/types";
 import type { PostMetadata } from "@src/pages/write";
 import { AxiosError } from "axios";
@@ -42,41 +46,24 @@ const InputSetting = ({
   const thumbnailRef = useRef<HTMLInputElement>(null);
   // 2022/04/29 - 섬네일 업로드 로딩 변수 - by 1-blue
   const [uploadThumbnailLoading, setUploadThumbnailLoading] = useState(false);
+
+  // 2022/09/25 - 게시글 섬네일 업로드 함수 - by 1-blue
+  const [uploadPhotoByClick] = usePhoto({
+    kinds: "post",
+  });
   // 2022/04/29 - 섬네일 업로드 - by 1-blue
   const onUploadThumbnail = useCallback(
-    async (e: any) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
       setUploadThumbnailLoading(true);
 
-      if (!e.target.files) return;
-      if (e.target.files?.length === 0) return;
+      const photoURL = await uploadPhotoByClick(e);
 
-      const file = e.target.files[0];
-
-      try {
-        const { photoURL } = await apiService.photoService.apiCreatePhoto({
-          file,
-          kinds: "post",
-        });
-
-        // 알 수 없는 이유로 이미지 업로드 실패
-        if (!photoURL) return toast.warning("이미지를 업로드하지 못했습니다.");
-
+      if (photoURL)
         setPostMetadata((prev) => ({ ...prev, thumbnail: photoURL }));
 
-        toast.success("이미지를 업로드했습니다.");
-      } catch (error) {
-        console.error("error >> ", error);
-
-        if (error instanceof AxiosError) {
-          toast.error(error.response?.data.message);
-        } else {
-          toast.error("알 수 없는 에러가 발생했습니다.");
-        }
-      } finally {
-        setUploadThumbnailLoading(false);
-      }
+      setUploadThumbnailLoading(false);
     },
-    [setPostMetadata, setUploadThumbnailLoading]
+    [uploadPhotoByClick, setPostMetadata, setUploadThumbnailLoading]
   );
 
   // 2022/09/25 - 로그인한 유저의 카테고리들 - by 1-blue
@@ -152,8 +139,9 @@ const InputSetting = ({
                   className="group w-full md:h-48 h-72 md:pt-0 bg-transparent flex flex-col justify-center items-center rounded-sm border-2 border-indigo-500 hover:border-indigo-600 text-indigo-500 hover:text-indigo-600"
                   onClick={() => thumbnailRef.current?.click()}
                 >
-                  <Icon icon={ICON.PHOTO} className="w-[80px] h-[80px]" />
-                  <span className="text-lg font-semibold py-2 px-4 rounded-md border-2 border-indigo-500 group-hover:border-indigo-600">
+                  <Icon icon={ICON.PHOTO} className="w-[60px] h-[60px]" />
+                  <div className="mb-2" />
+                  <span className="text-sm font-semibold py-1.5 px-3 rounded-md border-2 border-indigo-500 group-hover:border-indigo-600">
                     섬네일 업로드
                   </span>
                 </button>
@@ -194,6 +182,8 @@ const InputSetting = ({
                 {...register("category")}
               />
             </form>
+
+            <hr />
 
             <ul className="flex flex-col divide-y bg-zinc-300 dark:bg-zinc-700 overflow-auto mb-9">
               {categoryResponse?.categories.map(({ category }) => (

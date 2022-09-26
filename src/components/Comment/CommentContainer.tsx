@@ -11,8 +11,6 @@ import Button from "@src/components/common/Tool/Button";
 import CommentForm from "@src/components/Comment/CommentForm";
 import Comment from "@src/components/Comment";
 
-// hook
-
 // type
 import type { CommentWithUser, ApiGetCommentsResponse } from "@src/types";
 import { AxiosError } from "axios";
