@@ -6,6 +6,7 @@ import type {
   PostWithSimpleData,
   PostWithData,
   CommentWithData,
+  SimpleUser,
 } from "@src/types";
 
 /**
@@ -277,3 +278,175 @@ export type ApiGetPostsByCategoryResponse = ApiResponse & {
     title: string;
   }[];
 };
+
+/**
+ * 2022/09/26 - 특정 유저의 간단한 정보 송신 타입 - by 1-blue
+ */
+export type ApiGetUserBody = {
+  name: string;
+};
+/**
+ * 2022/09/26 - 특정 유저의 간단한 정보 수신 타입 - by 1-blue
+ */
+export type ApiGetUserResponse = ApiResponse & {
+  user: SimpleUser;
+};
+
+/**
+ * 2022/09/26 - 특정 유저의 게시글들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserBody = {
+  lastIdx: number;
+  limit: number;
+  username: string;
+};
+/**
+ * 2022/09/26 - 특정 유저의 게시글들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserResponse = ApiResponse & {
+  posts: (PostWithSimpleData & {
+    keywords: {
+      keyword: Keyword;
+    }[];
+  })[];
+};
+
+/**
+ * 2022/09/26 - 특정 유저의 카테고리와 그 게시글들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserWithCategoryBody = {
+  userIdx: number;
+};
+/**
+ * 2022/09/26 - 특정 유저의 카테고리와 그 게시글들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserWithCategoryResponse = ApiResponse & {
+  categories: {
+    category: string;
+    _count: {
+      posts: number;
+    };
+    posts: {
+      photo: string | null;
+    }[];
+  }[];
+};
+
+/**
+ * 2022/09/26 - 특정 유저의 특정 카테고리의 게시글들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserAndCategoryBody = {
+  userIdx: number;
+  category: string;
+};
+/**
+ * 2022/09/26 - 특정 유저의 특정 카테고리의 게시글들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfUserAndCategoryResponse = ApiResponse & {
+  posts: {
+    idx: number;
+    title: string;
+    summary: string | null;
+    photo: string | null;
+    updatedAt: Date;
+    _count: {
+      comments: number;
+      favorites: number;
+    };
+  }[];
+};
+
+/**
+ * 2022/09/26 - 유저 정보 수정 요청 송신 타입 - by 1-blue
+ */
+export type ApiUpdateUserBody = Partial<User> & { userIdx: number };
+/**
+ * 2022/09/26 - 유저 정보 수정 요청 수신 타입 - by 1-blue
+ */
+export type ApiUpdateUserResponse = ApiResponse & {};
+
+/**
+ * 2022/09/26 - 로그인한 유저의 임시글 목록 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfTemporaryBody = {};
+/**
+ * 2022/09/26 - 로그인한 유저의 임시글 목록 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfTemporaryResponse = ApiResponse & {
+  posts: {
+    idx: number;
+    title: string;
+    contents: string;
+    updatedAt: Date;
+  }[];
+};
+
+/**
+ * 2022/09/26 - 특정 임시 게시글 제거 요청 송신 타입 - by 1-blue
+ */
+export type ApiDeleteTemporaryPostBody = {
+  postIdx: number;
+};
+/**
+ * 2022/09/26 - 특정 임시 게시글 제거 요청 수신 타입 - by 1-blue
+ */
+export type ApiDeleteTemporaryPostResponse = ApiResponse & {};
+
+/**
+ * 2022/09/26 - 좋아요 누른 게시글들 요청 송신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfFavoriteBody = {};
+/**
+ * 2022/09/26 - 좋아요 누른 게시글들 요청 수신 타입 - by 1-blue
+ */
+export type ApiGetPostsOfFavoriteResponse = ApiResponse & {
+  posts: (Post & {
+    _count: {
+      comments: number;
+      favorites: number;
+    };
+    User: {
+      name: string;
+      photo: string | null;
+    };
+  })[];
+};
+
+/**
+ * 2022/09/26 - 특정 키워드를 가진 게시글들 요청 송신 타입 - by 1-blue
+ * ( 게시글 검색 )
+ */
+export type ApiGetPostsOfSearchBody = {
+  lastIdx: number;
+  limit: number;
+  kinds: PostKinds;
+  keyword: string;
+};
+/**
+ * 2022/09/26 - 특정 키워드를 가진 게시글들 요청 수신 타입 - by 1-blue
+ * ( 게시글 검색 )
+ */
+export type ApiGetPostsOfSearchResponse = ApiResponse & {
+  posts: (Post & {
+    _count: {
+      comments: number;
+      favorites: number;
+    };
+    User: {
+      name: string;
+      photo: string | null;
+    };
+    keywords: {
+      keyword: Keyword;
+    }[];
+  })[];
+};
+
+/**
+ * 2022/09/27 - 회원 탈퇴 송신 타입 - by 1-blue
+ */
+export type ApiDeleteUserBody = {};
+/**
+ * 2022/09/27 - 회원 탈퇴 수신 타입 - by 1-blue
+ */
+export type ApiDeleteUserResponse = ApiResponse & {};

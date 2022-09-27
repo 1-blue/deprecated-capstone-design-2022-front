@@ -12,6 +12,8 @@ import type {
   ApiDeleteFavoriteResponse,
   ApiDeletePostBody,
   ApiDeletePostResponse,
+  ApiDeleteTemporaryPostBody,
+  ApiDeleteTemporaryPostResponse,
   ApiGetPostBody,
   ApiGetPostResponse,
   ApiGetPostsBody,
@@ -102,6 +104,16 @@ const apiGetPostsByCategory = ({
   );
 
 /**
+ * 2022/09/26 - 특정 임시 게시글 제거 - by 1-blue
+ * @param body postIdx: 게시글의 식별자
+ * @returns 결과 메시지
+ */
+const apiDeleteTemporaryPost = ({ postIdx }: ApiDeleteTemporaryPostBody) =>
+  axiosInstance.delete<ApiDeleteTemporaryPostResponse>(
+    `/post/temporary?postIdx=${postIdx}`
+  );
+
+/**
  * 2022/09/23 - 게시글 관련 api 요청 객체 - by 1-blue
  */
 const postService = {
@@ -113,6 +125,7 @@ const postService = {
   apiCreatePost,
   apiCreateTemporaryPost,
   apiGetPostsByCategory,
+  apiDeleteTemporaryPost,
 };
 
 export default postService;

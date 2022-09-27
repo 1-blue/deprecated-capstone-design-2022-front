@@ -8,7 +8,12 @@ export type PhotoKinds = "user" | "post" | "remove";
 /**
  * 2022/09/23 - 게시글 요청 종류 - by 1-blue
  */
-export type PostKinds = "popular" | "recent" | "relevant";
+export type PostKinds =
+  | "popular"
+  | "recent"
+  | "relevant"
+  | "favorite"
+  | "search";
 
 /**
  * 2022/09/23 - 단축 유저 타입 - by 1-blue
