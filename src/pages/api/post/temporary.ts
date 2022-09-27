@@ -101,12 +101,20 @@ export default async function handler(
         temporaryPostIdx = post.idx;
       }
 
-      return res
-        .status(201)
-        .json({
-          temporaryPostIdx,
-          message: "현재 게시글을 임시 저장했습니다.",
-        });
+      return res.status(201).json({
+        temporaryPostIdx,
+        message: "현재 게시글을 임시 저장했습니다.",
+      });
+    }
+    if (method === "DELETE") {
+      if (typeof req.query.postIdx !== "string")
+        return res.status(418).json({ message: "잘못된 데이터입니다." });
+
+      const postIdx = +req.query.postIdx;
+
+      await prisma.post.delete({ where: { idx: postIdx } });
+
+      return res.status(200).json({ message: "임시 게시글을 제거했습니다." });
     }
   } catch (error) {
     console.error(error);

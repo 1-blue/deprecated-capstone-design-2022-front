@@ -3,11 +3,14 @@ import { getSession } from "next-auth/react";
 
 // type
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { ApiCreateCommentResponse } from "@src/types";
+import type {
+  ApiCreateReplyResponse,
+  ApiDeleteReplyResponse,
+} from "@src/types";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiCreateCommentResponse>
+  res: NextApiResponse<ApiCreateReplyResponse | ApiDeleteReplyResponse>
 ) {
   const { method } = req;
   const session = await getSession({ req });

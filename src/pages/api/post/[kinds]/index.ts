@@ -9,9 +9,7 @@ export default async function handler(
   res: NextApiResponse<ApiGetPostByRelevantResponse | { message: string }>
 ) {
   if (typeof req.query.postIdx !== "string")
-    return res
-      .status(418)
-      .json({ relenvantPosts: [], message: "잘못된 데이터를 받았습니다." });
+    return res.status(418).json({ message: "잘못된 데이터를 받았습니다." });
 
   const postIdx = +req.query.postIdx;
   const kinds = req.query.kinds as PostKinds;
@@ -23,9 +21,7 @@ export default async function handler(
     });
 
     if (!targetPost)
-      return res
-        .status(404)
-        .json({ relenvantPosts: [], message: "게시글이 존재하지 않습니다." });
+      return res.status(404).json({ message: "게시글이 존재하지 않습니다." });
 
     if (kinds === "relevant") {
       const keywords = targetPost.keywords.map(

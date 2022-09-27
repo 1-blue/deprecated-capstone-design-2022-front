@@ -1,79 +1,87 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
-import useSWRInfinite from "swr/infinite";
+import useSWR from "swr";
 import { toast } from "react-toastify";
 
-// type
-import type { NextPage } from "next";
-import type { ResponseStatus, SimplePost } from "@src/types";
-
-// common-component
-import Modal from "@src/components/common/Modal";
-import Spinner from "@src/components/common/Spinner";
-
-// hook
-import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
-import useModal from "@src/hooks/useModal";
+// api
+import apiService from "@src/api";
 
 // util
 import { timeFormat } from "@src/libs/dateFormat";
 
-type ResponseOfTempPosts = {
-  status: ResponseStatus;
-  data: {
-    posts: SimplePost[];
-  };
-};
+// hook
+import useModal from "@src/hooks/useModal";
+
+// component
+import HeadInfo from "@src/components/common/HeadInfo";
+import Modal from "@src/components/common/Modal";
+import Spinner from "@src/components/common/Spinner";
+
+// type
+import type { NextPage } from "next";
+import type { ApiGetPostsOfTemporaryResponse } from "@src/types";
+import { AxiosError } from "axios";
 
 const Saves: NextPage = () => {
   // 2022/05/12 - 임시 게시글 삭제 모달 관련 변수들 - by 1-blue
   const [modalRef, isOpen, setIsOpen] = useModal();
-  // 2022/05/12 - 삭제할 임시 게시글의 제목 - by 1-blue
-  const [title, setTitle] = useState("");
+  // 2022/05/12 - 삭제할 임시 게시글의 식별자 - by 1-blue
+  const [postIdx, setPostIdx] = useState(-1);
   // 2022/05/12 - 현재 임시 게시글 삭제 요청 여부 - by 1-blue
   const [deleting, setDeleting] = useState(false);
 
-  // 2022/05/12 - 게시글 offset - by 1-blue
-  const [offset, setOffset] = useState(6);
-  // 2022/05/12 - 게시글 추가 패치 가능 여부 - by 1-blue
-  const [hasMorePost, setHasMorePost] = useState(true);
-  const {
-    data: responseTempPosts,
-    setSize,
-    mutate: tempPostsMutate,
-  } = useSWRInfinite<ResponseOfTempPosts>((pageIndex, previousPageData) => {
-    if (
-      previousPageData?.data &&
-      previousPageData?.data.posts.length !== offset
-    ) {
-      setHasMorePost(false);
-      return null;
+  // 2022/09/26 - 임시 목록 - by 1-blue
+  const { data: responsePosts, mutate: postsMutate } =
+    useSWR<ApiGetPostsOfTemporaryResponse>(`/api/posts/temporary`);
+
+  // 2022/09/26 - 임시 게시글 삭제 - by 1-blue
+  const onClickRemove = useCallback(async () => {
+    setDeleting(true);
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiDeleteTemporaryPost({ postIdx });
+
+      postsMutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            posts: prev.posts.filter((post) => post.idx !== postIdx),
+          },
+        false
+      );
+
+      toast.success(message);
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
+      }
     }
-    if (previousPageData?.data && !previousPageData?.data.posts.length) {
-      setHasMorePost(false);
-      return null;
-    }
-    return `/api/temp?page=${pageIndex}&offset=${offset}`;
-  });
-  // 2022/05/12 - 게시글 스크롤링 시 패치하는 이벤트 등록 - by 1-blue
-  useInfiniteScroll({
-    condition: hasMorePost,
-    setSize,
-  });
-  // 2022/05/12 - 실제 게시글 목록을 담을 배열 - by 1-blue
-  const [list, setList] = useState<any>([]);
-  // 2022/05/12 - 게시글 담기 - by 1-blue
-  useEffect(() => {
-    setList(
-      responseTempPosts?.map(({ data: { posts } }) =>
-        posts.map((post) => (
+
+    setDeleting(false);
+  }, [postsMutate, postIdx, setDeleting]);
+
+  return (
+    <>
+      <HeadInfo
+        title="JSlog | 임시 저장 게시글"
+        description="Jslog의 임시 저장 게시글 목록 페이지입니다."
+      />
+
+      <h1 className="text-center font-bold text-4xl mb-16">임시 글 목록</h1>
+
+      <ul className="md:mx-auto md:w-3/5 space-y-4 divide-y">
+        {responsePosts?.posts?.map((post) => (
           <li key={post.idx} className="pt-4">
             <Link href={`/write?title=${post.title}`}>
               <a className="space-y-4">
-                <h3 className="text-xl font-bold">{post.title}</h3>
-                <p className="whitespace-pre-line text-sm text-gray-400">
-                  {post.summary}
-                </p>
+                <h3 className="text-2xl font-bold">{post.title}</h3>
+                <p className="text-gray-300 paragraph">{post.contents}</p>
               </a>
             </Link>
             <div className="flex justify-between mt-4">
@@ -85,46 +93,15 @@ const Saves: NextPage = () => {
                 className="text-sm hover:underline"
                 onClick={() => {
                   setIsOpen(true);
-                  setTitle(post.title);
+                  setPostIdx(post.idx);
                 }}
               >
                 삭제
               </button>
             </div>
           </li>
-        ))
-      )
-    );
-  }, [responseTempPosts, setIsOpen]);
-
-  // 2022/05/12 - 임시 게시글 삭제 이벤트 - by 1-blue
-  const onClickRemove = useCallback(async () => {
-    setDeleting(true);
-    await fetch(`/api/temp/${title}`, {
-      method: "DELETE",
-    }).then((res) => res.json());
-    setDeleting(false);
-
-    tempPostsMutate(
-      (prev) =>
-        prev &&
-        prev.map((body) => ({
-          ...body,
-          data: {
-            posts: body.data.posts.filter((post) => post.title !== title),
-          },
-        })),
-      false
-    );
-
-    toast.success(`"${title}" 게시글을 삭제했습니다.`);
-  }, [tempPostsMutate, title, setDeleting]);
-
-  return (
-    <>
-      <h1 className="text-center font-bold text-4xl mb-16">임시 글 목록</h1>
-
-      <ul className="md:mx-auto md:w-3/5 space-y-4 divide-y">{list}</ul>
+        ))}
+      </ul>
 
       {isOpen && (
         <Modal ref={modalRef} primary noScroll>

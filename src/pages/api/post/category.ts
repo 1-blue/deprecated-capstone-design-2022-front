@@ -30,7 +30,13 @@ export default async function handler(
 
     if (method === "GET") {
       const posts = await prisma.post.findMany({
-        where: { cateogoryIdx: exPost.cateogoryIdx, userIdx },
+        where: {
+          cateogoryIdx: exPost.cateogoryIdx,
+          userIdx,
+          NOT: {
+            OR: [{ isPrivate: true }, { isTemporary: true }],
+          },
+        },
         select: { title: true },
       });
 
