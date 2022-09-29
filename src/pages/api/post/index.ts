@@ -9,7 +9,6 @@ import type {
   ApiDeletePostResponse,
   ApiGetPostResponse,
 } from "@src/types";
-import { movePhoto } from "@src/libs";
 
 export default async function handler(
   req: NextApiRequest,
@@ -77,9 +76,6 @@ export default async function handler(
       if (!Array.isArray(keywords))
         return res.status(418).json({ message: "잘못된 데이터입니다." });
 
-      // 섬네일 확정으로 위치 이동
-      await movePhoto(photo, "post");
-
       let postIdx = -1;
 
       if (temporaryPostIdx) {
@@ -88,12 +84,12 @@ export default async function handler(
           data: {
             title,
             contents,
-            photo: photo.replace("/temporary", ""),
+            photo,
             summary,
             isPrivate,
             isTemporary: false,
             userIdx: session.user.idx,
-            cateogoryIdx: category,
+            cateogoryIdx: category || null,
           },
         });
 
@@ -108,12 +104,19 @@ export default async function handler(
             isPrivate,
             isTemporary: false,
             userIdx: session.user.idx,
-            cateogoryIdx: category,
+            cateogoryIdx: category || null,
           },
         });
 
         postIdx = createdPost.idx;
       }
+
+      await prisma.keyword.createMany({
+        data: keywords.map((keyword) => ({
+          keyword: keyword.toLocaleLowerCase(),
+        })),
+        skipDuplicates: true,
+      });
 
       await prisma.post.update({
         where: { idx: postIdx },

@@ -1,7 +1,6 @@
 import { getSession } from "next-auth/react";
 
 import prisma from "@src/prisma";
-import { movePhoto } from "@src/libs";
 
 // type
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -58,13 +57,7 @@ export default async function handler(
       if (!exUser)
         return res.status(404).json({ message: "유저가 존재하지 않습니다." });
 
-      if (photo && exUser.photo) {
-        await movePhoto(exUser.photo, "remove");
-      }
-
       if (photo === "remove" && exUser.photo) {
-        await movePhoto(exUser.photo, "remove");
-
         await prisma.user.update({
           where: { idx: userIdx },
           data: { ...rest, photo: null },

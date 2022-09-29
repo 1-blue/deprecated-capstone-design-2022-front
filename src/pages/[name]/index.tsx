@@ -17,6 +17,7 @@ import Keyword from "@src/components/common/Keyword";
 import HeadInfo from "@src/components/common/HeadInfo";
 import NotFoundPage from "@src/pages/404";
 import ProfileNav from "@src/components/ProfileNav";
+import Info from "@src/components/common/Support/Info";
 
 // type
 import type {
@@ -78,42 +79,46 @@ const Profile: NextPage<Props> = ({ user }) => {
 
       {/* 게시글 리스트 */}
       <article className="md:mx-auto md:w-3/5 mt-8">
-        <ul className="space-y-4 divide-y">
-          {arrayOfPosts?.map(({ posts }) =>
-            posts.map((post) => (
-              <li key={post.idx} className="space-y-4 pb-4 pt-8">
-                <Link href={`/${post.User.name}/${post.title}`}>
-                  <a className="group space-y-4">
-                    {post.photo && (
-                      <Photo
-                        photo={post.photo}
-                        className="w-full pt-[50%]"
-                        $cover
-                        $scale
-                      />
-                    )}
-                    <h3 className="text-xl font-bold">{post.title}</h3>
-                    <p className="whitespace-pre text-sm text-gray-500 dark:text-gray-400">
-                      {post.summary}
-                    </p>
+        {arrayOfPosts && arrayOfPosts?.[0].posts.length !== 0 ? (
+          <ul className="space-y-4 divide-y">
+            {arrayOfPosts?.map(({ posts }) =>
+              posts.map((post) => (
+                <li key={post.idx} className="space-y-4 pb-4 pt-8">
+                  <Link href={`/${post.User.name}/${post.title}`}>
+                    <a className="group space-y-4">
+                      {post.photo && (
+                        <Photo
+                          photo={post.photo}
+                          className="w-full pt-[50%]"
+                          $cover
+                          $scale
+                        />
+                      )}
+                      <h3 className="text-xl font-bold">{post.title}</h3>
+                      <p className="whitespace-pre text-sm text-gray-500 dark:text-gray-400">
+                        {post.summary}
+                      </p>
 
-                    <Keyword keywords={post.keywords} />
+                      <Keyword keywords={post.keywords} />
 
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      <time>
-                        {dateOrTimeFormat(post.updatedAt, "YYYY년MM월DD일")}
-                      </time>
-                      <span>ㆍ</span>
-                      <span>{post._count.comments}개의 댓글</span>
-                      <span>ㆍ</span>
-                      <span>{post._count.favorites}개의 좋아요</span>
-                    </div>
-                  </a>
-                </Link>
-              </li>
-            ))
-          )}
-        </ul>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <time>
+                          {dateOrTimeFormat(post.updatedAt, "YYYY년MM월DD일")}
+                        </time>
+                        <span>ㆍ</span>
+                        <span>{post._count.comments}개의 댓글</span>
+                        <span>ㆍ</span>
+                        <span>{post._count.favorites}개의 좋아요</span>
+                      </div>
+                    </a>
+                  </Link>
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
+          <Info text="내 게시글이 없습니다." />
+        )}
       </article>
     </>
   );

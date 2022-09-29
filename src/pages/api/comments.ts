@@ -32,7 +32,7 @@ export default async function handler(
         return res.status(404).json({ message: "게시글이 존재하지 않습니다." });
 
       const comments = await prisma.comment.findMany({
-        where: { postIdx },
+        where: { postIdx, commentIdx: { equals: null } },
         include: {
           User: {
             select: {

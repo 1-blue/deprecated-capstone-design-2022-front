@@ -51,10 +51,13 @@ const Markdown = ({ markdown }: Props) => {
                 <Photo
                   {...props}
                   photo={props.src}
-                  className="mx-auto my-4 h-[40vh]"
+                  className="mx-auto my-4 h-[200px] md:h-[300px] lg:h-[400px]"
                 />
               ) : (
-                <img {...props} className="mx-auto my-4 h-[40vh]" />
+                <img
+                  {...props}
+                  className="mx-auto my-4 h-[200px] md:h-[300px] lg:h-[400px]"
+                />
               )}
             </>
           </div>

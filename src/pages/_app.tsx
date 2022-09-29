@@ -4,8 +4,9 @@ import { ThemeProvider } from "next-themes";
 import { ToastContainer } from "react-toastify";
 
 // css
-import "../styles/globals.css";
 import "react-toastify/dist/ReactToastify.css";
+import "../styles/globals.css";
+import "../styles/toast.css";
 
 // component
 import Layout from "@src/components/Layout";
@@ -29,10 +30,11 @@ function MyApp({ Component, pageProps }: AppProps) {
 
           {/* 토스트 메시지 */}
           <ToastContainer
-            position="top-right"
-            autoClose={2000}
+            position="top-center"
+            autoClose={1500}
             theme="dark"
             closeOnClick
+            limit={3}
           />
         </ThemeProvider>
       </SessionProvider>

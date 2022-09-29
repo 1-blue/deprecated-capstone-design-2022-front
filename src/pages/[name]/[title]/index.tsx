@@ -194,15 +194,24 @@ const PostDetail: NextPage<Props> = ({
         </section>
 
         {/* 작성자, 작성일, 수정, 삭제 */}
-        <section className="flex space-x-2">
-          <Link href={`/${post.User.name}`}>
-            <a className="hover:underline underline-offset-2">
-              {post.User.name}
-            </a>
-          </Link>
-          <span>ㆍ</span>
-          <time>{dateOrTimeFormat(post.updatedAt, "YYYY-MM-DD")}</time>
-          <div className="flex-1" />
+        <section className="flex justify-between items-center space-x-2">
+          <div>
+            <Link href={`/${post.User.name}`}>
+              <a className="hover:underline underline-offset-2">
+                {post.User.name}
+              </a>
+            </Link>
+            <span>ㆍ</span>
+            <time>{dateOrTimeFormat(post.updatedAt, "YYYY-MM-DD")}</time>
+          </div>
+
+          {/* 좋아요 버튼 */}
+          <Favorite
+            favorites={post.favorites}
+            onCreateFavorite={onCreateFavorite}
+            onDeleteFavorite={onDeleteFavorite}
+          />
+
           {status === "authenticated" && data.user.idx === post.User.idx && (
             <>
               <button
@@ -231,39 +240,43 @@ const PostDetail: NextPage<Props> = ({
         </section>
 
         {/* 같은 카테고리 게시글들 */}
-        <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
-          <h2 className="text-xl font-semibold">{post.cateogoryIdx}</h2>
-          {toggleCategory && (
-            <ul className="space-y-1">
-              {relatedPosts.map(({ title }, index) => (
-                <li key={title}>
-                  <span className="dark:text-gray-400">{index + 1}. </span>
-                  <Link href={`/${data?.user.name}/${title}`}>
-                    <a
-                      className={combineClassNames(
-                        "font-semibold hover:text-indigo-500",
-                        router.query.title === title ? "text-indigo-400" : ""
-                      )}
-                    >
-                      {title}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            type="button"
-            onClick={() => setToggleCategory((prev) => !prev)}
-          >
-            {toggleCategory ? "▲ 숨기기" : "▼ 목록 보기"}
-          </button>
-        </section>
+        {relatedPosts.length !== 0 && (
+          <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
+            <h2 className="text-xl font-semibold">{post.cateogoryIdx}</h2>
+            {toggleCategory && (
+              <ul className="space-y-1">
+                {relatedPosts.map(({ title }, index) => (
+                  <li key={title}>
+                    <span className="dark:text-gray-400">{index + 1}. </span>
+                    <Link href={`/${data?.user.name}/${title}`}>
+                      <a
+                        className={combineClassNames(
+                          "font-semibold hover:text-indigo-500",
+                          router.query.title === title ? "text-indigo-400" : ""
+                        )}
+                      >
+                        {title}
+                      </a>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              type="button"
+              onClick={() => setToggleCategory((prev) => !prev)}
+            >
+              {toggleCategory ? "▲ 숨기기" : "▼ 목록 보기"}
+            </button>
+          </section>
+        )}
 
         {/* 섬네일 */}
-        <section>
-          <Photo photo={post.photo} className="w-full h-[60vh] m-0" $cover />
-        </section>
+        {post.photo && (
+          <section>
+            <Photo photo={post.photo} className="w-full h-[60vh] m-0" $cover />
+          </section>
+        )}
 
         {/* 내용 */}
         <section>
@@ -307,13 +320,6 @@ const PostDetail: NextPage<Props> = ({
 
       {/* 우측 네비게이션 */}
       <TitleNav contents={post.contents} />
-
-      {/* 좋아요 버튼 */}
-      <Favorite
-        favorites={post.favorites}
-        onCreateFavorite={onCreateFavorite}
-        onDeleteFavorite={onDeleteFavorite}
-      />
 
       {/* 게시글 삭제 모달 */}
       {isOpen && (

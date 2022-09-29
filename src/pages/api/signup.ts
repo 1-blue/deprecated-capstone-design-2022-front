@@ -2,9 +2,6 @@ import bcrypt from "bcrypt";
 
 import prisma from "@src/prisma";
 
-// util
-import { movePhoto } from "@src/libs";
-
 // type
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { ApiSignUpResponse } from "@src/types";
@@ -22,13 +19,11 @@ export default async function handler(
 
     if (body.photo) {
       const photo = body.photo as string;
-      // 프로필 이미지 확정으로 위치 이동
-      await movePhoto(photo, "user");
 
       data = {
         ...body,
         password: hashPassword,
-        photo: photo.replace("/temporary", ""),
+        photo,
       };
     } else {
       data = {

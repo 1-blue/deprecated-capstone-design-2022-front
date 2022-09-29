@@ -25,7 +25,7 @@ const createAdminUser = async () => {
  */
 const createKeywords = async () => {
   await prisma.keyword.createMany({
-    data: keywords.map((keyword) => ({ keyword })),
+    data: keywords.map((keyword) => ({ keyword: keyword.toLocaleLowerCase() })),
     skipDuplicates: true,
   });
 };
@@ -50,7 +50,7 @@ const createPosts = async (number: number) => {
           keywords: {
             createMany: {
               data: getDummyKeywords(2).map((keyword) => ({
-                keywordIdx: keyword,
+                keywordIdx: keyword.toLocaleLowerCase(),
               })),
               skipDuplicates: true,
             },

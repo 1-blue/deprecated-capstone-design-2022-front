@@ -156,9 +156,16 @@ export default async function handler(
         ...(lastIdx !== -1 && { cursor: { idx: lastIdx } }),
         orderBy: [{ favorites: { _count: "desc" } }],
       });
+      const allCount = await prisma.post.count({
+        where: {
+          ...where,
+          keywords: { some: { keyword: { keyword: { contains: keyword } } } },
+        },
+      });
 
       return res.status(200).json({
         posts,
+        allCount,
         message: `"${keyword}"를 키워드로 가진 게시글들입니다.`,
       });
     }

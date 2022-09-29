@@ -143,7 +143,11 @@ const Header = () => {
                       <button
                         type="button"
                         className="px-4 py-3 w-full text-left hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors cursor-pointer"
-                        onClick={() => signOut()}
+                        onClick={() =>
+                          signOut({
+                            callbackUrl: process.env.NEXT_PUBLIC_BASE_URL,
+                          })
+                        }
                       >
                         로그아웃
                       </button>

@@ -35,17 +35,12 @@ const Favorite = ({ favorites, onCreateFavorite, onDeleteFavorite }: Props) => {
   }, [status, isLiked, onDeleteFavorite, onCreateFavorite]);
 
   return (
-    <aside className="fixed top-[14%] left-[4%] bg-zinc-200 text-gray-400 py-3 px-2 rounded-full flex flex-col items-center">
-      <button
-        type="button"
-        className={combineClassNames(
-          "p-2 border-2 bg-zinc-300 border-gray-400 hover:border-indigo-500 hover:text-indigo-500 rounded-full",
-          isLiked
-            ? "bg-red-200 border-red-300 text-red-400 hover:bg-red-300 hover:border-red-400 hover:text-red-500"
-            : ""
-        )}
-        onClick={onClickLikeButton}
-      >
+    <button
+      type="button"
+      className="flex items-center bg-gray-300 px-3 py-2 rounded-md space-x-1"
+      onClick={onClickLikeButton}
+    >
+      <div className={isLiked ? "text-red-500" : "text-gray-500"}>
         {isLiked ? (
           <Icon
             icon={ICON.HEART}
@@ -55,9 +50,9 @@ const Favorite = ({ favorites, onCreateFavorite, onDeleteFavorite }: Props) => {
         ) : (
           <Icon icon={ICON.HEART} className="w-6 h-6" />
         )}
-      </button>
-      <span className="font-semibold text-gray-600">{favorites.length}</span>
-    </aside>
+      </div>
+      <span className="font-semibold text-gray-500">{favorites.length}</span>
+    </button>
   );
 };
 

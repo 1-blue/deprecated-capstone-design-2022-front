@@ -21,18 +21,20 @@ const Post = ({ post, priority }: Props) => {
   return (
     <li className="flex flex-col group bg-zinc-300 dark:bg-zinc-700 rounded-md overflow-hidden hover:-translate-y-2 duration-500 min-w-[300px] mb-8">
       {/* 게시글 섬네일 */}
-      <Link href={`/${post.User.name}/${post.title}`}>
-        <a className="inline-block w-full h-[300px]">
-          <Photo
-            photo={post.photo}
-            className="w-full h-full"
-            alt="임시 게시글 이미지"
-            $scale
-            $cover
-            priority={priority}
-          />
-        </a>
-      </Link>
+      {post.photo && (
+        <Link href={`/${post.User.name}/${post.title}`}>
+          <a className="inline-block w-full h-[300px]">
+            <Photo
+              photo={post.photo}
+              className="w-full h-full"
+              alt="임시 게시글 이미지"
+              $scale
+              $cover
+              priority={priority}
+            />
+          </a>
+        </Link>
+      )}
 
       <section className="flex-1 flex flex-col py-4">
         {/* 게시글 제목과 내용 */}

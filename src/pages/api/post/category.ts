@@ -29,6 +29,12 @@ export default async function handler(
       return res.status(404).json({ message: "게시글이 존재하지 않습니다." });
 
     if (method === "GET") {
+      if (!exPost.cateogoryIdx)
+        return res.status(200).json({
+          posts: [],
+          message: "카테고리가 존재하지 않습니다.",
+        });
+
       const posts = await prisma.post.findMany({
         where: {
           cateogoryIdx: exPost.cateogoryIdx,

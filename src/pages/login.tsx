@@ -95,7 +95,12 @@ const Login = () => {
           type="button"
           contents="Kakao"
           className="bg-yellow-400 dark:bg-yellow-400 py-2 font-bold sm:text-lg mt-4 text-white hover:bg-yellow-500 dark:hover:bg-yellow-500 transition-all"
-          onClick={() => signIn("kakao")}
+          onClick={() =>
+            signIn("kakao", {
+              redirect: true,
+              callbackUrl: process.env.NEXT_PUBLIC_BASE_URL,
+            })
+          }
         />
       </form>
 

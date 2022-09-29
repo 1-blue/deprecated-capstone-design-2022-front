@@ -64,7 +64,7 @@ const CommentContainer = ({ postIdx, allCount }: Props) => {
 
       try {
         const {
-          data: { message },
+          data: { message, commentIdx },
         } = await apiService.commentService.apiCreateComment({
           postIdx,
           contents,
@@ -83,7 +83,7 @@ const CommentContainer = ({ postIdx, allCount }: Props) => {
               return {
                 comments: [
                   {
-                    idx: Date.now(),
+                    idx: commentIdx,
                     contents,
                     createdAt: new Date(Date.now()),
                     updatedAt: new Date(Date.now()),

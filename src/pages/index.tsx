@@ -70,7 +70,7 @@ const Home: NextPage<ApiGetPostsResponse> = (initialPosts) => {
 
       {/* 게시글 리스트 */}
       <article>
-        {arrayOfPosts ? (
+        {arrayOfPosts && arrayOfPosts[0].posts.length !== 0 ? (
           <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {arrayOfPosts.map(({ posts }) =>
               posts.map((post) => <Post key={post.idx} post={post} />)

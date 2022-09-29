@@ -106,7 +106,10 @@ const Setting: NextPage = () => {
         .then(({ data: { message } }) => {
           toast.success(message);
 
-          signOut({ redirect: true, callbackUrl: "/login" });
+          signOut({
+            redirect: true,
+            callbackUrl: process.env.NEXT_PUBLIC_BASE_URL + "/login",
+          });
         })
         .catch(console.error);
     },
@@ -120,7 +123,10 @@ const Setting: NextPage = () => {
       .then(({ data: { message } }) => {
         toast.success(message);
 
-        signOut({ redirect: true, callbackUrl: "/" });
+        signOut({
+          redirect: true,
+          callbackUrl: process.env.NEXT_PUBLIC_BASE_URL,
+        });
       })
       .catch(console.error);
   }, []);

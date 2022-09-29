@@ -21,6 +21,7 @@ import { dateFormat } from "@src/libs/dateFormat";
 // type
 import { ICON } from "@src/types";
 import { ApiGetPostsOfSearchResponse } from "@src/types/api";
+import Info from "@src/components/common/Support/Info";
 
 const limit = 10;
 
@@ -95,7 +96,7 @@ const Search: NextPage = () => {
       <HeadInfo
         title="Jslog | 게시글 검색"
         description="Jslog의 게시글 검색 페이지입니다."
-        photo={arrayOfPosts?.[0].posts[0].photo}
+        photo={arrayOfPosts?.[0]?.posts[0]?.photo}
       />
 
       <div className="w-full md:w-[630px] flex flex-col mx-auto space-y-10">
@@ -113,43 +114,59 @@ const Search: NextPage = () => {
         </form>
 
         <article>
+          <span>
+            총
+            <strong>{`"${
+              (arrayOfPosts && arrayOfPosts[0].allCount) || 0
+            }개"`}</strong>
+            의 포스트를 찾았습니다.
+          </span>
+
           <ul className="flex flex-col space-y-8 divide-y">
-            {arrayOfPosts?.map(({ posts }) =>
-              posts.map((post) => (
-                <li key={post.idx} className="space-y-4 pt-8">
-                  <Link href={`/${post.User.name}`}>
-                    <a className="flex space-x-2 items-center mb-4">
-                      <Avatar photo={post.User.photo} className="w-10 h-10" />
-                      <span className="hover:underline underline-offset-2">
-                        {post.User.name}
-                      </span>
-                    </a>
-                  </Link>
-                  <Link href={`/${post.User.name}/${post.title}`}>
-                    <a className="space-y-4">
-                      <Photo
-                        photo={post.photo}
-                        className="w-full py-[30%]"
-                        $cover
-                      />
-                      <h3 className="text-lg font-bold mb-1">{post.title}</h3>
-                      <p className="whitespace-pre text-sm mb-4">
-                        {post.summary}
-                      </p>
-                    </a>
-                  </Link>
+            {arrayOfPosts && arrayOfPosts[0].posts.length !== 0 ? (
+              arrayOfPosts.map(({ posts }) =>
+                posts.map((post) => (
+                  <li key={post.idx} className="space-y-4 pt-8">
+                    <Link href={`/${post.User.name}`}>
+                      <a className="flex space-x-2 items-center mb-4">
+                        <Avatar photo={post.User.photo} className="w-10 h-10" />
+                        <span className="hover:underline underline-offset-2">
+                          {post.User.name}
+                        </span>
+                      </a>
+                    </Link>
+                    <Link href={`/${post.User.name}/${post.title}`}>
+                      <a className="space-y-4">
+                        {post.photo && (
+                          <Photo
+                            photo={post.photo}
+                            className="w-full py-[30%]"
+                            $cover
+                          />
+                        )}
+                        <h3 className="text-lg font-bold mb-1">{post.title}</h3>
+                        <p className="whitespace-pre text-sm mb-4">
+                          {post.summary}
+                        </p>
+                      </a>
+                    </Link>
 
-                  <Keyword keywords={post.keywords} />
+                    <Keyword keywords={post.keywords} />
 
-                  <div className="dark:text-gray-400 text-sm">
-                    <time>{dateFormat(post.updatedAt, "YYYY년MM월DD일")}</time>
-                    <span>ㆍ</span>
-                    <span>{post._count.comments}개의 댓글</span>
-                    <span>ㆍ</span>
-                    <span>{post._count.favorites}개의 좋아요</span>
-                  </div>
-                </li>
-              ))
+                    <div className="dark:text-gray-400 text-sm">
+                      <time>
+                        {dateFormat(post.updatedAt, "YYYY년MM월DD일")}
+                      </time>
+                      <span>ㆍ</span>
+                      <span>{post._count.comments}개의 댓글</span>
+                      <span>ㆍ</span>
+                      <span>{post._count.favorites}개의 좋아요</span>
+                    </div>
+                  </li>
+                ))
+              )
+            ) : (
+              <Info text="검색한 게시글이 없습니다." />
             )}
           </ul>
         </article>

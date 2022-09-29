@@ -125,7 +125,9 @@ export type ApiCreateCommentBody = {
 /**
  * 2022/09/24 - 특정 게시글에 댓글 생성 수신 타입 - by 1-blue
  */
-export type ApiCreateCommentResponse = ApiResponse & {};
+export type ApiCreateCommentResponse = ApiResponse & {
+  commentIdx: number;
+};
 
 /**
  * 2022/09/24 - 특정 댓글 제거 송신 타입 - by 1-blue
@@ -440,6 +442,7 @@ export type ApiGetPostsOfSearchResponse = ApiResponse & {
       keyword: Keyword;
     }[];
   })[];
+  allCount: number;
 };
 
 /**

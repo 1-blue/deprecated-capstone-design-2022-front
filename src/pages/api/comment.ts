@@ -3,11 +3,14 @@ import { getSession } from "next-auth/react";
 
 // type
 import type { NextApiRequest, NextApiResponse } from "next";
-import type { ApiCreateCommentResponse } from "@src/types";
+import type {
+  ApiCreateCommentResponse,
+  ApiDeleteCommentResponse,
+} from "@src/types";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiCreateCommentResponse>
+  res: NextApiResponse<ApiCreateCommentResponse | ApiDeleteCommentResponse>
 ) {
   const { method } = req;
   const session = await getSession({ req });
@@ -26,11 +29,16 @@ export default async function handler(
       if (!exPost)
         return res.status(404).json({ message: "존재하지 않는 게시글입니다." });
 
-      await prisma.comment.create({
+      const createdComment = await prisma.comment.create({
         data: { contents, postIdx, userIdx: session.user.idx },
       });
 
-      return res.status(200).json({ message: "댓글을 생성했습니다." });
+      return res
+        .status(200)
+        .json({
+          message: "댓글을 생성했습니다.",
+          commentIdx: createdComment.idx,
+        });
     }
     if (method === "DELETE") {
       if (typeof req.query.commentIdx !== "string")
