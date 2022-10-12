@@ -8,6 +8,12 @@ class MyDocument extends Document {
           {/* favicon */}
           <link href="/favicon.ico" rel="shortcut icon" />
 
+          {/* SEO를 위한 키워드 */}
+          <meta
+            name="keyword"
+            content="jslog, blog, next.js, typescript, velog, clone, 블로그, 벨로그, 클론"
+          />
+
           {/* Nanum Gothic ( https://fonts.google.com/specimen/Nanum+Gothic?subset=korean ) */}
           <link
             href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap"

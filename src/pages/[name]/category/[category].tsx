@@ -15,6 +15,7 @@ import useMe from "@src/hooks/useMe";
 // component
 import ProfileNav from "@src/components/ProfileNav";
 import Photo from "@src/components/common/Photo";
+import HeadInfo from "@src/components/common/HeadInfo";
 
 // type
 import type {
@@ -80,6 +81,11 @@ const CategoryPost: NextPage<Props> = ({ user }) => {
 
   return (
     <>
+      <HeadInfo
+        title={"Jslog | " + router.query?.category}
+        description="Jslog의 카테고리 페이지"
+      />
+
       <ProfileNav
         avatar={user.photo}
         name={user.name}

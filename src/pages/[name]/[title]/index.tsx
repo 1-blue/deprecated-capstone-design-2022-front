@@ -194,8 +194,8 @@ const PostDetail: NextPage<Props> = ({
         </section>
 
         {/* 작성자, 작성일, 수정, 삭제 */}
-        <section className="flex justify-between items-center space-x-2">
-          <div>
+        <section className="flex items-center space-x-2">
+          <div className="flex-1">
             <Link href={`/${post.User.name}`}>
               <a className="hover:underline underline-offset-2">
                 {post.User.name}
@@ -223,6 +223,7 @@ const PostDetail: NextPage<Props> = ({
               >
                 수정
               </button>
+              <span>ㆍ</span>
               <button
                 type="button"
                 className="text-gray-400 hover:text-black dark:hover:text-white"
@@ -304,7 +305,7 @@ const PostDetail: NextPage<Props> = ({
         <CommentContainer postIdx={post.idx} allCount={post._count.comments} />
       </article>
 
-      <hr />
+      <hr className="mb-4" />
 
       {/* 연관 게시글들 */}
       <section>

@@ -7,6 +7,8 @@ import apiService from "@src/api";
 // component
 import Photo from "@src/components/common/Photo";
 import ProfileNav from "@src/components/ProfileNav";
+import Info from "@src/components/common/Support/Info";
+import HeadInfo from "@src/components/common/HeadInfo";
 
 // type
 import type {
@@ -18,7 +20,6 @@ import type {
   ApiGetPostsOfUserWithCategoryResponse,
   ApiGetUserResponse,
 } from "@src/types";
-import Info from "@src/components/common/Support/Info";
 
 type Props = {
   user: ApiGetUserResponse["user"];
@@ -32,6 +33,11 @@ const Category: NextPage<Props> = ({ user }) => {
 
   return (
     <>
+      <HeadInfo
+        title="Jslog | 카테고리"
+        description="Jslog의 카테고리 페이지"
+      />
+
       <ProfileNav
         avatar={user.photo}
         name={user.name}
@@ -46,7 +52,7 @@ const Category: NextPage<Props> = ({ user }) => {
                 <a className="group space-y-1">
                   <Photo
                     photo={posts.find((post) => post.photo)?.photo}
-                    className="w-full pt-[50%]"
+                    className="w-full pt-[70%]"
                     $cover
                     $scale
                   />
