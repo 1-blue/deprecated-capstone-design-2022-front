@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-// common-component
+// component
 import Icon from "@src/components/common/Icon";
 
 // type
@@ -14,7 +14,7 @@ const MainNav = () => {
     <ul className="flex space-x-4">
       <li
         className={
-          asPath === "/" ? "border-b-2 border-black dark:border-white" : ""
+          asPath === "/" ? "border-b-2 border-black dark:border-white pb-1" : ""
         }
       >
         <Link href="/">
@@ -27,7 +27,7 @@ const MainNav = () => {
       <li
         className={
           asPath === "/recent"
-            ? "border-b-2 border-black dark:border-white"
+            ? "border-b-2 border-black dark:border-white pb-1"
             : ""
         }
       >

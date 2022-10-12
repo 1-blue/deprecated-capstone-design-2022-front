@@ -10,21 +10,22 @@ import { combineClassNames } from "@src/libs/util";
 type Props = {
   avatar: string | null | undefined;
   name: string;
+  introduction: string | null;
 };
 
-const ProfileNav = ({ avatar, name }: Props) => {
+const ProfileNav = ({ avatar, name, introduction }: Props) => {
   const router = useRouter();
 
   return (
     <>
       <section className="md:mx-auto md:w-3/5 flex items-center space-x-4">
-        <Avatar
-          photo={avatar}
-          size="w-20 h-20 md:w-28 md:h-28"
-          $rouneded
-          $priority
-        />
-        <span className="font-bold text-xl md:text-2xl">{name}</span>
+        <Avatar photo={avatar} className="w-20 h-20 md:w-28 md:h-28" />
+        <div className="flex flex-col space-y-2">
+          <span className="font-bold text-xl md:text-2xl">{name}</span>
+          <p className="whitespace-pre-line text-sm md:text-base">
+            {introduction}
+          </p>
+        </div>
       </section>
 
       <hr className="md:mx-auto md:w-3/5 my-8" />

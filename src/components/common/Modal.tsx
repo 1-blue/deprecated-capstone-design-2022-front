@@ -1,7 +1,7 @@
 import { forwardRef, useEffect } from "react";
 
 // util
-import { combineClassNames } from "@src/libs/util";
+import { combineClassNames } from "@src/libs";
 
 type Props = {
   children: React.ReactChild;

@@ -1,119 +1,74 @@
-import { Dispatch, SetStateAction, useCallback, useRef, useState } from "react";
-import { useForm, UseFormGetValues } from "react-hook-form";
+import { useCallback, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import { toast } from "react-toastify";
 
-// common-component
+// api
+import apiService from "@src/api";
+
+// util
+import { combineClassNames } from "@src/libs";
+
+// hook
+import usePhoto from "@src/hooks/usePhoto";
+
+// component
 import Photo from "@src/components/common/Photo";
 import Icon from "@src/components/common/Icon";
 import Spinner from "@src/components/common/Spinner";
 
-// hook
-import useMe from "@src/hooks/useMe";
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
-
-// util
-import { combineClassNames } from "@src/libs/util";
-
 // type
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import type { ApiGetCategoriesResponse } from "@src/types";
+import type { PostMetadata } from "@src/pages/write";
+import { AxiosError } from "axios";
 import { ICON } from "@src/types";
-import type { ResponseStatus } from "@src/types";
-import type { ICategoryWithCount } from "@src/types";
-import type { ResponseOfPhoto } from "@src/types";
-import type { PostMetadata, WriteForm } from "@src/pages/write";
 
-type ResponseOfCreatedPost = {
-  status: ResponseStatus;
-  data: {
-    title: string;
-  };
-};
-type CategoryResponse = {
-  status: ResponseStatus;
-  data: {
-    categorys: ICategoryWithCount[];
-  };
-};
 type CategoryForm = {
   category: string;
 };
 type Props = {
-  getValues: UseFormGetValues<WriteForm>;
+  onCreatePost: () => void;
+  title: string;
   setIsPreview: Dispatch<SetStateAction<boolean>>;
-  keywords: string[];
-  tempPostIdx?: number;
   postMetadata: PostMetadata;
   setPostMetadata: Dispatch<SetStateAction<PostMetadata>>;
 };
 
 const InputSetting = ({
-  getValues,
+  onCreatePost,
+  title,
   setIsPreview,
-  keywords,
-  tempPostIdx,
   postMetadata,
   setPostMetadata,
 }: Props) => {
-  const { me } = useMe();
-
-  // 2022/04/27 - 게시글 생성 함수 - by 1-blue
-  const [createPost, { data: createPostResponse, loading: createPostLoading }] =
-    useMutation<ResponseOfCreatedPost>({
-      url: "/api/post",
-    });
-  // 2022/04/27 - 게시글 생성 - by 1-blue
-  const onCreatePost = useCallback(() => {
-    const title = getValues("title");
-    const contents = getValues("contents");
-    if (!title) return toast.error("제목을 입력해주세요!");
-    if (!contents) return toast.error("내용을 입력해주세요!");
-
-    createPost({
-      title,
-      contents,
-      keywords,
-      tempPostIdx,
-      ...postMetadata,
-    });
-  }, [getValues, createPost, keywords, tempPostIdx, postMetadata]);
-  // 2022/04/27 - 게시글 생성 성공 시 toast + 페이지 이동 - by 1-blue
-  useToastMessage({
-    ok: createPostResponse?.status.ok,
-    message: `"${createPostResponse?.data.title}" 게시글을 생성했습니다.`,
-    go: `/${me?.name}/${createPostResponse?.data.title}`,
-  });
-
   // 2022/04/29 - 섬네일 - by 1-blue
   const thumbnailRef = useRef<HTMLInputElement>(null);
   // 2022/04/29 - 섬네일 업로드 로딩 변수 - by 1-blue
   const [uploadThumbnailLoading, setUploadThumbnailLoading] = useState(false);
+
+  // 2022/09/25 - 게시글 섬네일 업로드 함수 - by 1-blue
+  const [uploadPhotoByClick] = usePhoto({
+    kinds: "post",
+  });
   // 2022/04/29 - 섬네일 업로드 - by 1-blue
   const onUploadThumbnail = useCallback(
-    async (e: any) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
       setUploadThumbnailLoading(true);
-      try {
-        const formData = new FormData();
-        formData.append("photo", e.target.files[0]);
-        const {
-          data: { photoUrl },
-        }: ResponseOfPhoto = await fetch("/api/photo", {
-          method: "POST",
-          body: formData,
-        }).then((res) => res.json());
-        setPostMetadata((prev) => ({ ...prev, thumbnail: photoUrl }));
-        toast.success("섬네일를 업로드했습니다.");
-      } catch (error) {
-        toast.error("섬네일 업로드에 실패했습니다.");
-      }
+
+      const photoURL = await uploadPhotoByClick(e);
+
+      if (photoURL)
+        setPostMetadata((prev) => ({ ...prev, thumbnail: photoURL }));
+
       setUploadThumbnailLoading(false);
     },
-    [setPostMetadata, setUploadThumbnailLoading]
+    [uploadPhotoByClick, setPostMetadata, setUploadThumbnailLoading]
   );
 
-  // 2022/04/29 - 로그인한 유저의 카테고리들 - by 1-blue
+  // 2022/09/25 - 로그인한 유저의 카테고리들 - by 1-blue
   const { data: categoryResponse, mutate: categoryMutate } =
-    useSWR<CategoryResponse>("/api/category");
+    useSWR<ApiGetCategoriesResponse>("/api/category");
   // 2022/04/29 - 카테고리 변수 - by 1-blue
   const [isShowCategory, setIsShowCategory] = useState(false);
   // 2022/04/29 - 카테고리 임시 등록 변수 - by 1-ble
@@ -129,26 +84,29 @@ const InputSetting = ({
   const { register, handleSubmit, reset } = useForm<CategoryForm>();
   // 2022/04/29 - 카테고리 추가 - by 1-blue
   const onAddCategory = useCallback(
-    (body: CategoryForm) => {
-      categoryMutate(
-        (prev) =>
-          prev && {
-            ...prev,
-            data: {
-              categorys: [
-                ...prev?.data.categorys,
-                {
-                  category: body.category,
-                  _count: {
-                    post: 1,
-                  },
-                },
-              ],
+    ({ category }: CategoryForm) => {
+      try {
+        apiService.categoryService.apiCreateCategory({ category });
+
+        categoryMutate(
+          (prev) =>
+            prev && {
+              ...prev,
+              categories: [...prev.categories, { category }],
             },
-          },
-        false
-      );
-      reset();
+          false
+        );
+      } catch (error) {
+        console.error("error >> ", error);
+
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data.message);
+        } else {
+          toast.error("알 수 없는 에러가 발생했습니다.");
+        }
+      } finally {
+        reset();
+      }
     },
     [categoryMutate, reset]
   );
@@ -169,27 +127,11 @@ const InputSetting = ({
               onChange={onUploadThumbnail}
             />
             {postMetadata.thumbnail ? (
-              <>
-                {postMetadata.thumbnail.includes(
-                  process.env.NEXT_PUBLIC_IMAGE_BASE_URL!
-                ) ? (
-                  <Photo
-                    photo={postMetadata.thumbnail}
-                    size="w-full pt-[60%] md:h-48"
-                    className="m-0"
-                    $cover
-                  />
-                ) : (
-                  <figure
-                    className="w-full pt-[60%] md:h-48 m-0 bg-contain bg-no-repeat bg-center"
-                    style={{
-                      backgroundImage: `url("${postMetadata.thumbnail}")`,
-                    }}
-                  >
-                    <img src={postMetadata.thumbnail} hidden />
-                  </figure>
-                )}
-              </>
+              <Photo
+                photo={postMetadata.thumbnail}
+                className="w-full pt-[60%] md:h-48 m-0"
+                $cover
+              />
             ) : (
               <>
                 <button
@@ -197,8 +139,9 @@ const InputSetting = ({
                   className="group w-full md:h-48 h-72 md:pt-0 bg-transparent flex flex-col justify-center items-center rounded-sm border-2 border-indigo-500 hover:border-indigo-600 text-indigo-500 hover:text-indigo-600"
                   onClick={() => thumbnailRef.current?.click()}
                 >
-                  <Icon icon={ICON.PHOTO} className="w-[80px] h-[80px]" />
-                  <span className="text-lg font-semibold py-2 px-4 rounded-md border-2 border-indigo-500 group-hover:border-indigo-600">
+                  <Icon icon={ICON.PHOTO} className="w-[60px] h-[60px]" />
+                  <div className="mb-2" />
+                  <span className="text-sm font-semibold py-1.5 px-3 rounded-md border-2 border-indigo-500 group-hover:border-indigo-600">
                     섬네일 업로드
                   </span>
                 </button>
@@ -207,7 +150,7 @@ const InputSetting = ({
           </form>
           {/* 요약 입력 */}
           <form className="space-y-2">
-            <h3 className="text-xl font-bold">{getValues("title")}</h3>
+            <h3 className="text-xl font-bold">{title}</h3>
             <textarea
               rows={5}
               className="resize-none w-full p-2 focus:outline-none bg-zinc-100 dark:bg-zinc-600 rounded-sm border-2 border-zinc-600 dark:border-zinc-400"
@@ -240,8 +183,10 @@ const InputSetting = ({
               />
             </form>
 
+            <hr />
+
             <ul className="flex flex-col divide-y bg-zinc-300 dark:bg-zinc-700 overflow-auto mb-9">
-              {categoryResponse?.data.categorys.map(({ category }) => (
+              {categoryResponse?.categories.map(({ category }) => (
                 <button
                   type="button"
                   key={category}
@@ -383,9 +328,7 @@ const InputSetting = ({
         )}
       </article>
 
-      {(createPostLoading || uploadThumbnailLoading) && (
-        <Spinner kinds="page" />
-      )}
+      {uploadThumbnailLoading && <Spinner kinds="page" />}
     </>
   );
 };

@@ -1,113 +1,190 @@
-import { useState } from "react";
-import type {
-  GetServerSideProps,
-  GetServerSidePropsContext,
-  GetStaticPaths,
-  GetStaticProps,
-  GetStaticPropsContext,
-  NextPage,
-} from "next";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 
-// type
-import type {
-  IPostWithUserAndKeywordAndCount,
-  IPostWithUserAndCount,
-  ResponseStatus,
-} from "@src/types";
+// api
+import apiService from "@src/api";
 
-// common-component
+// util
+import { combineClassNames, dateOrTimeFormat } from "@src/libs";
+
+// hook
+import useModal from "@src/hooks/useModal";
+
+// component
+import HeadInfo from "@src/components/common/HeadInfo";
 import Spinner from "@src/components/common/Spinner";
 import Photo from "@src/components/common/Photo";
 import Markdown from "@src/components/common/Markdown";
 import Post from "@src/components/Post";
 import Modal from "@src/components/common/Modal";
 import Keyword from "@src/components/common/Keyword";
-import HeadInfo from "@src/components/common/HeadInfo";
-
-// component
 import CommentContainer from "@src/components/Comment/CommentContainer";
-import Like from "@src/components/Like";
+import Favorite from "@src/components/Favorite";
 import TitleNav from "@src/components/TitleNav";
+import NotFoundPage from "@src/pages/404";
+import Avatar from "@src/components/common/Avatar";
 
-// util
-import { dateFormat } from "@src/libs/dateFormat";
-import { combineClassNames } from "@src/libs/util";
+// type
+import type {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  NextPage,
+} from "next";
+import type {
+  ApiGetPostByRelevantResponse,
+  ApiGetPostResponse,
+  ApiGetPostsByCategoryResponse,
+} from "@src/types";
+import { AxiosError } from "axios";
 
-// hook
-import useMe from "@src/hooks/useMe";
-import useModal from "@src/hooks/useModal";
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
-
-type ResponseOfDetailPost = {
-  status: ResponseStatus;
-  data: {
-    post: IPostWithUserAndKeywordAndCount;
-    error?: Error;
-  };
-};
-type ResponseOfCategorizedPosts = {
-  status: ResponseStatus;
-  data: {
-    category: string;
-    posts: IPostWithUserAndCount[];
-  };
-};
-type ResponseOfRelevantPosts = {
-  status: ResponseStatus;
-  data: {
-    posts: IPostWithUserAndCount[];
-  };
-};
-type ResponseOfRemovedPost = {
-  status: ResponseStatus;
+type Props = {
+  post: ApiGetPostResponse["post"];
+  posts: ApiGetPostsByCategoryResponse["posts"];
 };
 
-const PostDetail: NextPage<ResponseOfDetailPost> = ({
-  status: { ok },
-  data: { post },
+const PostDetail: NextPage<Props> = ({
+  post: initialPost,
+  posts: relatedPosts,
 }) => {
   const router = useRouter();
-  const { me } = useMe();
+  const { status, data } = useSession();
 
-  // 2022/04/30 - 현재 게시글과 같은 카테고리를 가진 게시글들 ( + 동일한 유저 ) - by 1-blue
-  const { data: categorizedPosts } = useSWR<ResponseOfCategorizedPosts>(
-    router.query.title ? `/api/post/${router.query.title}/categorized` : null
+  // 2022/09/24 - 현재 게시글 상세 데이터 요청 - by 1-blue
+  const { data: responsePost, mutate: postMutate } = useSWR<ApiGetPostResponse>(
+    initialPost
+      ? `/api/post?name=${initialPost.User.name}&title=${initialPost.title}`
+      : null,
+    null,
+    { fallbackData: { post: initialPost, message: "" } }
   );
+
   // 2022/04/30 - 카테고리 토글 변수 - by 1-blue
   const [toggleCategory, setToggleCategory] = useState(false);
 
-  // 2022/04/30 - 현재 게시글과 연관된 게시글들 - by 1-blue
-  const { data: relevantPosts } = useSWR<ResponseOfRelevantPosts>(
-    router.query.title ? `/api/post/${router.query.title}/relevant` : null
+  // 2022/09/24 - 현재 게시글과 연관된 게시글들 - by 1-blue
+  const { data: relevantResult } = useSWR<ApiGetPostByRelevantResponse>(
+    initialPost ? `/api/post/relevant?postIdx=${initialPost.idx}` : null
   );
 
   // 2022/05/01 - 게시글 삭제 모달 - by 1-blue
   const [modalRef, isOpen, setIsOpen] = useModal();
-  // 2022/05/01 - 게시글 삭제 요청 관련 메서드 - by 1-blue
-  const [removePost, { data: removePostResponse, loading: removePostLoading }] =
-    useMutation<ResponseOfRemovedPost>({
-      url: router.query.title ? `/api/post/${router.query.title}` : null,
-      method: "DELETE",
-    });
-  // 2022/05/01 - 게시글 삭제 시 성공 토스트 및 페이지 이동 - by 1-blue
-  useToastMessage({
-    ok: removePostResponse?.status.ok,
-    message: `"${router.query.title}" 게시글을 삭제했습니다.`,
-    go: "/",
-  });
+  // 2022/09/24 - 게시글 삭제중인지 확인할 변수 - by 1-blue
+  const [isDeleting, setIsDeleting] = useState(false);
+  // 2022/09/24 - 현재 게시글 제거 요청 - by 1-blue
+  const onDeletePost = useCallback(() => {
+    if (!initialPost) return;
 
-  if (!ok) return <span>에러 페이지</span>;
+    setIsDeleting(true);
+
+    apiService.postService
+      .apiDeletePost({ postIdx: initialPost.idx })
+      .then(({ data: { message } }) => {
+        toast.success(message);
+        router.push("/");
+      })
+      .catch((error) => {
+        console.error(error);
+
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data.message);
+        } else {
+          toast.error("서버측 오류입니다. \n잠시후에 다시 시도해주세요!");
+        }
+      })
+      .finally(() => {
+        setIsDeleting(false);
+      });
+  }, [initialPost, router]);
+
+  // 2022/09/24 - 좋아요 요청 - by 1-blue
+  const onCreateFavorite = useCallback(async () => {
+    if (status !== "authenticated")
+      return toast.error("로그인을 해야 누를 수 있습니다.");
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiCreateFavorite({
+        postIdx: initialPost.idx,
+      });
+
+      toast.success(message);
+
+      postMutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            post: {
+              ...prev.post,
+              favorites: [...prev.post.favorites, { userIdx: data.user.idx }],
+            },
+          },
+        false
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
+      }
+    }
+  }, [status, data, postMutate, initialPost]);
+  // 2022/09/24 - 좋아요 취소 요청 - by 1-blue
+  const onDeleteFavorite = useCallback(async () => {
+    if (status !== "authenticated")
+      return toast.error("로그인을 해야 누를 수 있습니다.");
+
+    try {
+      const {
+        data: { message },
+      } = await apiService.postService.apiDeleteFavorite({
+        postIdx: initialPost.idx,
+      });
+
+      toast.success(message);
+
+      postMutate(
+        (prev) =>
+          prev && {
+            ...prev,
+            post: {
+              ...prev.post,
+              favorites: prev.post.favorites.filter(
+                ({ userIdx }) => userIdx !== data.user.idx
+              ),
+            },
+          },
+        false
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data.message);
+      } else {
+        toast.error("서버 문제가 발생했습니다. \n잠시후에 다시 시도해주세요");
+      }
+    }
+  }, [status, data, postMutate, initialPost]);
+
+  // >>> 에러 페이지
+  if (!responsePost || !responsePost.post)
+    return <NotFoundPage text="존재하지 않는 게시글입니다." />;
+
+  const post = responsePost.post;
 
   return (
     <>
       <HeadInfo
-        title={`${post.title}`}
-        description={`${post.title}\n${post.summary}`}
-        photo={`${post.thumbnail}`}
+        title={`Jslog | ${post.title}`}
+        description={`${post.title}\n${post.contents}`}
+        photo={post.photo}
       />
 
       <article className="max-w-[768px] md:w-[60vw] mx-4 md:mx-auto space-y-8 mb-40">
@@ -117,16 +194,25 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
         </section>
 
         {/* 작성자, 작성일, 수정, 삭제 */}
-        <section className="flex space-x-2">
-          <Link href={`/${post.user.name}`}>
-            <a className="hover:underline underline-offset-2">
-              {post.user.name}
-            </a>
-          </Link>
-          <span>ㆍ</span>
-          <time>{dateFormat(post.updatedAt, "YYYY-MM-DD")}</time>
-          <div className="flex-1" />
-          {me?.idx === post.user.idx && (
+        <section className="flex items-center space-x-2">
+          <div className="flex-1">
+            <Link href={`/${post.User.name}`}>
+              <a className="hover:underline underline-offset-2">
+                {post.User.name}
+              </a>
+            </Link>
+            <span>ㆍ</span>
+            <time>{dateOrTimeFormat(post.updatedAt, "YYYY-MM-DD")}</time>
+          </div>
+
+          {/* 좋아요 버튼 */}
+          <Favorite
+            favorites={post.favorites}
+            onCreateFavorite={onCreateFavorite}
+            onDeleteFavorite={onDeleteFavorite}
+          />
+
+          {status === "authenticated" && data.user.idx === post.User.idx && (
             <>
               <button
                 type="button"
@@ -137,6 +223,7 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
               >
                 수정
               </button>
+              <span>ㆍ</span>
               <button
                 type="button"
                 className="text-gray-400 hover:text-black dark:hover:text-white"
@@ -154,59 +241,43 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
         </section>
 
         {/* 같은 카테고리 게시글들 */}
-        <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
-          <h2 className="text-xl font-semibold">
-            {categorizedPosts?.data.category}
-          </h2>
-          {toggleCategory && (
-            <ul className="space-y-1">
-              {categorizedPosts?.data.posts.map((post, index) => (
-                <li key={post.idx}>
-                  <span className="dark:text-gray-400">{index + 1}. </span>
-                  <Link href={`/${post.user.name}/${post.title}`}>
-                    <a
-                      className={combineClassNames(
-                        "font-semibold hover:text-indigo-500",
-                        router.query.title === post.title
-                          ? "text-indigo-400"
-                          : ""
-                      )}
-                    >
-                      {post.title}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <button
-            type="button"
-            onClick={() => setToggleCategory((prev) => !prev)}
-          >
-            {toggleCategory ? "▲ 숨기기" : "▼ 목록 보기"}
-          </button>
-        </section>
+        {relatedPosts.length !== 0 && (
+          <section className="bg-zinc-300 dark:bg-zinc-700 px-8 py-6 rounded-md space-y-4">
+            <h2 className="text-xl font-semibold">{post.cateogoryIdx}</h2>
+            {toggleCategory && (
+              <ul className="space-y-1">
+                {relatedPosts.map(({ title }, index) => (
+                  <li key={title}>
+                    <span className="dark:text-gray-400">{index + 1}. </span>
+                    <Link href={`/${data?.user.name}/${title}`}>
+                      <a
+                        className={combineClassNames(
+                          "font-semibold hover:text-indigo-500",
+                          router.query.title === title ? "text-indigo-400" : ""
+                        )}
+                      >
+                        {title}
+                      </a>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              type="button"
+              onClick={() => setToggleCategory((prev) => !prev)}
+            >
+              {toggleCategory ? "▲ 숨기기" : "▼ 목록 보기"}
+            </button>
+          </section>
+        )}
 
         {/* 섬네일 */}
-        <section>
-          {post.thumbnail?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
-            <Photo
-              photo={post.thumbnail}
-              size="w-full h-80"
-              className="m-0"
-              $cover
-            />
-          ) : (
-            <figure
-              className="w-full h-80 m-0 bg-contain bg-no-repeat bg-center"
-              style={{
-                backgroundImage: `url("${post.thumbnail}")`,
-              }}
-            >
-              <img src={post.thumbnail} hidden />
-            </figure>
-          )}
-        </section>
+        {post.photo && (
+          <section>
+            <Photo photo={post.photo} className="w-full h-[60vh] m-0" $cover />
+          </section>
+        )}
 
         {/* 내용 */}
         <section>
@@ -217,25 +288,24 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
 
         {/* 작성자 정보 */}
         <section className="flex items-center space-x-4">
-          <Photo
-            photo={post.user.avatar}
-            size="w-20 h-20"
+          <Avatar
+            photo={post.User.photo}
+            className="w-[80px] h-[80px] self-start"
             alt="유저 이미지"
-            $rouneded
           />
           <div className="flex flex-col">
-            <span className="text-xl font-bold">{post.user.name}</span>
-            <span>{post.user.introduction}</span>
+            <span className="text-xl font-bold">{post.User.name}</span>
+            <p className="whitespace-pre">{post.User.introduction}</p>
           </div>
         </section>
 
         <hr />
 
         {/* 댓글 영역 */}
-        <CommentContainer postIdx={post.idx} allCount={post._count.comment} />
+        <CommentContainer postIdx={post.idx} allCount={post._count.comments} />
       </article>
 
-      <hr />
+      <hr className="mb-4" />
 
       {/* 연관 게시글들 */}
       <section>
@@ -243,17 +313,14 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
           관심 있을만한 게시글
         </span>
         <ul className="grid gird-col-1 gap-x-8 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {relevantPosts?.data.posts.map((post) => (
-            <Post key={post.idx} post={post} photoSize="w-full h-[200px]" />
+          {relevantResult?.relenvantPosts.map((post) => (
+            <Post key={post.idx} post={post} />
           ))}
         </ul>
       </section>
 
       {/* 우측 네비게이션 */}
       <TitleNav contents={post.contents} />
-
-      {/* 좋아요 버튼 */}
-      <Like />
 
       {/* 게시글 삭제 모달 */}
       {isOpen && (
@@ -272,7 +339,7 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
               <button
                 type="button"
                 className="px-6 py-2 bg-indigo-400 rounded-md hover:bg-indigo-500"
-                onClick={() => removePost({})}
+                onClick={onDeletePost}
               >
                 확인
               </button>
@@ -282,7 +349,7 @@ const PostDetail: NextPage<ResponseOfDetailPost> = ({
       )}
 
       {/* 게시글 삭제 스피너 */}
-      {removePostLoading && <Spinner kinds="page" />}
+      {isDeleting && <Spinner kinds="page" />}
     </>
   );
 };
@@ -291,29 +358,32 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   try {
-    const post = await fetch(
-      `${process.env.NEXT_PUBLIC_SERVER_URL}/api/post/${context.params?.title}`
-    ).then((res) => res.json());
+    const { name, title } = context.query;
+
+    if (typeof name !== "string" || typeof title !== "string") {
+      return { props: {} };
+    }
+
+    const {
+      data: { post },
+    } = await apiService.postService.apiGetPost({ name, title });
+    const {
+      data: { posts },
+    } = await apiService.postService.apiGetPostsByCategory({
+      postIdx: post.idx,
+      userIdx: post.User.idx,
+    });
 
     return {
       props: {
-        ...JSON.parse(JSON.stringify(post)),
+        post: JSON.parse(JSON.stringify(post)),
+        posts: JSON.parse(JSON.stringify(posts)),
       },
     };
   } catch (error) {
-    console.error(error);
+    console.error("[name]/[title]/index.tsx >> ", error);
 
-    return {
-      props: {
-        status: {
-          ok: false,
-        },
-        data: {
-          post: {},
-          error,
-        },
-      },
-    };
+    return { props: {} };
   }
 };
 

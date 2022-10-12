@@ -1,198 +1,154 @@
 import type { NextPage } from "next";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { signOut, useSession } from "next-auth/react";
+
+// api
+import apiService from "@src/api";
+
+// hook
+import useModal from "@src/hooks/useModal";
+import usePhoto from "@src/hooks/usePhoto";
 
 // common-component
 import Avatar from "@src/components/common/Avatar";
 import HeadInfo from "@src/components/common/HeadInfo";
 import Modal from "@src/components/common/Modal";
 import Spinner from "@src/components/common/Spinner";
-
-// hook
-import useMe from "@src/hooks/useMe";
-import useModal from "@src/hooks/useModal";
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
-
-// type
-import type { ResponseOfPhoto, ResponseStatus } from "@src/types";
+import NotFoundPage from "@src/pages/404";
 
 type ModifyForm = {
   name: string;
   introduction: string;
 };
-type ResponseOfModifyProfile = {
-  status: ResponseStatus;
-};
-type ResponseOfRemoveProfile = {
-  status: ResponseStatus;
-};
 
 const Setting: NextPage = () => {
-  const { me, meMutate } = useMe();
+  const { data, status } = useSession();
 
   // 2022/05/14 - 이미지 input ref - by 1-blue
   const photoRef = useRef<HTMLInputElement>(null);
   // 2022/05/14 - 이미지 업로드 로딩 변수 - by 1-blue
   const [uploadLoading, setUploadLoading] = useState(false);
-  // 2022/05/14 - 아바타 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+
+  // 2022/09/25 - 유저 이미지 업로드 함수 - by 1-blue
+  const [onUploadPhotoByClick] = usePhoto({ kinds: "user" });
+
+  // 2022/09/27 - 아바타 업로드 ( 파일 탐색기 이용 ) - by 1-blue
   const onUploadAvatar = useCallback(
-    async (e: any) => {
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      if (status !== "authenticated")
+        return toast.error("로그인후에 접근해주세요!");
+
       setUploadLoading(true);
 
-      try {
-        const formData = new FormData();
-        formData.append("photo", e.target.files[0]);
+      const photoURL = await onUploadPhotoByClick(e);
+
+      if (photoURL) {
+        // 유저 이미지 변경
         const {
-          data: { photoUrl },
-        }: ResponseOfPhoto = await fetch("/api/photo", {
-          method: "POST",
-          body: formData,
-        }).then((res) => res.json());
+          data: { message },
+        } = await apiService.userService.apiUpdateUser({
+          photo: photoURL,
+          userIdx: data?.user.idx,
+        });
 
-        await fetch("/api/user", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            avatar: photoUrl,
-          }),
-        }).then((res) => res.json());
-
-        meMutate(
-          (prev) =>
-            prev && {
-              ...prev,
-              data: {
-                user: {
-                  ...prev.data!.user,
-                  avatar: photoUrl,
-                },
-              },
-            },
-          false
-        );
-
-        toast.success("아바타를 업로드했습니다.");
-      } catch (error) {
-        console.error(error);
-
-        toast.error("아바타 업로드에 실패했습니다.");
+        toast.success(message);
       }
 
       setUploadLoading(false);
     },
-    [setUploadLoading, meMutate]
+    [status, data, setUploadLoading, onUploadPhotoByClick]
   );
-  // 2022/05/14 - 아바타 제거 - by 1-blue
+  // 2022/09/27 - 아바타 제거 - by 1-blue
   const onRemoveAvatar = useCallback(async () => {
-    try {
-      setUploadLoading(true);
+    if (status !== "authenticated")
+      return toast.error("로그인후에 접근해주세요!");
 
-      await fetch("/api/user", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          avatar: null,
-        }),
-      }).then((res) => res.json());
+    setUploadLoading(true);
 
-      meMutate(
-        (prev) =>
-          prev && {
-            ...prev,
-            data: {
-              user: {
-                ...prev.data!.user,
-                avatar: null,
-              },
-            },
-          },
-        false
-      );
+    // 이미지 제거 요청
+    const {
+      data: { message },
+    } = await apiService.userService.apiUpdateUser({
+      photo: "remove",
+      userIdx: data?.user.idx,
+    });
 
-      setUploadLoading(false);
+    toast.success(message);
 
-      toast.success("아바타를 제거했습니다.");
-    } catch (error) {
-      toast.error("아바타 제거에 실패했습니다.");
-    }
-  }, [setUploadLoading, meMutate]);
+    setUploadLoading(false);
+  }, [status, data, setUploadLoading]);
 
-  // 2022/05/14 - 프로필 수정 처리 관련 메서드들 - by 1-blue
-  const [
-    profileModifyMutation,
-    { loading: modifyLoading, data: responseOfModifyProfile },
-    profileModifyResetState,
-  ] = useMutation<ResponseOfModifyProfile>({
-    url: "/api/user",
-    method: "PATCH",
-  });
   // 2022/05/14 - 프로필 수정 폼 toggle - by 1-blue
   const [toggleModifyForm, setToggleModifyForm] = useState(false);
   // 2022/05/14 - 프로필 수정 폼 관련 메서드들 - by 1-blue
-  const { register, handleSubmit, getValues, setValue } = useForm<ModifyForm>();
-  // 2022/05/14 - 프로필 기본 값 입력 - by 1-blue
+  const { register, handleSubmit, setValue } = useForm<ModifyForm>();
+  // 2022/09/27 - 프로필 기본 값 입력 - by 1-blue
   useEffect(() => {
-    if (me?.name) setValue("name", me.name);
-    if (me?.introduction) setValue("introduction", me.introduction);
-  }, [me, setValue]);
+    if (status !== "authenticated") return;
+
+    setValue("name", data.user.name);
+    setValue("introduction", data.user.introduction || "");
+  }, [status, data, setValue]);
+
   // 2022/05/14 - 프로필 수정 - by 1-blub
   const onModifyProfile = useCallback(
-    (body: ModifyForm) => profileModifyMutation(body),
-    [profileModifyMutation]
-  );
-  // 2022/05/14 - 프로필 수정 성공 시 실행할 함수 - by 1-blue
-  const onModifySuccessed = useCallback(() => {
-    meMutate(
-      (prev) =>
-        prev && {
-          ...prev,
-          data: {
-            user: {
-              ...prev.data!.user,
-              ...getValues(),
-            },
-          },
-        },
-      false
-    );
-    setToggleModifyForm(false);
-    profileModifyResetState();
-  }, [meMutate, setToggleModifyForm, profileModifyResetState, getValues]);
-  // 2022/05/14 - 프로실 수정 성공 시 토스트 메시지 - by 1-blue
-  useToastMessage({
-    ok: responseOfModifyProfile?.status.ok,
-    message: "프로필을 수정했습니다.",
-    excute: onModifySuccessed,
-  });
+    (body: ModifyForm) => {
+      if (status !== "authenticated")
+        return toast.error("로그인후에 접근해주세요!");
 
-  // 2022/05/14 - 계정 삭제 관련 메서드들 - by 1-blue
-  const [
-    profileRemoveMutation,
-    { loading: removeLoading, data: responseOfRemoveProfile },
-  ] = useMutation<ResponseOfRemoveProfile>({
-    url: "/api/user",
-    method: "DELETE",
-  });
-  // 2022/05/14 - 회원 탈퇴 - by 1-blue
-  const onRemoveAccount = useCallback(
-    () => profileRemoveMutation({}),
-    [profileRemoveMutation]
+      apiService.userService
+        .apiUpdateUser({
+          userIdx: data.user.idx,
+          ...body,
+        })
+        .then(({ data: { message } }) => {
+          toast.success(message);
+
+          signOut({
+            redirect: true,
+            callbackUrl: process.env.NEXT_PUBLIC_BASE_URL + "/login",
+          });
+        })
+        .catch(console.error);
+    },
+    [status, data]
   );
-  // 2022/05/14 - 회원 탈퇴 성공 시 토스트 메시지 - by 1-blue
-  useToastMessage({
-    ok: responseOfRemoveProfile?.status.ok,
-    message: "계정을 삭제했습니다.",
-    go: "/",
-  });
+
+  // 2022/09/27 - 회원 탈퇴 - by 1-blue
+  const onDeleteAccount = useCallback(() => {
+    apiService.userService
+      .apiDeleteUser()
+      .then(({ data: { message } }) => {
+        toast.success(message);
+
+        signOut({
+          redirect: true,
+          callbackUrl: process.env.NEXT_PUBLIC_BASE_URL,
+        });
+      })
+      .catch(console.error);
+  }, []);
 
   // 2022/05/14 - 계정 삭제 모달 관련 변수들 - by 1-blue
   const [modalRef, isOpen, setIsOpen] = useModal();
+
+  // 2022/05/17 - input ref 분리 - by 1-blue
+  const introductionRef = useRef<HTMLTextAreaElement | null>(null);
+  const { ref, ...rest } = register("introduction");
+
+  // 2022/09/26 - textarea 리사이징 - by 1-blue
+  const handleResizeHeight = useCallback(() => {
+    if (!introductionRef.current) return;
+
+    introductionRef.current.style.height = "auto";
+    introductionRef.current.style.height =
+      introductionRef.current?.scrollHeight + 4 + "px";
+  }, []);
+
+  if (status !== "authenticated")
+    return <NotFoundPage text="로그인후에 접근해주세요!" />;
 
   return (
     <>
@@ -200,13 +156,7 @@ const Setting: NextPage = () => {
 
       <article className="md:mx-auto md:w-3/5 flex flex-col items-center divide-y space-y-8 md:items-stretch md:flex-row md:divide-y-0 md:divide-x mb-20 md:space-y-0 md:space-x-8">
         <form className="flex flex-col space-y-4">
-          <Avatar
-            photo={me?.avatar}
-            size="w-28 h-28"
-            $rouneded
-            $cover
-            $priority
-          />
+          <Avatar photo={data.user.photo} className="w-28 h-28" />
           <input
             type="file"
             accept="image/*"
@@ -241,11 +191,15 @@ const Setting: NextPage = () => {
                 className="p-2 rounded-md font-bold text-lg bg-gray-200 dark:bg-gray-800"
                 {...register("name")}
               />
-              <input
-                type="text"
+              <textarea
+                {...rest}
                 placeholder="한 줄 소개를 입력해주세요."
-                className="p-2 rounded-md bg-gray-200 dark:bg-gray-800"
-                {...register("introduction")}
+                className="resize-none p-2 rounded-md bg-gray-200 dark:bg-gray-800"
+                ref={(e) => {
+                  ref(e);
+                  introductionRef.current = e;
+                }}
+                onInput={handleResizeHeight}
               />
               <div className="self-end space-x-2">
                 <button
@@ -265,8 +219,8 @@ const Setting: NextPage = () => {
             </form>
           ) : (
             <>
-              <h2 className="text-3xl font-bold">{me?.name}</h2>
-              <span className="block">{me?.introduction}</span>
+              <h2 className="text-3xl font-bold">{data.user.name}</h2>
+              <p className="whitespace-pre-line">{data.user.introduction}</p>
               <button
                 type="button"
                 className="text-indigo-400 hover:underline"
@@ -314,7 +268,7 @@ const Setting: NextPage = () => {
               <button
                 type="button"
                 className="py-2 px-4 text-white bg-indigo-400 hover:bg-indigo-500 rounded-lg"
-                onClick={onRemoveAccount}
+                onClick={onDeleteAccount}
               >
                 확인
               </button>
@@ -323,9 +277,7 @@ const Setting: NextPage = () => {
         </Modal>
       )}
 
-      {(uploadLoading || modifyLoading || removeLoading) && (
-        <Spinner kinds="page" />
-      )}
+      {uploadLoading && <Spinner kinds="page" />}
     </>
   );
 };

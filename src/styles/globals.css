@@ -7,4 +7,16 @@
     font-family: 'Nanum Gothic', sans-serif;
     transition: background-color 0.5s;
   }
+
+  /* 3줄 이상 문자열 자르기 ( "..." ) */
+  .paragraph {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    word-wrap:break-word; 
+    line-height: 1.2em;
+    height: 3.6em;
+  }
 }

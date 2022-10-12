@@ -47,15 +47,17 @@ const Markdown = ({ markdown }: Props) => {
         img: ({ node, ...props }) => (
           <div>
             <>
-              {props.src?.includes(process.env.NEXT_PUBLIC_IMAGE_BASE_URL!) ? (
+              {props.src?.includes(process.env.NEXT_PUBLIC_PHOTO_BASE_URL) ? (
                 <Photo
                   {...props}
                   photo={props.src}
-                  size="w-full h-80"
-                  className="m-0"
+                  className="mx-auto my-4 h-[200px] md:h-[300px] lg:h-[400px]"
                 />
               ) : (
-                <img {...props} className="w-full h-80 m-0" />
+                <img
+                  {...props}
+                  className="mx-auto my-4 h-[200px] md:h-[300px] lg:h-[400px]"
+                />
               )}
             </>
           </div>

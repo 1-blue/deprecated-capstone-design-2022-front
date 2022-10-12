@@ -1,40 +1,38 @@
 import Image from "next/image";
 
 // util
-import { combineClassNames } from "@src/libs/util";
+import { combineClassNames, combinePhotoUrl } from "@src/libs";
 
 type Props = {
   photo?: string | null;
-  size: string;
-  className?: string;
+  className: string;
   alt?: string;
   $scale?: boolean;
   $cover?: boolean;
   $rouneded?: boolean;
-  $priority?: boolean;
+  priority?: boolean;
 };
 
 const Photo = ({
   photo,
-  size,
   className,
   alt = "이미지",
   $scale,
   $cover,
   $rouneded,
-  $priority,
+  priority,
 }: Props) => {
+  const src = photo
+    ? photo.includes("http")
+      ? photo
+      : combinePhotoUrl(photo)
+    : "/temporary.jpg";
+
   return (
     <>
-      <figure
-        className={combineClassNames(
-          "relative",
-          size,
-          className ? className : ""
-        )}
-      >
+      <figure className={combineClassNames("relative", className)}>
         <Image
-          src={photo ? photo : "/temporary.jpg"}
+          src={src}
           layout="fill"
           alt={alt}
           className={combineClassNames(
@@ -43,7 +41,7 @@ const Photo = ({
             $rouneded ? "rounded-full" : "",
             photo ? "" : "blur"
           )}
-          priority={$priority}
+          priority={priority}
         />
       </figure>
     </>

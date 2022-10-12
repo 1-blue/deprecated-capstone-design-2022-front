@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 // common-component
@@ -19,15 +19,11 @@ import useInfiniteScroll from "@src/hooks/useInfiniteScroll";
 import { dateFormat } from "@src/libs/dateFormat";
 
 // type
-import { ICON, ResponseStatus } from "@src/types";
-import type { IPostWithUserAndKeywordAndCount } from "@src/types";
+import { ICON } from "@src/types";
+import { ApiGetPostsOfSearchResponse } from "@src/types/api";
+import Info from "@src/components/common/Support/Info";
 
-type ResponseOfDetailPosts = {
-  status: ResponseStatus;
-  data: {
-    posts: IPostWithUserAndKeywordAndCount[];
-  };
-};
+const limit = 10;
 
 const Search: NextPage = () => {
   const router = useRouter();
@@ -59,30 +55,29 @@ const Search: NextPage = () => {
     [router, currentKeyword, setCurrentKeyword]
   );
 
-  // 2022/05/10 - 검색할 게시글 offset - by 1-blue
-  const [offset, setOffset] = useState(20);
   // 2022/05/10 - 검색할 게시글 추가 패치 가능 여부 - by 1-blue
   const [hasMorePost, setHasMorePost] = useState(true);
   // 2022/05/10 - 검색할 게시글 패치 관련 데이터 - by 1-blue
   const {
-    data: responsePosts,
+    data: arrayOfPosts,
     setSize,
     isValidating,
-  } = useSWRInfinite<ResponseOfDetailPosts>(
+  } = useSWRInfinite<ApiGetPostsOfSearchResponse>(
     debounce && (currentKeyword || router.query.keyword)
-      ? (pageIndex, previousPageData) => {
-          if (
-            previousPageData?.data &&
-            previousPageData.data.posts.length !== offset
-          ) {
+      ? (pageIndex, prevData) => {
+          if (prevData && prevData.posts.length !== limit) {
             setHasMorePost(false);
             return null;
           }
-          if (previousPageData?.data && !previousPageData.data.posts.length) {
+          if (prevData && !prevData.posts.length) {
             setHasMorePost(false);
             return null;
           }
-          return `/api/posts?page=${pageIndex}&offset=${offset}&kinds=latest&keyword=${
+
+          const lastIdx =
+            prevData?.posts?.[prevData.posts.length - 1].idx || -1;
+
+          return `/api/posts?lastIdx=${lastIdx}&limit=${limit}&kinds=search&keyword=${
             currentKeyword || router.query.keyword
           }`;
         }
@@ -94,48 +89,15 @@ const Search: NextPage = () => {
     setSize,
   });
 
-  // 2022/05/06 - 실제 게시글 목록을 담을 배열 - by 1-blue
-  const [list, setList] = useState<any>([]);
-  // 2022/05/06 - 게시글 담기 - by 1-blue
-  useEffect(() => {
-    if (!responsePosts || responsePosts?.length === 0) return;
-
-    setList(
-      responsePosts.map(({ data: { posts } }) =>
-        posts?.map((post) => (
-          <li key={post.idx} className="space-y-4 pt-8">
-            <Link href={`/${post.user.name}`}>
-              <a className="flex space-x-2 items-center mb-4">
-                <Avatar photo={post.user.avatar} size="w-10 h-10" $rouneded />
-                <span className="hover:underline underline-offset-2">
-                  {post.user.name}
-                </span>
-              </a>
-            </Link>
-            <Link href={`/${post.user.name}/${post.title}`}>
-              <a className="space-y-4">
-                <Photo photo={post.thumbnail} size="w-full py-[30%]" $cover />
-                <h3 className="text-lg font-bold mb-1">{post.title}</h3>
-                <p className="whitespace-pre text-sm mb-4">{post.summary}</p>
-              </a>
-            </Link>
-            <Keyword keywords={post.keywords} />
-            <div className="dark:text-gray-400 text-sm">
-              <time>{dateFormat(post.updatedAt, "YYYY년MM월DD일")}</time>
-              <span>ㆍ</span>
-              <span>{post._count.comment}개의 댓글</span>
-            </div>
-          </li>
-        ))
-      )
-    );
-  }, [router, setList, responsePosts]);
-
   if (isValidating && !currentKeyword) return <Spinner kinds="page" />;
 
   return (
     <>
-      <HeadInfo title="게시글 검색" description="blelog의 게시글 검색" />
+      <HeadInfo
+        title="Jslog | 게시글 검색"
+        description="Jslog의 게시글 검색 페이지입니다."
+        photo={arrayOfPosts?.[0]?.posts[0]?.photo}
+      />
 
       <div className="w-full md:w-[630px] flex flex-col mx-auto space-y-10">
         <form onSubmit={onSearch} className="flex justify-center items-center">
@@ -152,7 +114,61 @@ const Search: NextPage = () => {
         </form>
 
         <article>
-          <ul className="flex flex-col space-y-8 divide-y">{list}</ul>
+          <span>
+            총
+            <strong>{`"${
+              (arrayOfPosts && arrayOfPosts[0].allCount) || 0
+            }개"`}</strong>
+            의 포스트를 찾았습니다.
+          </span>
+
+          <ul className="flex flex-col space-y-8 divide-y">
+            {arrayOfPosts && arrayOfPosts[0].posts.length !== 0 ? (
+              arrayOfPosts.map(({ posts }) =>
+                posts.map((post) => (
+                  <li key={post.idx} className="space-y-4 pt-8">
+                    <Link href={`/${post.User.name}`}>
+                      <a className="flex space-x-2 items-center mb-4">
+                        <Avatar photo={post.User.photo} className="w-10 h-10" />
+                        <span className="hover:underline underline-offset-2">
+                          {post.User.name}
+                        </span>
+                      </a>
+                    </Link>
+                    <Link href={`/${post.User.name}/${post.title}`}>
+                      <a className="space-y-4">
+                        {post.photo && (
+                          <Photo
+                            photo={post.photo}
+                            className="w-full py-[30%]"
+                            $cover
+                          />
+                        )}
+                        <h3 className="text-lg font-bold mb-1">{post.title}</h3>
+                        <p className="whitespace-pre text-sm mb-4">
+                          {post.summary}
+                        </p>
+                      </a>
+                    </Link>
+
+                    <Keyword keywords={post.keywords} />
+
+                    <div className="dark:text-gray-400 text-sm">
+                      <time>
+                        {dateFormat(post.updatedAt, "YYYY년MM월DD일")}
+                      </time>
+                      <span>ㆍ</span>
+                      <span>{post._count.comments}개의 댓글</span>
+                      <span>ㆍ</span>
+                      <span>{post._count.favorites}개의 좋아요</span>
+                    </div>
+                  </li>
+                ))
+              )
+            ) : (
+              <Info text="검색한 게시글이 없습니다." />
+            )}
+          </ul>
         </article>
       </div>
     </>

@@ -1,51 +1,70 @@
+import useSWR from "swr";
+import Link from "next/link";
+
+// api
+import apiService from "@src/api";
+
+// component
+import Photo from "@src/components/common/Photo";
+import ProfileNav from "@src/components/ProfileNav";
+import Info from "@src/components/common/Support/Info";
+import HeadInfo from "@src/components/common/HeadInfo";
+
+// type
 import type {
   GetServerSideProps,
   GetServerSidePropsContext,
   NextPage,
 } from "next";
-import useSWR from "swr";
-
-// component
-import ProfileNav from "@src/components/ProfileNav";
-
-// type
 import type {
-  ICategoryWithCount,
-  ResponseStatus,
-  SimpleUser,
+  ApiGetPostsOfUserWithCategoryResponse,
+  ApiGetUserResponse,
 } from "@src/types";
-import Link from "next/link";
 
 type Props = {
-  user: SimpleUser;
-};
-type ResponseOfCategorys = {
-  status: ResponseStatus;
-  data: {
-    categorys: ICategoryWithCount[];
-  };
+  user: ApiGetUserResponse["user"];
 };
 
 const Category: NextPage<Props> = ({ user }) => {
   const { data: responseOfCategorys } =
-    useSWR<ResponseOfCategorys>(`/api/category`);
+    useSWR<ApiGetPostsOfUserWithCategoryResponse>(
+      `/api/user/categories?userIdx=${user.idx}`
+    );
 
   return (
     <>
-      <ProfileNav avatar={user.avatar} name={user.name} />
+      <HeadInfo
+        title="Jslog | 카테고리"
+        description="Jslog의 카테고리 페이지"
+      />
 
-      <ul className="md:mx-auto md:w-3/5 my-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {responseOfCategorys?.data.categorys.map(({ category, _count }) => (
-          <li key={category}>
-            <Link href={`/${user.name}/category/${category}`}>
-              <a className="space-y-1">
-                <div className="w-full pt-[70%] bg-gray-300 dark:bg-gray-400" />
-                <h3 className="font-bold">{category}</h3>
-                <h3 className="text-sm">{_count.post}개의 포스트</h3>
-              </a>
-            </Link>
-          </li>
-        ))}
+      <ProfileNav
+        avatar={user.photo}
+        name={user.name}
+        introduction={user.introduction}
+      />
+
+      <ul className="md:mx-auto md:w-3/5 my-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {responseOfCategorys && responseOfCategorys.categories.length !== 0 ? (
+          responseOfCategorys.categories.map(({ category, posts, _count }) => (
+            <li key={category}>
+              <Link href={`/${user.name}/category/${category}`}>
+                <a className="group space-y-1">
+                  <Photo
+                    photo={posts.find((post) => post.photo)?.photo}
+                    className="w-full pt-[70%]"
+                    $cover
+                    $scale
+                  />
+                  <h3 className="font-bold">{category}</h3>
+                  <h3 className="text-sm">{_count.posts}개의 포스트</h3>
+                </a>
+              </Link>
+            </li>
+          ))
+        ) : (
+          <Info text="내 카테고리가 없습니다." />
+        )}
       </ul>
     </>
   );
@@ -54,15 +73,26 @@ const Category: NextPage<Props> = ({ user }) => {
 export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/user/${context.params?.name}`
-  ).then((res) => res.json());
+  if (!context.params) return { props: { user: null } };
+  if (typeof context.params.name !== "string") return { props: { user: null } };
 
-  return {
-    props: {
-      user: response?.data.user,
-    },
-  };
+  try {
+    const {
+      data: { user },
+    } = await apiService.userService.apiGetUser({
+      name: context.params.name,
+    });
+
+    return {
+      props: {
+        user: JSON.parse(JSON.stringify(user)),
+      },
+    };
+  } catch (error) {
+    console.error("/category/index.tsx getServerSideProps >> ", error);
+  }
+
+  return { props: { user: null } };
 };
 
 export default Category;

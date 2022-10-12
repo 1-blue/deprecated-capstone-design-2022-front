@@ -1,44 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
-// type
-import { ICON, ResponseStatus } from "@src/types";
-
-// common-component
-import Button from "@src/components/common/Button";
-import Input from "@src/components/common/Input";
-import Spinner from "@src/components/common/Spinner";
+// api
+import apiService from "@src/api";
 
 // hook
-import useMe from "@src/hooks/useMe";
-import useMutation from "@src/hooks/useMutation";
-import useToastMessage from "@src/hooks/useToastMessage";
+import usePhoto from "@src/hooks/usePhoto";
+
+// component
+import HeadInfo from "@src/components/common/HeadInfo";
+import Input from "@src/components/common/Tool/Input";
+import Textarea from "@src/components/common/Tool/Textarea";
+import Button from "@src/components/common/Tool/Button";
+import Spinner from "@src/components/common/Spinner";
 import Photo from "@src/components/common/Photo";
 import Icon from "@src/components/common/Icon";
 
-export type RegisterForm = {
-  id: string;
-  password: string;
+// type
+import type { ChangeEvent, DragEvent } from "react";
+import type { ApiSignUpBody } from "@src/types";
+import { ICON } from "@src/types";
+import { AxiosError } from "axios";
+
+export type RegisterForm = ApiSignUpBody & {
   passwordCheck: string;
-  name: string;
-  introduction?: string;
-  avatar?: string;
-};
-type RegisterResponse = {
-  status: ResponseStatus;
-};
-type AvatarResponse = {
-  status: ResponseStatus;
-  data: {
-    photoUrl: string;
-  };
 };
 
 const Register = () => {
   const router = useRouter();
-  const { me } = useMe();
   const {
     register,
     handleSubmit,
@@ -46,158 +37,146 @@ const Register = () => {
     formState: { errors },
     watch,
   } = useForm<RegisterForm>();
-  const [registerMutation, { data, loading }] = useMutation<RegisterResponse>({
-    url: "/api/auth/register",
-    method: "POST",
-  });
 
-  // 2022/06/04 - textarea 관련 변수/함수들 - by 1-blue
-  const introductionRef = useRef<HTMLTextAreaElement | null>(null);
-  const handleResizeHeight = useCallback(() => {
-    if (!introductionRef.current) return;
-
-    introductionRef.current.style.height = "auto";
-    introductionRef.current.style.height =
-      introductionRef.current.scrollHeight + "px";
-  }, [introductionRef]);
-  const { ref, ...rest } = register("introduction");
-
+  // 2022/09/23 - 회원가입중인지 판단 - by 1-blue
+  const [isSignUp, setIsSignUp] = useState(false);
   // 2022/06/04 - 아바타 input ref - by 1-blue
   const avatarRef = useRef<HTMLInputElement>(null);
   // 2022/06/04 - 아바타 드래그중인지 판단할 변수 - by 1-blue
   const [isDragging, setIsDragging] = useState(false);
   // 2022/06/04 - 아바타 업로드 로딩 변수 - by 1-blue
   const [uploadLoading, setUploadLoading] = useState(false);
-  // 2022/06/04 - 아바타 업로드 ( 드래그 앤 드랍 ) - by 1-blue
-  const onUploadAvatarByDrop = useCallback(
-    async (e: any) => {
-      e.preventDefault();
 
-      setUploadLoading(true);
-
-      try {
-        const formData = new FormData();
-        formData.append("photo", e.dataTransfer.files[0]);
-        const {
-          data: { photoUrl },
-        }: AvatarResponse = await fetch(
-          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
-          {
-            method: "POST",
-            body: formData,
-          }
-        ).then((res) => res.json());
-        setValue("avatar", photoUrl);
-        toast.success("아바타를 업로드했습니다.");
-      } catch (error) {
-        toast.error("아바타 업로드에 실패했습니다.");
-      }
-
-      setUploadLoading(false);
-      setIsDragging(false);
-    },
-    [setValue, setUploadLoading, setIsDragging]
-  );
-  // 2022/06/04 - 아바타 업로드 ( 파일 탐색기 이용 ) - by 1-blue
-  const onUploadAvatarByExplorer = useCallback(
-    async (e: any) => {
-      setUploadLoading(true);
-
-      try {
-        const formData = new FormData();
-        formData.append("photo", e.target.files[0]);
-        const {
-          data: { photoUrl },
-        }: AvatarResponse = await fetch(
-          process.env.NEXT_PUBLIC_SERVER_URL + "/api/photo",
-          {
-            method: "POST",
-            body: formData,
-          }
-        ).then((res) => res.json());
-        setValue("avatar", photoUrl);
-        toast.success("아바타를 업로드했습니다.");
-      } catch (error) {
-        toast.error("아바타 업로드에 실패했습니다.");
-      }
-
-      setUploadLoading(false);
-      setIsDragging(false);
-    },
-    [setUploadLoading, setValue, setIsDragging]
-  );
-
-  // 2022/06/04 - 회원가입 요청 - by 1-blue
-  const onSubmit = useCallback(
-    (body: RegisterForm) => registerMutation(body),
-    [registerMutation]
-  );
-
-  // 2022/06/04 - 회원가입 요청 - by 1-blue
-  useToastMessage({
-    message: "회원가입에 성공했습니다!\n메인 페이지로 이동합니다.",
-    go: "/",
-    ok: data?.status.ok,
+  // 2022/09/25 - 유저 이미지 업로드 함수 - by 1-blue
+  const [onUploadPhotoByClick, onUploadPhotoByDrop] = usePhoto({
+    kinds: "user",
   });
 
-  // 2022/06/04 - 회원가입한 이후에 접근 - by 1-blue
-  if (me) {
-    toast.error("로그아웃하고 접근해주세요!");
-    router.push("/");
-    return null;
-  }
+  // 2022/09/25 - 유저 프로필 사진 업로드 ( 파일 탐색기 이용 ) - by 1-blue
+  const onUploadAvatarByExplorer = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>) => {
+      setUploadLoading(true);
+
+      const photoURL = await onUploadPhotoByClick(e);
+
+      if (photoURL) setValue("photo", photoURL);
+
+      setUploadLoading(false);
+      setIsDragging(false);
+    },
+    [onUploadPhotoByClick, setUploadLoading, setValue, setIsDragging]
+  );
+  // 2022/09/25 - 유저 프로필 사진 업로드 ( 드래그 앤 드랍 ) - by 1-blue
+  const onUploadAvatarByDrop = useCallback(
+    async (e: DragEvent<HTMLDivElement>) => {
+      setUploadLoading(true);
+
+      const photoURL = await onUploadPhotoByDrop(e);
+
+      if (photoURL) setValue("photo", photoURL);
+
+      setUploadLoading(false);
+      setIsDragging(false);
+    },
+    [onUploadPhotoByDrop, setValue, setUploadLoading, setIsDragging]
+  );
+
+  // 2022/09/23 - 회원가입 요청 - by 1-blue
+  const onSubmit = useCallback(
+    (body: RegisterForm) => {
+      setIsSignUp(true);
+      const { passwordCheck, ...rest } = body;
+
+      apiService.authService
+        .apiSignUp(rest)
+        .then(({ data: { message } }) => {
+          toast.success(message);
+          router.push("/login");
+        })
+        .catch((error) => {
+          console.error("회원가입 >> ", error);
+
+          if (error instanceof AxiosError) {
+            toast.error(error.response?.data.message);
+          } else {
+            toast.error("알 수 없는 에러입니다.");
+          }
+        })
+        .finally(() => {
+          setIsSignUp(false);
+        });
+    },
+    [router]
+  );
 
   return (
     <>
+      <HeadInfo
+        title="Jslog | 회원가입"
+        description="Jslog의 회원가입페이지입니다."
+      />
+
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col max-w-[500px] mx-auto"
       >
         <Input
-          name="id"
+          name="아이디"
           type="text"
           register={register("id", {
             required: "아이디를 입력해주세요!",
+            maxLength: {
+              value: 20,
+              message: "20자 이내로 입력해주세요!",
+            },
           })}
-          errorMessage={errors.id?.message}
+          placeholder="아이디를 입력해주세요."
+          infoMessage={errors.id?.message}
         />
         <Input
-          name="password"
+          name="비밀번호"
           type="password"
           register={register("password", {
             required: "비밀번호를 입력해주세요!",
           })}
-          errorMessage={errors.password?.message}
+          placeholder="비밀번호를 입력해주세요."
+          infoMessage={errors.password?.message}
         />
         <Input
-          name="passwordCheck"
+          name="비밀번호 확인"
           type="password"
           register={register("passwordCheck", {
             validate: (value) =>
               watch("password") === value || "비밀번호가 불일치합니다.",
           })}
-          errorMessage={errors.passwordCheck?.message}
+          placeholder="비밀번호를 다시 입력해주세요."
+          infoMessage={errors.passwordCheck?.message}
         />
         <Input
-          name="name"
+          name="이름"
           type="text"
           register={register("name", {
             required: "이름을 입력해주세요!",
+            maxLength: {
+              value: 20,
+              message: "20자 이내로 입력해주세요!",
+            },
           })}
-          errorMessage={errors.name?.message}
+          placeholder="사용할 이름을 입력해주세요."
+          infoMessage={errors.name?.message}
         />
 
         {/* 자기소개 */}
-        <label htmlFor="introduction">introduction</label>
-        <textarea
-          ref={(e) => {
-            ref(e);
-            introductionRef.current = e;
-          }}
-          onInput={handleResizeHeight}
-          rows={1}
-          className="py-2 px-4 mb-4 resize-none focus:outline-none bg-slate-300 dark:bg-slate-600 rounded-sm"
-          {...rest}
+        <Textarea
+          name="자기소개"
+          register={register("introduction", {
+            maxLength: {
+              value: 100,
+              message: "100자 이내로 입력해주세요! ( 공백 포함 )",
+            },
+          })}
+          placeholder="간단한 자기소개를 입력해주세요."
+          infoMessage={errors.introduction?.message}
         />
 
         {/* 아바타 */}
@@ -219,17 +198,17 @@ const Register = () => {
             </div>
           ) : (
             <>
-              {watch("avatar") ? (
+              {watch("photo") ? (
                 <figure className="relative w-full h-full bg-black rounded-md">
                   <Photo
-                    photo={watch("avatar")}
+                    photo={watch("photo")}
                     alt="프로필 사진"
                     $cover
-                    size="w-full h-full"
+                    className="w-full h-full"
                   />
                 </figure>
               ) : (
-                <Icon icon={ICON.PHOTO} className="w-20 h-20" />
+                <Icon icon={ICON.PHOTO} className="w-16 h-16 sm:w-20 sm:h-20" />
               )}
               <input
                 type="file"
@@ -245,13 +224,12 @@ const Register = () => {
         <Button
           type="submit"
           contents="회원가입"
-          className="bg-indigo-400 py-2 font-bold text-xl mt-4"
-          loading={loading}
+          className="bg-indigo-400 py-2 font-bold text-lg sm:text-xl mt-4 text-white hover:bg-indigo-500 transition-all"
           loadingText="회원가입중입니다... "
         />
       </form>
 
-      {loading && <Spinner kinds="page" />}
+      {isSignUp && <Spinner kinds="page" />}
       {uploadLoading && <Spinner kinds="page" />}
     </>
   );

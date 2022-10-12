@@ -1,70 +1,71 @@
+import { getSession } from "next-auth/react";
+
+import prisma from "@src/prisma";
+
+// type
 import type { NextApiRequest, NextApiResponse } from "next";
+import type {
+  ApiCreateCategoryResponse,
+  ApiGetCategoriesResponse,
+} from "@src/types";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<ApiGetCategoriesResponse | ApiCreateCategoryResponse>
 ) {
-  console.log("로그인한 유저의 카테고리 요청");
+  const { method } = req;
+  const session = await getSession({ req });
 
-  return res.status(200).json({
-    status: { ok: true },
-    data: {
-      categorys: [
-        {
-          category: "React.js",
-          _count: {
-            post: 12,
+  if (!session)
+    return res.status(403).json({ message: "로그인후에 접근해주세요!" });
+
+  const userIdx = session.user.idx;
+
+  try {
+    if (method === "GET") {
+      const categories = await prisma.category.findMany({
+        where: {
+          categories: {
+            some: {
+              userIdx,
+            },
           },
         },
-        {
-          category: "Vue.js",
-          _count: {
-            post: 21,
+      });
+
+      return res
+        .status(200)
+        .json({ categories, message: "모든 카테고리들을 가져왔습니다." });
+    }
+    if (method === "POST") {
+      if (typeof req.body.category !== "string")
+        return res.status(418).json({ message: "잘못된 데이터입니다." });
+
+      const { category } = req.body;
+
+      await prisma.category.create({
+        data: {
+          category,
+          categories: {
+            connectOrCreate: {
+              where: {
+                userIdx_categoryIdx: { categoryIdx: category, userIdx },
+              },
+              create: { userIdx },
+            },
           },
         },
-        {
-          category: "Node.js",
-          _count: {
-            post: 5,
-          },
-        },
-        {
-          category: "Docker",
-          _count: {
-            post: 9,
-          },
-        },
-        {
-          category: "JavaScript",
-          _count: {
-            post: 11,
-          },
-        },
-        {
-          category: "TypeScript",
-          _count: {
-            post: 19,
-          },
-        },
-        {
-          category: "Next.js",
-          _count: {
-            post: 31,
-          },
-        },
-        {
-          category: "HTML",
-          _count: {
-            post: 2,
-          },
-        },
-        {
-          category: "CSS",
-          _count: {
-            post: 6,
-          },
-        },
-      ],
-    },
-  });
+      });
+
+      return res
+        .status(201)
+        .json({ message: "새로운 카테고리를 생성했습니다." });
+    }
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({ message: "서버측 오류입니다." });
+  }
+
+  return res.status(404).json({ message: "잘못된 접근입니다." });
 }

@@ -6,7 +6,13 @@ class MyDocument extends Document {
       <Html>
         <Head>
           {/* favicon */}
-          <link href="/fav1.ico" rel="shortcut icon" />
+          <link href="/favicon.ico" rel="shortcut icon" />
+
+          {/* SEO를 위한 키워드 */}
+          <meta
+            name="keyword"
+            content="jslog, blog, next.js, typescript, velog, clone, 블로그, 벨로그, 클론"
+          />
 
           {/* Nanum Gothic ( https://fonts.google.com/specimen/Nanum+Gothic?subset=korean ) */}
           <link

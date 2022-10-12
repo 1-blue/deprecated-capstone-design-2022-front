@@ -31,7 +31,7 @@ export default function useMutation<T>({
 
     if (!url) return;
 
-    fetch(process.env.NEXT_PUBLIC_SERVER_URL + url, {
+    fetch(process.env.NEXT_PUBLIC_BASE_URL + url, {
       method,
       headers: {
         "Content-Type": "application/json",
